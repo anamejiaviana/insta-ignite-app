@@ -293,6 +293,18 @@ export default function ShootingDay() {
           <Lightbulb className="h-4 w-4" />
           Desde una idea
         </button>
+        <button
+          onClick={() => setMode("optimize")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            mode === "optimize"
+              ? "text-primary-foreground"
+              : "bg-secondary text-muted-foreground hover:text-foreground"
+          }`}
+          style={mode === "optimize" ? { background: "var(--gradient-primary)" } : undefined}
+        >
+          <Zap className="h-4 w-4" />
+          Optimizar grabación
+        </button>
       </div>
 
       {/* MODE 1: From weekly calendar */}
