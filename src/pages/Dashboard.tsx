@@ -25,7 +25,7 @@ interface WeeklyPlanItem {
 
 interface WeeklyPlan {
   reels: WeeklyPlanItem[];
-  post: WeeklyPlanItem;
+  posts: WeeklyPlanItem[];
   stories: { idea: string; tipo: string }[];
 }
 
