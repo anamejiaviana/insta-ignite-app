@@ -195,7 +195,7 @@ export default function ContentCalendar() {
               className="gap-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              Semana anterior
+              {t("previousWeek")}
             </Button>
             <div className="text-center">
               <p className="font-semibold text-sm">{formatWeekLabel(selectedPlan)}</p>
