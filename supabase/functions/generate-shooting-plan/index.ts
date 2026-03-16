@@ -22,7 +22,62 @@ serve(async (req) => {
     let systemPrompt: string;
     let userPrompt: string;
 
-    if (customIdea) {
+    if (optimizeMode) {
+      // MODE 3: Optimize recording for all weekly content
+      const contentList = (allContent || []).map((c: any, i: number) =>
+        `${i + 1}. [${(c.type || 'reel').toUpperCase()}] "${c.idea}" - Hook: "${c.hook}" - Planos: ${(c.shots || []).join(', ')}`
+      ).join('\n');
+
+      const storiesList = (stories || []).map((s: any) => `- [STORY] ${s.idea} (${s.tipo})`).join('\n');
+
+      systemPrompt = `Eres un director de producción audiovisual profesional. Analizas contenido planificado para Instagram y creas planes de grabación OPTIMIZADOS que identifican planos reutilizables y minimizan el tiempo de grabación.
+
+      TODO el contenido generado DEBE estar en ${langName}.
+
+      Responde SIEMPRE en formato JSON válido con esta estructura exacta:
+      {
+        "contenidos": [
+          {
+            "tipo": "reel o post",
+            "idea": "nombre del contenido",
+            "hook": "hook del contenido",
+            "planos_necesarios": ["plano 1", "plano 2", "plano 3"]
+          }
+        ],
+        "planos_reutilizables": [
+          {
+            "nombre": "plano exterior del local",
+            "descripcion": "Grabar fachada con luz natural",
+            "tipo_plano": "plano general",
+            "reutilizado_en": ["Reel 1", "Reel 2", "Post 1"]
+          }
+        ],
+        "orden_grabacion": ["Paso 1: preparar escena", "Paso 2: grabar planos generales reutilizables", "Paso 3: grabar reel 1"],
+        "total_planos": 12,
+        "duracion_estimada": "30-40 minutos",
+        "resumen": "Con estos 12 planos puedes grabar todo el contenido de la semana en aproximadamente 30 minutos."
+      }`;
+
+      userPrompt = `Analiza TODO este contenido semanal planificado y crea un plan de grabación OPTIMIZADO:
+
+      Negocio: ${client.name || 'Mi negocio'}
+      Tipo: ${client.type || 'negocio local'}
+      Ciudad: ${client.city || ''}
+
+      CONTENIDO PLANIFICADO:
+${contentList}
+${storiesList ? `\nIDEAS DE STORIES:\n${storiesList}` : ''}
+
+      Instrucciones:
+      1. Lista cada contenido con su tipo, idea, hook y planos necesarios
+      2. Identifica TODOS los planos que se pueden reutilizar entre varios contenidos (ej: plano exterior, plano ambiente, detalle producto, manos trabajando, persona explicando, cliente disfrutando)
+      3. Crea un orden de grabación optimizado que agrupe planos similares
+      4. Calcula el total de planos únicos necesarios
+      5. Estima el tiempo total de grabación
+      6. Genera un resumen tipo: "Con estos X planos puedes grabar todo el contenido de la semana en aproximadamente Y minutos."
+
+      Todo en ${langName}.`;
+    } else if (customIdea) {
       // MODE 2: Generate from a specific idea/topic
       systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales.
       Creas planes de grabación extremadamente detallados con storyboard paso a paso, incluyendo tipo de plano, movimiento de cámara, y textos en pantalla.
