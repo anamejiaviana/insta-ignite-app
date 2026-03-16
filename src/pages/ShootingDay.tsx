@@ -3,21 +3,50 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check } from "lucide-react";
+import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check, Video, Eye, Move, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+
+interface StoryboardStep {
+  paso: number;
+  nombre: string;
+  descripcion: string;
+  tipo_plano: string;
+  movimiento: string;
+  duracion_segundos: number;
+  texto_pantalla: string | null;
+}
+
+interface ShootingReelDetailed {
+  reel: string;
+  hook: string;
+  storyboard: StoryboardStep[];
+  textos_pantalla: string[];
+  duracion: string;
+  orden_grabacion: number;
+}
+
+interface PlanoApoyo {
+  nombre: string;
+  descripcion: string;
+  tipo_plano: string;
+  uso: string;
+}
 
 interface ShootingPlanData {
-  reels: { reel: string; hook: string; planos: string[]; duracion: string }[];
-  planosApoyo: string[];
+  reels: ShootingReelDetailed[];
+  planosApoyo: PlanoApoyo[] | string[];
+  orden_sesion: string[];
 }
 
 interface CustomIdeaPlan {
   hook: string;
-  storyboard: { paso: number; descripcion: string; tipo_plano: string; duracion_segundos: number }[];
+  storyboard: StoryboardStep[];
   shots: string[];
   textos_pantalla: string[];
+  orden_grabacion: string[];
   duracion_estimada: string;
   caption: string;
   hashtags: string[];
@@ -270,63 +299,9 @@ export default function ShootingDay() {
                 </Button>
               </div>
 
+              {/* MODE 1 RESULTS */}
               {shootingPlan && (
-                <>
-                  <Card className="bg-card border-border">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Clapperboard className="h-5 w-5 text-primary" />
-                        Plan de grabación
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-border">
-                              <th className="text-left py-3 pr-4 font-medium text-muted-foreground">Reel</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Hook</th>
-                              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Planos</th>
-                              <th className="text-left py-3 pl-4 font-medium text-muted-foreground">Duración</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {shootingPlan.reels.map((reel, idx) => (
-                              <tr key={idx} className="border-b border-border/50">
-                                <td className="py-3 pr-4 font-medium">{reel.reel}</td>
-                                <td className="py-3 px-4 text-primary">"{reel.hook}"</td>
-                                <td className="py-3 px-4">
-                                  <ul className="space-y-1">
-                                    {reel.planos.map((p, i) => (
-                                      <li key={i} className="text-muted-foreground flex items-center gap-1.5">
-                                        <span className="h-1 w-1 rounded-full bg-primary shrink-0" />
-                                        {p}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </td>
-                                <td className="py-3 pl-4 text-muted-foreground">{reel.duracion}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-card border-border">
-                    <CardHeader>
-                      <CardTitle className="text-lg">Planos extra de apoyo</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {shootingPlan.planosApoyo.map((p, i) => (
-                          <div key={i} className="bg-secondary/50 rounded-lg px-3 py-2 text-sm text-muted-foreground">{p}</div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </>
+                <CalendarShootingResults plan={shootingPlan} />
               )}
             </div>
           )}
@@ -355,109 +330,295 @@ export default function ShootingDay() {
             </Button>
           </div>
 
+          {/* MODE 2 RESULTS */}
           {customPlan && (
-            <>
-              {/* Hook */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Clapperboard className="h-5 w-5 text-primary" />
-                    Hook
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-primary font-medium text-lg">"{customPlan.hook}"</p>
-                </CardContent>
-              </Card>
-
-              {/* Storyboard */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">Storyboard</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {customPlan.storyboard.map((step, idx) => (
-                      <div key={idx} className="flex gap-4 p-3 rounded-lg bg-secondary/50">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold">
-                          {step.paso}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{step.descripcion}</p>
-                          <div className="flex gap-3 mt-1.5 text-xs text-muted-foreground">
-                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{step.tipo_plano}</span>
-                            <span>{step.duracion_segundos}s</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Shots */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">Planos a grabar</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-1.5">
-                    {customPlan.shots.map((s, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-
-              {/* On-screen text */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">Textos en pantalla</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {customPlan.textos_pantalla.map((t, i) => (
-                      <div key={i} className="bg-secondary/50 rounded-lg px-3 py-2 text-sm font-medium text-center">
-                        "{t}"
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Duration + Caption + Hashtags */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-lg">Caption y hashtags</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">Duración estimada:</span>
-                    {customPlan.duracion_estimada}
-                  </div>
-                  <div className="relative">
-                    <p className="text-sm bg-secondary/50 rounded-lg p-3 pr-10">{customPlan.caption}</p>
-                    <button
-                      onClick={() => copyText(customPlan.caption + "\n\n" + customPlan.hashtags.map(h => `#${h}`).join(" "))}
-                      className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-secondary"
-                    >
-                      {copiedCaption ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {customPlan.hashtags.map((h, i) => (
-                      <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">#{h}</span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </>
+            <CustomShootingResults plan={customPlan} onCopy={copyText} copied={copiedCaption} />
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ───────── MODE 1 RESULTS ───────── */
+function CalendarShootingResults({ plan }: { plan: ShootingPlanData }) {
+  return (
+    <div className="space-y-6">
+      {/* Reels with detailed storyboards */}
+      {plan.reels.map((reel, idx) => (
+        <Card key={idx} className="bg-card border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clapperboard className="h-5 w-5 text-primary" />
+                {reel.reel}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {reel.orden_grabacion && (
+                  <Badge variant="outline" className="text-xs">
+                    Orden: {reel.orden_grabacion}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="text-xs">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {reel.duracion}
+                </Badge>
+              </div>
+            </div>
+            <p className="text-primary font-medium mt-1">🎬 "{reel.hook}"</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Storyboard */}
+            {reel.storyboard && reel.storyboard.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Storyboard</h4>
+                <div className="space-y-3">
+                  {reel.storyboard.map((step, i) => (
+                    <StoryboardStepCard key={i} step={step} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* On-screen text */}
+            {reel.textos_pantalla && reel.textos_pantalla.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Eye className="h-3.5 w-3.5" /> Textos en pantalla
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {reel.textos_pantalla.map((t, i) => (
+                    <div key={i} className="bg-secondary/50 rounded-lg px-3 py-2 text-sm font-medium text-center">
+                      "{t}"
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Session order */}
+      {plan.orden_sesion && plan.orden_sesion.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Move className="h-5 w-5 text-primary" />
+              Orden de la sesión
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Sigue estos pasos para una grabación eficiente</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {plan.orden_sesion.map((paso, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
+                  <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm pt-1">{paso}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Support shots */}
+      {plan.planosApoyo && plan.planosApoyo.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Video className="h-5 w-5 text-primary" />
+              Planos extra de apoyo
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Graba estos planos adicionales para enriquecer tus reels</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {plan.planosApoyo.map((p, i) => {
+                if (typeof p === "string") {
+                  return (
+                    <div key={i} className="bg-secondary/50 rounded-lg px-4 py-3 text-sm text-muted-foreground">{p}</div>
+                  );
+                }
+                const plano = p as PlanoApoyo;
+                return (
+                  <div key={i} className="bg-secondary/50 rounded-lg px-4 py-3 space-y-1">
+                    <p className="text-sm font-medium">{plano.nombre}</p>
+                    <p className="text-xs text-muted-foreground">{plano.descripcion}</p>
+                    <div className="flex gap-2 mt-1">
+                      <Badge variant="outline" className="text-[10px]">{plano.tipo_plano}</Badge>
+                      <Badge variant="outline" className="text-[10px] text-primary border-primary/30">{plano.uso}</Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+/* ───────── MODE 2 RESULTS ───────── */
+function CustomShootingResults({ plan, onCopy, copied }: { plan: CustomIdeaPlan; onCopy: (t: string) => void; copied: boolean }) {
+  return (
+    <div className="space-y-6">
+      {/* Hook */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Clapperboard className="h-5 w-5 text-primary" />
+            Hook
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-primary font-medium text-lg">"{plan.hook}"</p>
+        </CardContent>
+      </Card>
+
+      {/* Storyboard */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg">Storyboard detallado</CardTitle>
+          <p className="text-xs text-muted-foreground">Cada paso describe exactamente qué grabar</p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {plan.storyboard.map((step, idx) => (
+              <StoryboardStepCard key={idx} step={step} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Shots list */}
+      {plan.shots && plan.shots.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg">Lista de planos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5">
+              {plan.shots.map((s, i) => (
+                <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* On-screen text */}
+      {plan.textos_pantalla && plan.textos_pantalla.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" /> Textos en pantalla
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {plan.textos_pantalla.map((t, i) => (
+                <div key={i} className="bg-secondary/50 rounded-lg px-3 py-2 text-sm font-medium text-center">
+                  "{t}"
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recording order */}
+      {plan.orden_grabacion && plan.orden_grabacion.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Move className="h-5 w-5 text-primary" /> Orden de grabación
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Orden óptimo para grabar (puede diferir del orden final del reel)</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {plan.orden_grabacion.map((paso, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
+                  <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm pt-1">{paso}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Duration + Caption + Hashtags */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg">Caption y hashtags</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span className="font-medium text-foreground">Duración estimada:</span>
+            {plan.duracion_estimada}
+          </div>
+          <div className="relative">
+            <p className="text-sm bg-secondary/50 rounded-lg p-3 pr-10">{plan.caption}</p>
+            <button
+              onClick={() => onCopy(plan.caption + "\n\n" + plan.hashtags.map(h => `#${h}`).join(" "))}
+              className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-secondary"
+            >
+              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {plan.hashtags.map((h, i) => (
+              <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">#{h}</span>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/* ───────── SHARED STORYBOARD STEP CARD ───────── */
+function StoryboardStepCard({ step }: { step: StoryboardStep }) {
+  return (
+    <div className="flex gap-4 p-4 rounded-lg bg-secondary/50">
+      <div className="flex-shrink-0 h-9 w-9 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold">
+        {step.paso}
+      </div>
+      <div className="flex-1 space-y-1.5">
+        {step.nombre && (
+          <p className="text-sm font-semibold">{step.nombre}</p>
+        )}
+        <p className="text-sm text-muted-foreground">{step.descripcion}</p>
+        <div className="flex flex-wrap gap-2 mt-1.5">
+          <Badge variant="outline" className="text-[10px]">
+            📷 {step.tipo_plano}
+          </Badge>
+          {step.movimiento && (
+            <Badge variant="outline" className="text-[10px]">
+              🎥 {step.movimiento}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-[10px] text-primary border-primary/30">
+            ⏱ {step.duracion_segundos}s
+          </Badge>
+        </div>
+        {step.texto_pantalla && (
+          <p className="text-xs bg-primary/10 text-primary px-2 py-1 rounded mt-1 inline-block">
+            📝 "{step.texto_pantalla}"
+          </p>
+        )}
+      </div>
     </div>
   );
 }
