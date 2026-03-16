@@ -162,6 +162,12 @@ ${postExamples}
       throw new Error('Failed to parse AI response');
     }
 
+    // Normalize: if AI returned "post" (singular), convert to "posts" array
+    if (parsed.post && !parsed.posts) {
+      parsed.posts = [parsed.post];
+      delete parsed.post;
+    }
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
