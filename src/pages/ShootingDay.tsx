@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check, Video, Eye, Move, Clock, Zap, RotateCcw } from "lucide-react";
@@ -79,6 +80,7 @@ type Mode = "calendar" | "custom" | "optimize";
 
 export default function ShootingDay() {
   const { activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [mode, setMode] = useState<Mode>("calendar");
   const [latestPlan, setLatestPlan] = useState<any>(null);
@@ -119,7 +121,7 @@ export default function ShootingDay() {
 
   const generateFromCalendar = async () => {
     if (!latestPlan) {
-      toast({ variant: "destructive", title: "No hay plan semanal. Genera uno primero desde el Dashboard." });
+      toast({ variant: "destructive", title: t("noWeeklyPlanToast") });
       return;
     }
     setLoading(true);
@@ -147,9 +149,9 @@ export default function ShootingDay() {
           plan_data: data,
         });
       }
-      toast({ title: "¡Plan de grabación generado!" });
+      toast({ title: t("shootingPlanGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+      toast({ variant: "destructive", title: t("errorGeneratingShootingPlan"), description: error.message });
     } finally {
       setLoading(false);
     }
@@ -157,7 +159,7 @@ export default function ShootingDay() {
 
   const generateFromIdea = async () => {
     if (!customIdea.trim()) {
-      toast({ variant: "destructive", title: "Escribe una idea o tema para grabar." });
+      toast({ variant: "destructive", title: t("writeIdeaFirst") });
       return;
     }
     setLoading(true);
@@ -182,9 +184,9 @@ export default function ShootingDay() {
           plan_data: { ...data, customIdea: customIdea.trim() },
         });
       }
-      toast({ title: "¡Plan de grabación generado!" });
+      toast({ title: t("shootingPlanGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+      toast({ variant: "destructive", title: t("errorGeneratingShootingPlan"), description: error.message });
     } finally {
       setLoading(false);
     }
@@ -192,7 +194,7 @@ export default function ShootingDay() {
 
   const generateOptimized = async () => {
     if (!latestPlan) {
-      toast({ variant: "destructive", title: "No hay plan semanal. Genera uno primero desde el Dashboard." });
+      toast({ variant: "destructive", title: t("noWeeklyPlanToast") });
       return;
     }
     setLoading(true);
@@ -227,9 +229,9 @@ export default function ShootingDay() {
           plan_data: { ...data, mode: "optimize" },
         });
       }
-      toast({ title: "¡Plan optimizado generado!" });
+      toast({ title: t("optimizedPlanGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+      toast({ variant: "destructive", title: t("errorGeneratingShootingPlan"), description: error.message });
     } finally {
       setLoading(false);
     }
@@ -251,8 +253,8 @@ export default function ShootingDay() {
         </div>
         <div className="glass rounded-2xl p-12 text-center">
           <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Selecciona un cliente</h3>
-          <p className="text-muted-foreground text-sm">Ve a Configuración para crear o seleccionar un cliente.</p>
+          <h3 className="text-lg font-medium mb-2">{t("selectClient")}</h3>
+          <p className="text-muted-foreground text-sm">{t("goToSettings")}</p>
         </div>
       </div>
     );
@@ -261,9 +263,9 @@ export default function ShootingDay() {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Día de grabación</h1>
+        <h1 className="text-3xl font-bold">{t("shootingDay")}</h1>
         <p className="text-muted-foreground mt-1">
-          Sesión para <span className="text-primary font-medium">{activeClient.name}</span>
+          {t("sessionFor")} <span className="text-primary font-medium">{activeClient.name}</span>
         </p>
       </div>
 
@@ -279,7 +281,7 @@ export default function ShootingDay() {
           style={mode === "calendar" ? { background: "var(--gradient-primary)" } : undefined}
         >
           <CalendarDays className="h-4 w-4" />
-          Desde plan semanal
+          {t("fromWeeklyPlan")}
         </button>
         <button
           onClick={() => setMode("custom")}
@@ -291,7 +293,7 @@ export default function ShootingDay() {
           style={mode === "custom" ? { background: "var(--gradient-primary)" } : undefined}
         >
           <Lightbulb className="h-4 w-4" />
-          Desde una idea
+          {t("fromIdea")}
         </button>
         <button
           onClick={() => setMode("optimize")}
@@ -303,7 +305,7 @@ export default function ShootingDay() {
           style={mode === "optimize" ? { background: "var(--gradient-primary)" } : undefined}
         >
           <Zap className="h-4 w-4" />
-          Optimizar grabación
+          {t("optimizeRecording")}
         </button>
       </div>
 

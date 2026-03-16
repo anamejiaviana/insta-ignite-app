@@ -1,4 +1,5 @@
 import { useClients } from "@/contexts/ClientContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -8,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface WeeklyPlanItem {
   id: string;
@@ -31,6 +31,7 @@ interface WeeklyPlan {
 
 export default function Dashboard() {
   const { activeClient, clients, setActiveClientId } = useClients();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
@@ -55,7 +56,7 @@ export default function Dashboard() {
 
   const generateWeeklyPlan = async () => {
     if (!activeClient) {
-      toast({ variant: "destructive", title: "Selecciona un negocio primero" });
+      toast({ variant: "destructive", title: t("selectBusinessFirst") });
       return;
     }
 
@@ -84,7 +85,6 @@ export default function Dashboard() {
 
       setWeeklyPlan(data);
 
-      // Save to DB
       const user = (await supabase.auth.getUser()).data.user;
       if (user) {
         const now = new Date();
@@ -101,11 +101,11 @@ export default function Dashboard() {
         });
       }
 
-      toast({ title: "¡Plan semanal generado!" });
+      toast({ title: t("weeklyPlanGenerated") });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error al generar plan",
+        title: t("errorGeneratingPlan"),
         description: error.message,
       });
     } finally {
@@ -131,19 +131,19 @@ export default function Dashboard() {
   };
 
   const quickActions = [
-    { label: "Calendario", icon: Calendar, path: "/strategy/calendar" },
-    { label: "Día de grabación", icon: Camera, path: "/shooting" },
-    { label: "Biblioteca", icon: FolderOpen, path: "/library" },
+    { label: t("calendarNav"), icon: Calendar, path: "/strategy/calendar" },
+    { label: t("recordingDay"), icon: Camera, path: "/shooting" },
+    { label: t("libraryNav"), icon: FolderOpen, path: "/library" },
   ];
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in px-4 md:px-0">
       {/* Header with client selector */}
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         {clients.length > 0 ? (
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className="text-sm text-muted-foreground">Negocio:</span>
+            <span className="text-sm text-muted-foreground">{t("business")}:</span>
             {clients.map((c) => (
               <button
                 key={c.id}
@@ -165,9 +165,9 @@ export default function Dashboard() {
           </div>
         ) : (
           <p className="text-muted-foreground mt-1 text-sm">
-            Empieza añadiendo tu negocio en{" "}
+            {t("startAddingBusiness")}{" "}
             <button onClick={() => navigate("/settings")} className="text-primary underline">
-              Configuración
+              {t("settings")}
             </button>
           </p>
         )}
@@ -178,17 +178,17 @@ export default function Dashboard() {
         <Card className="bg-card border-border overflow-hidden">
           <div className="p-6 md:p-8">
             <h2 className="text-xl font-bold mb-1">
-              ¿Qué publico esta semana?
+              {t("whatToPublish")}
             </h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Personaliza tu plan de contenido semanal
+              {t("customizeWeeklyPlan")}
             </p>
 
             <div className="space-y-5">
               {/* Number of publications */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  ¿Cuántas publicaciones quieres esta semana?
+                  {t("howManyPublications")}
                 </Label>
                 <div className="flex gap-2">
                   {["2", "3", "4", "5"].map((n) => (
@@ -211,13 +211,13 @@ export default function Dashboard() {
               {/* Content type preference */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  ¿Qué tipo de contenido prefieres?
+                  {t("contentTypePreference")}
                 </Label>
                 <div className="flex gap-2">
                   {[
-                    { value: "more_reels", label: "Más reels" },
-                    { value: "balanced", label: "Equilibrado" },
-                    { value: "more_posts", label: "Más posts" },
+                    { value: "more_reels", labelKey: "moreReels" as const },
+                    { value: "balanced", labelKey: "balanced" as const },
+                    { value: "more_posts", labelKey: "morePosts" as const },
                   ].map((opt) => (
                     <button
                       key={opt.value}
@@ -229,7 +229,7 @@ export default function Dashboard() {
                       }`}
                       style={contentPreference === opt.value ? { background: "var(--gradient-primary)" } : undefined}
                     >
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -238,10 +238,10 @@ export default function Dashboard() {
               {/* Special dates */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
-                  ¿Hay fechas especiales esta semana? (opcional)
+                  {t("specialDatesOptional")}
                 </Label>
                 <Input
-                  placeholder="Ej: Black Friday, aniversario del local, nueva carta..."
+                  placeholder={t("specialDatesPlaceholder")}
                   value={specialDates}
                   onChange={(e) => setSpecialDates(e.target.value)}
                   className="bg-secondary border-border"
@@ -257,12 +257,12 @@ export default function Dashboard() {
                 {loading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Generando plan...
+                    {t("generatingPlan")}
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-5 w-5" />
-                    Generar mi contenido de esta semana
+                    {t("generateWeeklyContent")}
                   </>
                 )}
               </Button>
@@ -274,7 +274,7 @@ export default function Dashboard() {
       {/* Weekly Plan Results */}
       {weeklyPlan && (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold">Tu plan semanal</h3>
+          <h3 className="text-lg font-bold">{t("yourWeeklyPlan")}</h3>
 
           {/* Reels */}
           {weeklyPlan.reels.map((reel, idx) => (
@@ -299,7 +299,7 @@ export default function Dashboard() {
                     className="shrink-0"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1" />
-                    Generar
+                    {t("generate")}
                   </Button>
                 </div>
               </CardContent>
@@ -328,7 +328,7 @@ export default function Dashboard() {
                     className="shrink-0"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1" />
-                    Generar
+                    {t("generate")}
                   </Button>
                 </div>
               </CardContent>
@@ -339,7 +339,7 @@ export default function Dashboard() {
           {weeklyPlan.stories && weeklyPlan.stories.length > 0 && (
             <Card className="bg-card border-border">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Ideas de Stories</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-2">
@@ -381,7 +381,7 @@ export default function Dashboard() {
       {recentPosts.length > 0 && (
         <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-base">Contenido reciente</CardTitle>
+            <CardTitle className="text-base">{t("recentContent")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

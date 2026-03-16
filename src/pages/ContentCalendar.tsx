@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Calendar, CheckCircle2, Pencil, ChevronLeft, ChevronRight, Film, Zap } from "lucide-react";
@@ -35,6 +36,7 @@ interface StoredPlan {
 
 export default function ContentCalendar() {
   const { activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<StoredPlan[]>([]);
@@ -139,24 +141,24 @@ export default function ContentCalendar() {
     <div className="max-w-5xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Calendario</h1>
+          <h1 className="text-3xl font-bold">{t("calendar")}</h1>
           {activeClient && (
             <p className="text-muted-foreground mt-1">
-              Planes para{" "}
+              {t("plans")}{" "}
               <span className="text-primary font-medium">{activeClient.name}</span>
             </p>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate("/strategy/reels")}>
-            <Film className="h-4 w-4 mr-1" /> Ideas de reels
+            <Film className="h-4 w-4 mr-1" /> {t("reelIdeas")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate("/strategy/hooks")}>
-            <Zap className="h-4 w-4 mr-1" /> Hooks
+            <Zap className="h-4 w-4 mr-1" /> {t("hooks")}
           </Button>
           <Button variant="gradient" onClick={() => navigate("/")} size="sm">
             <Sparkles className="h-4 w-4 mr-2" />
-            Generar plan semanal
+            {t("generateWeeklyPlanBtn")}
           </Button>
         </div>
       </div>
@@ -164,19 +166,19 @@ export default function ContentCalendar() {
       {loading && (
         <div className="glass rounded-2xl p-12 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Cargando planes...</p>
+          <p className="text-muted-foreground">{t("loadingPlans")}</p>
         </div>
       )}
 
       {!loading && plans.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Sin planes aún</h3>
+          <h3 className="text-lg font-medium mb-2">{t("noPlansYet")}</h3>
           <p className="text-muted-foreground text-sm max-w-md mx-auto mb-4">
-            Genera tu primer plan semanal desde el Dashboard.
+            {t("generateFirstPlan")}
           </p>
           <Button variant="gradient" onClick={() => navigate("/")}>
-            Ir al Dashboard
+            {t("goToDashboard")}
           </Button>
         </div>
       )}
@@ -193,12 +195,12 @@ export default function ContentCalendar() {
               className="gap-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              Semana anterior
+              {t("previousWeek")}
             </Button>
             <div className="text-center">
               <p className="font-semibold text-sm">{formatWeekLabel(selectedPlan)}</p>
               <p className="text-[10px] text-muted-foreground">
-                Creado el {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+                {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
               </p>
             </div>
             <Button
@@ -208,7 +210,7 @@ export default function ContentCalendar() {
               disabled={!canGoPrev}
               className="gap-1"
             >
-              Semana siguiente
+              {t("nextWeek")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -249,7 +251,7 @@ export default function ContentCalendar() {
                           {generated && (
                             <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
                               <CheckCircle2 className="h-3 w-3" />
-                              generado
+                              {t("generated")}
                             </Badge>
                           )}
                         </div>
@@ -271,9 +273,9 @@ export default function ContentCalendar() {
                         className="shrink-0"
                       >
                         {generated ? (
-                          <><Pencil className="h-3.5 w-3.5 mr-1" /> Editar contenido</>
+                          <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
                         ) : (
-                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> Generar este contenido</>
+                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
                         )}
                       </Button>
                     </div>
@@ -286,7 +288,7 @@ export default function ContentCalendar() {
             {planData?.stories && planData.stories.length > 0 && (
               <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Ideas de Stories</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2">

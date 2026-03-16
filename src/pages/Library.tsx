@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ type TabType = "posts" | "plans" | "shooting";
 
 export default function Library() {
   const { clients, activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("posts");
   const [posts, setPosts] = useState<any[]>([]);
@@ -59,7 +61,7 @@ export default function Library() {
     const { error } = await supabase.from("generated_posts").delete().eq("id", id);
     if (!error) {
       setPosts((prev) => prev.filter((p) => p.id !== id));
-      toast({ title: "Contenido eliminado" });
+      toast({ title: t("contentDeleted") });
     }
   };
 
@@ -67,7 +69,7 @@ export default function Library() {
     const { error } = await (supabase as any).from("weekly_plans").delete().eq("id", id);
     if (!error) {
       setWeeklyPlans((prev) => prev.filter((p) => p.id !== id));
-      toast({ title: "Plan eliminado" });
+      toast({ title: t("planDeleted") });
     }
   };
 
@@ -75,14 +77,14 @@ export default function Library() {
     const { error } = await (supabase as any).from("shooting_plans").delete().eq("id", id);
     if (!error) {
       setShootingPlans((prev) => prev.filter((p) => p.id !== id));
-      toast({ title: "Plan eliminado" });
+      toast({ title: t("planDeleted") });
     }
   };
 
   const tabs = [
-    { id: "posts" as TabType, label: "Posts", count: posts.length },
-    { id: "plans" as TabType, label: "Planes semanales", count: weeklyPlans.length },
-    { id: "shooting" as TabType, label: "Sesiones de grabación", count: shootingPlans.length },
+    { id: "posts" as TabType, label: t("posts"), count: posts.length },
+    { id: "plans" as TabType, label: t("weeklyPlans"), count: weeklyPlans.length },
+    { id: "shooting" as TabType, label: t("recordingSessions"), count: shootingPlans.length },
   ];
 
   const clientName = (clientId: string) => clients.find(c => c.id === clientId)?.name || "";
@@ -90,13 +92,13 @@ export default function Library() {
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Biblioteca</h1>
+        <h1 className="text-3xl font-bold">{t("library")}</h1>
         <Select value={filterClient} onValueChange={setFilterClient}>
           <SelectTrigger className="w-[180px] bg-secondary border-border">
-            <SelectValue placeholder="Todos los negocios" />
+            <SelectValue placeholder={t("allBusinesses")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="all">{t("allBusinesses")}</SelectItem>
             {clients.map((c) => (
               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
@@ -127,8 +129,8 @@ export default function Library() {
           {posts.length === 0 && (
             <div className="glass rounded-2xl p-12 text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Sin contenido</h3>
-              <p className="text-muted-foreground text-sm">El contenido generado aparecerá aquí.</p>
+              <h3 className="text-lg font-medium mb-2">{t("noContent")}</h3>
+              <p className="text-muted-foreground text-sm">{t("generatedContentAppearsHere")}</p>
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -178,8 +180,8 @@ export default function Library() {
           {weeklyPlans.length === 0 && (
             <div className="glass rounded-2xl p-12 text-center">
               <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Sin planes semanales</h3>
-              <p className="text-muted-foreground text-sm">Los planes que generes aparecerán aquí.</p>
+              <h3 className="text-lg font-medium mb-2">{t("noWeeklyPlans")}</h3>
+              <p className="text-muted-foreground text-sm">{t("plansAppearHere")}</p>
             </div>
           )}
           <div className="space-y-3">
@@ -220,8 +222,8 @@ export default function Library() {
           {shootingPlans.length === 0 && (
             <div className="glass rounded-2xl p-12 text-center">
               <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Sin sesiones de grabación</h3>
-              <p className="text-muted-foreground text-sm">Las sesiones planificadas aparecerán aquí.</p>
+              <h3 className="text-lg font-medium mb-2">{t("noRecordingSessions")}</h3>
+              <p className="text-muted-foreground text-sm">{t("sessionsAppearHere")}</p>
             </div>
           )}
           <div className="space-y-3">

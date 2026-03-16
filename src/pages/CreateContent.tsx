@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,6 +62,7 @@ interface PrefillData {
 
 export default function CreateContent() {
   const { activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -108,7 +110,7 @@ export default function CreateContent() {
 
   const generateContent = async () => {
     if (!title.trim()) {
-      toast({ variant: "destructive", title: "Introduce un título" });
+      toast({ variant: "destructive", title: t("enterTitle") });
       return;
     }
     setLoading(true);
@@ -150,9 +152,9 @@ export default function CreateContent() {
       } else if (imageSource === "upload" && uploadedImage) {
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
       }
-      toast({ title: "¡Contenido generado!" });
+      toast({ title: t("contentGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar", description: error.message });
+      toast({ variant: "destructive", title: t("errorGenerating"), description: error.message });
     } finally {
       setLoading(false);
     }
@@ -167,7 +169,7 @@ export default function CreateContent() {
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar imagen", description: error.message });
+      toast({ variant: "destructive", title: t("errorGeneratingImage"), description: error.message });
     }
   };
 
@@ -180,7 +182,7 @@ export default function CreateContent() {
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al editar imagen", description: error.message });
+      toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
     }
   };
 
@@ -206,9 +208,9 @@ export default function CreateContent() {
 
       const { error } = await (supabase as any).from("generated_posts").insert(insertData);
       if (error) throw error;
-      toast({ title: "Post guardado en biblioteca" });
+      toast({ title: t("savedToLibrary") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al guardar", description: error.message });
+      toast({ variant: "destructive", title: t("errorSaving"), description: error.message });
     }
   };
 
@@ -234,25 +236,25 @@ export default function CreateContent() {
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver al calendario
+          {t("backToCalendar")}
         </button>
       )}
 
-      <h1 className="text-3xl font-bold mb-8">Crear contenido</h1>
+      <h1 className="text-3xl font-bold mb-8">{t("createContent")}</h1>
 
       {/* Show prefill details if coming from weekly plan */}
       {hasPrefillDetails && !generatedPost && (
         <div className="glass rounded-2xl p-5 mb-6 space-y-3">
-          <h3 className="text-sm font-medium text-primary">Contenido del plan semanal</h3>
+          <h3 className="text-sm font-medium text-primary">{t("weeklyPlanContent")}</h3>
           {prefill?.hook && (
             <div>
-              <span className="text-xs text-muted-foreground">Hook:</span>
+              <span className="text-xs text-muted-foreground">{t("hook")}:</span>
               <p className="text-sm font-medium">"{prefill.hook}"</p>
             </div>
           )}
           {prefill?.shots && prefill.shots.length > 0 && (
             <div>
-              <span className="text-xs text-muted-foreground">Planos:</span>
+              <span className="text-xs text-muted-foreground">{t("shots")}:</span>
               <ul className="mt-1 space-y-0.5">
                 {prefill.shots.map((s, i) => (
                   <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
@@ -270,7 +272,7 @@ export default function CreateContent() {
         <div className="glass rounded-2xl p-6 md:p-8 space-y-6">
           {/* Post Type */}
           <div className="space-y-2">
-            <Label>Tipo de contenido</Label>
+            <Label>{t("contentType")}</Label>
             <div className="grid grid-cols-4 gap-2">
               {POST_TYPES.map((t) => (
                 <button
@@ -291,10 +293,10 @@ export default function CreateContent() {
 
           {/* Visual Style */}
           <div className="space-y-2">
-            <Label>Estilo visual</Label>
+            <Label>{t("visualStyle")}</Label>
             <Select value={visualStyle} onValueChange={setVisualStyle}>
               <SelectTrigger className="bg-secondary border-border">
-                <SelectValue placeholder="Seleccionar estilo visual" />
+                <SelectValue placeholder={t("selectVisualStyle")} />
               </SelectTrigger>
               <SelectContent>
                 {VISUAL_STYLES.map((s) => (
@@ -307,7 +309,7 @@ export default function CreateContent() {
           {/* Image Source - only for posts */}
           {postType === "post" && (
             <div className="space-y-2">
-              <Label>Origen de la imagen</Label>
+              <Label>{t("imageSource")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 {IMAGE_SOURCES.map((src) => (
                   <button
@@ -334,12 +336,12 @@ export default function CreateContent() {
                     ) : (
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <Image className="h-8 w-8" />
-                        <span className="text-sm">Subir imagen</span>
+                        <span className="text-sm">{t("uploadImage")}</span>
                       </div>
                     )}
                   </Button>
                   {imageSource === "edit" && uploadedImage && (
-                    <Textarea placeholder="Instrucciones de edición (opcional)..." value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
+                    <Textarea placeholder={t("editInstructions")} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
                   )}
                 </div>
               )}
@@ -349,39 +351,39 @@ export default function CreateContent() {
           {/* Content Fields */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Idea o título *</Label>
-              <Input placeholder="Ej: 5 tips para mejorar tu productividad" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-secondary border-border" />
+              <Label>{t("ideaOrTitle")}</Label>
+              <Input placeholder={t("ideaPlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} className="bg-secondary border-border" />
             </div>
             <div className="space-y-2">
-              <Label>Contexto (opcional)</Label>
-              <Textarea placeholder="Describe el contexto..." value={description} onChange={(e) => setDescription(e.target.value)} className="bg-secondary border-border min-h-[80px]" />
+              <Label>{t("contextOptional")}</Label>
+              <Textarea placeholder={t("describeContext")} value={description} onChange={(e) => setDescription(e.target.value)} className="bg-secondary border-border min-h-[80px]" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Objetivo</Label>
+                <Label>{t("objective")}</Label>
                 <Select value={objective} onValueChange={setObjective}>
                   <SelectTrigger className="bg-secondary border-border">
-                    <SelectValue placeholder="Seleccionar" />
+                    <SelectValue placeholder={t("select")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="descubrir">Descubrir</SelectItem>
-                    <SelectItem value="confiar">Confiar</SelectItem>
-                    <SelectItem value="comprar">Comprar</SelectItem>
+                    <SelectItem value="descubrir">{t("discover")}</SelectItem>
+                    <SelectItem value="confiar">{t("trust")}</SelectItem>
+                    <SelectItem value="comprar">{t("buy")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>CTA</Label>
-                <Input placeholder="Ej: Guarda este post" value={cta} onChange={(e) => setCta(e.target.value)} className="bg-secondary border-border" />
+                <Label>{t("ctaLabel")}</Label>
+                <Input placeholder={t("ctaPlaceholder")} value={cta} onChange={(e) => setCta(e.target.value)} className="bg-secondary border-border" />
               </div>
             </div>
           </div>
 
           <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim()} className="w-full">
             {loading ? (
-              <><Loader2 className="h-5 w-5 animate-spin" /> Generando...</>
+              <><Loader2 className="h-5 w-5 animate-spin" /> {t("generating")}</>
             ) : (
-              <><Sparkles className="h-5 w-5" /> Generar contenido</>
+              <><Sparkles className="h-5 w-5" /> {t("generateContentBtn")}</>
             )}
           </Button>
         </div>
