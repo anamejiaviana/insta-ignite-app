@@ -137,7 +137,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in px-4 md:px-0">
       {/* Header with client selector */}
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
