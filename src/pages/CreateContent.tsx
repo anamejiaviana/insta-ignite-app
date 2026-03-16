@@ -355,8 +355,8 @@ export default function CreateContent() {
               <Input placeholder={t("ideaPlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} className="bg-secondary border-border" />
             </div>
             <div className="space-y-2">
-              <Label>Contexto (opcional)</Label>
-              <Textarea placeholder="Describe el contexto..." value={description} onChange={(e) => setDescription(e.target.value)} className="bg-secondary border-border min-h-[80px]" />
+              <Label>{t("contextOptional")}</Label>
+              <Textarea placeholder={t("describeContext")} value={description} onChange={(e) => setDescription(e.target.value)} className="bg-secondary border-border min-h-[80px]" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
