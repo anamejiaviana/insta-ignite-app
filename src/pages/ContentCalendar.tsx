@@ -36,6 +36,7 @@ interface StoredPlan {
 
 export default function ContentCalendar() {
   const { activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<StoredPlan[]>([]);
