@@ -82,9 +82,9 @@ export default function Library() {
   };
 
   const tabs = [
-    { id: "posts" as TabType, label: "Posts", count: posts.length },
-    { id: "plans" as TabType, label: "Planes semanales", count: weeklyPlans.length },
-    { id: "shooting" as TabType, label: "Sesiones de grabación", count: shootingPlans.length },
+    { id: "posts" as TabType, label: t("posts"), count: posts.length },
+    { id: "plans" as TabType, label: t("weeklyPlans"), count: weeklyPlans.length },
+    { id: "shooting" as TabType, label: t("recordingSessions"), count: shootingPlans.length },
   ];
 
   const clientName = (clientId: string) => clients.find(c => c.id === clientId)?.name || "";
