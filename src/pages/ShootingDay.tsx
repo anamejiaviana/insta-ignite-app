@@ -190,6 +190,51 @@ export default function ShootingDay() {
     }
   };
 
+  const generateOptimized = async () => {
+    if (!latestPlan) {
+      toast({ variant: "destructive", title: "No hay plan semanal. Genera uno primero desde el Dashboard." });
+      return;
+    }
+    setLoading(true);
+    try {
+      const planData = latestPlan.plan_data;
+      const allContent = [
+        ...(planData.reels || []),
+        ...(planData.posts || (planData.post ? [planData.post] : [])),
+      ];
+      const stories = planData.stories || [];
+
+      const { data, error } = await supabase.functions.invoke("generate-shooting-plan", {
+        body: {
+          client: getClientBody(),
+          optimizeMode: true,
+          allContent,
+          stories,
+          language: activeClient!.content_language || "es",
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      setOptimizedPlan(data);
+
+      const user = (await supabase.auth.getUser()).data.user;
+      if (user) {
+        await (supabase as any).from("shooting_plans").insert({
+          user_id: user.id,
+          client_id: activeClient!.id,
+          weekly_plan_id: latestPlan.id,
+          num_days: 1,
+          plan_data: { ...data, mode: "optimize" },
+        });
+      }
+      toast({ title: "¡Plan optimizado generado!" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const copyText = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedCaption(true);
