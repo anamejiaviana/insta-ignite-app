@@ -263,9 +263,9 @@ export default function ShootingDay() {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Día de grabación</h1>
+        <h1 className="text-3xl font-bold">{t("shootingDay")}</h1>
         <p className="text-muted-foreground mt-1">
-          Sesión para <span className="text-primary font-medium">{activeClient.name}</span>
+          {t("sessionFor")} <span className="text-primary font-medium">{activeClient.name}</span>
         </p>
       </div>
 
