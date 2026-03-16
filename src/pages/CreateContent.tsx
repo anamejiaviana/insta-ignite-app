@@ -182,7 +182,7 @@ export default function CreateContent() {
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al editar imagen", description: error.message });
+      toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
     }
   };
 
