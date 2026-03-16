@@ -245,7 +245,7 @@ export default function CreateContent() {
       {/* Show prefill details if coming from weekly plan */}
       {hasPrefillDetails && !generatedPost && (
         <div className="glass rounded-2xl p-5 mb-6 space-y-3">
-          <h3 className="text-sm font-medium text-primary">Contenido del plan semanal</h3>
+          <h3 className="text-sm font-medium text-primary">{t("weeklyPlanContent")}</h3>
           {prefill?.hook && (
             <div>
               <span className="text-xs text-muted-foreground">Hook:</span>
