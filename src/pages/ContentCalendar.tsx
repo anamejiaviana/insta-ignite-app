@@ -273,9 +273,9 @@ export default function ContentCalendar() {
                         className="shrink-0"
                       >
                         {generated ? (
-                          <><Pencil className="h-3.5 w-3.5 mr-1" /> Editar contenido</>
+                          <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
                         ) : (
-                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> Generar este contenido</>
+                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
                         )}
                       </Button>
                     </div>
