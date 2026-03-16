@@ -272,7 +272,7 @@ export default function CreateContent() {
         <div className="glass rounded-2xl p-6 md:p-8 space-y-6">
           {/* Post Type */}
           <div className="space-y-2">
-            <Label>Tipo de contenido</Label>
+            <Label>{t("contentType")}</Label>
             <div className="grid grid-cols-4 gap-2">
               {POST_TYPES.map((t) => (
                 <button
