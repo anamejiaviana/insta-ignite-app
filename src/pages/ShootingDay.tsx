@@ -468,6 +468,113 @@ export default function ShootingDay() {
   );
 }
 
+/* ───────── MODE 3 RESULTS: OPTIMIZED ───────── */
+function OptimizedResults({ plan }: { plan: OptimizedPlanData }) {
+  return (
+    <div className="space-y-6">
+      {/* Summary */}
+      <Card className="bg-card border-border">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <Clock className="h-5 w-5 text-primary" />
+            <p className="text-sm font-medium">{plan.resumen}</p>
+          </div>
+          <div className="flex gap-4 text-sm text-muted-foreground">
+            <span><strong className="text-foreground">{plan.total_planos}</strong> planos totales</span>
+            <span><strong className="text-foreground">{plan.planos_reutilizables?.length || 0}</strong> reutilizables</span>
+            <span>⏱ <strong className="text-foreground">{plan.duracion_estimada}</strong></span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content items */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Clapperboard className="h-5 w-5 text-primary" />
+            Plan de sesión
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Contenido a grabar en esta sesión</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {plan.contenidos?.map((item, idx) => (
+            <div key={idx} className="p-4 rounded-lg bg-secondary/50 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${
+                  item.tipo === "reel" ? "bg-blue-500/20 text-blue-400" : "bg-green-500/20 text-green-400"
+                }`}>
+                  {item.tipo}
+                </span>
+                <span className="font-semibold text-sm">{item.idea}</span>
+              </div>
+              <p className="text-xs text-primary font-medium">🎬 "{item.hook}"</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {item.planos_necesarios?.map((p, i) => (
+                  <span key={i} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">{p}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Reusable shots */}
+      {plan.planos_reutilizables && plan.planos_reutilizables.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-primary" />
+              Planos reutilizables
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Graba estos planos una sola vez y úsalos en varios contenidos</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {plan.planos_reutilizables.map((p, i) => (
+                <div key={i} className="bg-secondary/50 rounded-lg px-4 py-3 space-y-1.5">
+                  <p className="text-sm font-medium">{p.nombre}</p>
+                  <p className="text-xs text-muted-foreground">{p.descripcion}</p>
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-[10px]">📷 {p.tipo_plano}</Badge>
+                    {p.reutilizado_en?.map((uso, j) => (
+                      <Badge key={j} variant="outline" className="text-[10px] text-primary border-primary/30">{uso}</Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recording order */}
+      {plan.orden_grabacion && plan.orden_grabacion.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Move className="h-5 w-5 text-primary" />
+              Orden de grabación optimizado
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Sigue estos pasos para una sesión eficiente</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {plan.orden_grabacion.map((paso, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
+                  <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm pt-1">{paso}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 /* ───────── MODE 1 RESULTS ───────── */
 function CalendarShootingResults({ plan }: { plan: ShootingPlanData }) {
   return (
