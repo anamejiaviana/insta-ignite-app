@@ -137,7 +137,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in px-4 md:px-0">
       {/* Header with client selector */}
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -252,7 +252,7 @@ export default function Dashboard() {
                 size="xl"
                 onClick={generateWeeklyPlan}
                 disabled={loading}
-                className="w-full"
+                className="w-full whitespace-normal text-base md:text-lg px-4 md:px-10"
               >
                 {loading ? (
                   <>
@@ -359,12 +359,12 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
         {quickActions.map((action) => (
           <button
             key={action.label}
             onClick={() => navigate(action.path)}
-            className="glass glass-hover rounded-xl p-5 flex flex-col items-center gap-2.5 text-center transition-all hover:shadow-glow"
+            className="glass glass-hover rounded-xl p-3 md:p-5 flex flex-col items-center gap-2 md:gap-2.5 text-center transition-all hover:shadow-glow"
           >
             <div
               className="h-10 w-10 rounded-xl flex items-center justify-center"
