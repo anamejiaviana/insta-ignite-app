@@ -309,7 +309,7 @@ export default function CreateContent() {
           {/* Image Source - only for posts */}
           {postType === "post" && (
             <div className="space-y-2">
-              <Label>Origen de la imagen</Label>
+              <Label>{t("imageSource")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 {IMAGE_SOURCES.map((src) => (
                   <button
