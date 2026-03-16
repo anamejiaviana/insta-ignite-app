@@ -240,7 +240,7 @@ export default function CreateContent() {
         </button>
       )}
 
-      <h1 className="text-3xl font-bold mb-8">Crear contenido</h1>
+      <h1 className="text-3xl font-bold mb-8">{t("createContent")}</h1>
 
       {/* Show prefill details if coming from weekly plan */}
       {hasPrefillDetails && !generatedPost && (
