@@ -305,7 +305,7 @@ export default function ShootingDay() {
           style={mode === "optimize" ? { background: "var(--gradient-primary)" } : undefined}
         >
           <Zap className="h-4 w-4" />
-          Optimizar grabación
+          {t("optimizeRecording")}
         </button>
       </div>
 
