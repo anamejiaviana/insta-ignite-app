@@ -47,7 +47,11 @@ serve(async (req) => {
     }`;
     }
 
+    const langMap: Record<string, string> = { es: 'español', ca: 'català', en: 'English' };
+    const langName = langMap[language] || 'español';
+
     const systemPrompt = `Eres un experto copywriter para Instagram especializado en negocios locales. Genera contenido optimizado para engagement.
+    TODO el contenido (captions, stories, hashtags) DEBE estar en ${langName}.
     ${contextBlock}
     
     ${responseFormat}`;
@@ -59,9 +63,10 @@ serve(async (req) => {
     - Objetivo: ${objective || 'engagement'}
     - CTA: ${cta || 'No especificado'}
     - Estilo visual: ${visualStyle || 'moderno'}
-    - Idioma: ${language || 'es'}
+    - Idioma del contenido: ${langName}
     
     El contenido debe:
+    - Estar escrito completamente en ${langName}
     - Ser persuasivo, auténtico y optimizado para el algoritmo de Instagram
     - Incluir palabras clave del negocio cuando tenga sentido
     - Mencionar la ciudad cuando sea relevante
