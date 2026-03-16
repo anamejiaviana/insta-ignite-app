@@ -20,6 +20,7 @@ serve(async (req) => {
 
     const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales. 
     Generas ideas de reels virales, realistas y grabables en 15-30 minutos en el propio negocio.
+    TODO el contenido generado (ideas, hooks, guiones, captions, hashtags) DEBE estar en ${langName}.
     
     Responde SIEMPRE en formato JSON válido con esta estructura:
     {
