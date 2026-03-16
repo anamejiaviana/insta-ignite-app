@@ -41,6 +41,7 @@ export default function ReelIdeas() {
             objective: activeClient.objective,
             keywords: activeClient.keywords,
           },
+          language: activeClient.content_language || "es",
         },
       });
 

@@ -11,13 +11,16 @@ serve(async (req) => {
   }
 
   try {
-    const { client } = await req.json();
+    const { client, language } = await req.json();
+    const langMap: Record<string, string> = { es: 'español', ca: 'català', en: 'English' };
+    const langName = langMap[language] || 'español';
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
     const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales. 
     Generas ideas de reels virales, realistas y grabables en 15-30 minutos en el propio negocio.
+    TODO el contenido generado (ideas, hooks, guiones, captions, hashtags) DEBE estar en ${langName}.
     
     Responde SIEMPRE en formato JSON válido con esta estructura:
     {

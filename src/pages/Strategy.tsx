@@ -1,17 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useClients } from "@/contexts/ClientContext";
-import { Calendar, Film, Zap, PenSquare } from "lucide-react";
+import { Calendar, Film, Zap } from "lucide-react";
 
 const strategies = [
   {
-    title: "Calendario mensual",
-    description: "Planifica el contenido del mes con la matriz de contenido",
+    title: "Calendario semanal",
+    description: "Consulta y gestiona tus planes de contenido",
     icon: Calendar,
     path: "/strategy/calendar",
   },
   {
     title: "Ideas de reels",
-    description: "Genera 10 ideas de reels adaptadas al cliente",
+    description: "Genera 10 ideas de reels adaptadas a tu negocio",
     icon: Film,
     path: "/strategy/reels",
   },
@@ -20,12 +20,6 @@ const strategies = [
     description: "Crea hooks irresistibles para tus contenidos",
     icon: Zap,
     path: "/strategy/hooks",
-  },
-  {
-    title: "Ideas de posts",
-    description: "Obtén ideas frescas de posts para el feed",
-    icon: PenSquare,
-    path: "/strategy/posts",
   },
 ];
 
@@ -45,7 +39,7 @@ export default function Strategy() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {strategies.map((s) => (
           <button
             key={s.path}

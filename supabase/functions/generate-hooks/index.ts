@@ -11,13 +11,16 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, client } = await req.json();
+    const { topic, client, language } = await req.json();
+    const langMap: Record<string, string> = { es: 'español', ca: 'català', en: 'English' };
+    const langName = langMap[language] || 'español';
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
     const systemPrompt = `Eres un copywriter experto en hooks virales para Instagram y TikTok.
     Generas hooks que captan la atención en los primeros 3 segundos.
+    TODOS los hooks DEBEN estar escritos en ${langName}.
     
     Responde SIEMPRE en formato JSON válido:
     {

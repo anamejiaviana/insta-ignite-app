@@ -11,13 +11,20 @@ serve(async (req) => {
   }
 
   try {
-    const { client } = await req.json();
+    const { client, existingReels, numDays } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
+    const reelsContext = existingReels && existingReels.length > 0
+      ? `REELS YA PLANIFICADOS (del plan semanal):
+${existingReels.map((r: any, i: number) => `${i + 1}. "${r.idea}" - Hook: "${r.hook}" - Planos sugeridos: ${(r.shots || []).join(', ')}`).join('\n')}
+
+Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
+      : `Genera 3-4 reels para grabar en ${numDays || 1} día(s) para este negocio.`;
+
     const systemPrompt = `Eres un director de producción audiovisual especializado en contenido para Instagram de negocios locales.
-    Planificas sesiones de grabación eficientes de 30-40 minutos.
+    Planificas sesiones de grabación eficientes de 30-40 minutos por día.
     
     Responde SIEMPRE en formato JSON válido con esta estructura:
     {
@@ -29,17 +36,10 @@ serve(async (req) => {
           "duracion": "estimación en minutos"
         }
       ],
-      "planosApoyo": ["plano exterior del local", "plano ambiente", "detalle de producto", "manos trabajando", "clientes disfrutando", "profesional explicando"],
-      "planosModulares": {
-        "contexto": ["plano 1", "plano 2", "plano 3"],
-        "producto": ["plano 1", "plano 2", "plano 3"],
-        "accion": ["plano 1", "plano 2", "plano 3"],
-        "autoridad": ["plano 1", "plano 2"],
-        "emocionales": ["plano 1", "plano 2"]
-      }
+      "planosApoyo": ["plano exterior del local", "plano ambiente", "detalle de producto", "manos trabajando", "cliente disfrutando", "profesional explicando"]
     }`;
 
-    const userPrompt = `Prepara un plan de grabación para una sesión de 30-40 minutos en este negocio:
+    const userPrompt = `Prepara un plan de grabación para ${numDays || 1} día(s) en este negocio:
     - Nombre: ${client.name}
     - Tipo: ${client.type}
     - Ciudad: ${client.city}
@@ -47,13 +47,14 @@ serve(async (req) => {
     - Objetivo: ${client.objective}
     - Palabras clave: ${(client.keywords || []).join(', ')}
     
+    ${reelsContext}
+    
     Genera:
-    1. 3-4 reels para grabar en la sesión
-    2. 6 planos extra de apoyo adaptados al negocio
-    3. 12-15 planos modulares reutilizables organizados en: contexto, producto, acción, autoridad, emocionales
+    1. Los reels organizados con planos detallados y orden óptimo de grabación
+    2. 6 planos extra de apoyo adaptados al negocio (plano exterior, ambiente, detalle producto, manos trabajando, cliente disfrutando, profesional explicando)
     
     Los planos deben ser realistas y grabables en el negocio.
-    La idea es que con los planos modulares se puedan crear múltiples reels después.`;
+    Distribuye el trabajo realísticamente en ${numDays || 1} día(s).`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

@@ -33,6 +33,7 @@ export default function HookGenerator() {
             tone: activeClient.tone,
             objective: activeClient.objective,
           },
+          language: activeClient.content_language || "es",
         },
       });
 
