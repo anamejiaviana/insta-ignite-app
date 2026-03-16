@@ -210,7 +210,7 @@ export default function ContentCalendar() {
               disabled={!canGoPrev}
               className="gap-1"
             >
-              Semana siguiente
+              {t("nextWeek")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
