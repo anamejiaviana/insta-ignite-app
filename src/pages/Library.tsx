@@ -222,8 +222,8 @@ export default function Library() {
           {shootingPlans.length === 0 && (
             <div className="glass rounded-2xl p-12 text-center">
               <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Sin sesiones de grabación</h3>
-              <p className="text-muted-foreground text-sm">Las sesiones planificadas aparecerán aquí.</p>
+              <h3 className="text-lg font-medium mb-2">{t("noRecordingSessions")}</h3>
+              <p className="text-muted-foreground text-sm">{t("sessionsAppearHere")}</p>
             </div>
           )}
           <div className="space-y-3">
