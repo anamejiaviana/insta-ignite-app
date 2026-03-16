@@ -121,7 +121,7 @@ export default function ShootingDay() {
 
   const generateFromCalendar = async () => {
     if (!latestPlan) {
-      toast({ variant: "destructive", title: "No hay plan semanal. Genera uno primero desde el Dashboard." });
+      toast({ variant: "destructive", title: t("noWeeklyPlanToast") });
       return;
     }
     setLoading(true);
