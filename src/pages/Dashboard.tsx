@@ -37,6 +37,8 @@ export default function Dashboard() {
   const [specialDates, setSpecialDates] = useState("");
   const [loading, setLoading] = useState(false);
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
+  const [numPublications, setNumPublications] = useState("3");
+  const [contentPreference, setContentPreference] = useState("balanced");
 
   useEffect(() => {
     loadRecentPosts();
