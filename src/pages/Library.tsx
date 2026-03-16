@@ -98,7 +98,7 @@ export default function Library() {
             <SelectValue placeholder={t("allBusinesses")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="all">{t("allBusinesses")}</SelectItem>
             {clients.map((c) => (
               <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
             ))}
