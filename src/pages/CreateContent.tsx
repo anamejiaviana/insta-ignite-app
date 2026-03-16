@@ -62,6 +62,7 @@ interface PrefillData {
 
 export default function CreateContent() {
   const { activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
