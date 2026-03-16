@@ -229,9 +229,9 @@ export default function ShootingDay() {
           plan_data: { ...data, mode: "optimize" },
         });
       }
-      toast({ title: "¡Plan optimizado generado!" });
+      toast({ title: t("optimizedPlanGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+      toast({ variant: "destructive", title: t("errorGeneratingShootingPlan"), description: error.message });
     } finally {
       setLoading(false);
     }
