@@ -252,7 +252,7 @@ export default function Dashboard() {
                 size="xl"
                 onClick={generateWeeklyPlan}
                 disabled={loading}
-                className="w-full"
+                className="w-full whitespace-normal text-base md:text-lg px-4 md:px-10"
               >
                 {loading ? (
                   <>
