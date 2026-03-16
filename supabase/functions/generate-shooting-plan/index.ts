@@ -11,50 +11,109 @@ serve(async (req) => {
   }
 
   try {
-    const { client, existingReels, numDays } = await req.json();
+    const { client, existingReels, numDays, customIdea, language } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    const reelsContext = existingReels && existingReels.length > 0
-      ? `REELS YA PLANIFICADOS (del plan semanal):
+    const langMap: Record<string, string> = { es: 'español', ca: 'català', en: 'English' };
+    const langName = langMap[language] || 'español';
+
+    let systemPrompt: string;
+    let userPrompt: string;
+
+    if (customIdea) {
+      // MODE 2: Generate from a specific idea/topic
+      systemPrompt = `Eres un director de producción audiovisual especializado en contenido para Instagram de negocios locales.
+      Creas planes de grabación detallados con storyboard paso a paso.
+      
+      TODO el contenido generado DEBE estar en ${langName}.
+      
+      Responde SIEMPRE en formato JSON válido con esta estructura:
+      {
+        "hook": "Frase gancho de los primeros 3 segundos",
+        "storyboard": [
+          {
+            "paso": 1,
+            "descripcion": "Descripción detallada del plano",
+            "tipo_plano": "primer plano / plano medio / plano general / detalle",
+            "duracion_segundos": 3
+          }
+        ],
+        "shots": ["plano 1", "plano 2", "plano 3"],
+        "textos_pantalla": ["texto superpuesto 1", "texto superpuesto 2"],
+        "duracion_estimada": "15-20 minutos",
+        "caption": "Caption optimizado para Instagram con CTA",
+        "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
+      }`;
+
+      userPrompt = `Crea un plan de grabación detallado para este contenido de Instagram:
+
+      IDEA: ${customIdea}
+      
+      Negocio: ${client.name || 'Mi negocio'}
+      Tipo: ${client.type || 'negocio local'}
+      Ciudad: ${client.city || ''}
+      Tono: ${client.tone || 'cercano y profesional'}
+      Objetivo: ${client.objective || 'atraer clientes'}
+      Palabras clave: ${(client.keywords || []).join(', ')}
+      
+      Genera:
+      1. Un hook potente para los primeros 3 segundos
+      2. Un storyboard paso a paso (6-10 pasos) describiendo cada plano
+      3. Lista de planos necesarios
+      4. 3-4 textos sugeridos para superponer en pantalla
+      5. Duración estimada de grabación
+      6. Caption optimizado con CTA
+      7. 5 hashtags estratégicos (sin #)
+      
+      Todo debe ser grabable en el propio negocio en 15-30 minutos.
+      Todo el contenido en ${langName}.`;
+    } else {
+      // MODE 1: Organize existing weekly plan content
+      const reelsContext = existingReels && existingReels.length > 0
+        ? `REELS YA PLANIFICADOS (del plan semanal):
 ${existingReels.map((r: any, i: number) => `${i + 1}. "${r.idea}" - Hook: "${r.hook}" - Planos sugeridos: ${(r.shots || []).join(', ')}`).join('\n')}
 
 Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
-      : `Genera 3-4 reels para grabar en ${numDays || 1} día(s) para este negocio.`;
+        : `Genera 3-4 reels para grabar en ${numDays || 1} día(s) para este negocio.`;
 
-    const systemPrompt = `Eres un director de producción audiovisual especializado en contenido para Instagram de negocios locales.
-    Planificas sesiones de grabación eficientes de 30-40 minutos por día.
-    
-    Responde SIEMPRE en formato JSON válido con esta estructura:
-    {
-      "reels": [
-        {
-          "reel": "Nombre del reel",
-          "hook": "Hook de los primeros 3 segundos",
-          "planos": ["plano detallado 1", "plano 2", "plano 3"],
-          "duracion": "estimación en minutos"
-        }
-      ],
-      "planosApoyo": ["plano exterior del local", "plano ambiente", "detalle de producto", "manos trabajando", "cliente disfrutando", "profesional explicando"]
-    }`;
+      systemPrompt = `Eres un director de producción audiovisual especializado en contenido para Instagram de negocios locales.
+      Planificas sesiones de grabación eficientes de 30-40 minutos por día.
+      
+      TODO el contenido generado DEBE estar en ${langName}.
+      
+      Responde SIEMPRE en formato JSON válido con esta estructura:
+      {
+        "reels": [
+          {
+            "reel": "Nombre del reel",
+            "hook": "Hook de los primeros 3 segundos",
+            "planos": ["plano detallado 1", "plano 2", "plano 3"],
+            "duracion": "estimación en minutos"
+          }
+        ],
+        "planosApoyo": ["plano exterior del local", "plano ambiente", "detalle de producto", "manos trabajando", "cliente disfrutando", "profesional explicando"]
+      }`;
 
-    const userPrompt = `Prepara un plan de grabación para ${numDays || 1} día(s) en este negocio:
-    - Nombre: ${client.name}
-    - Tipo: ${client.type}
-    - Ciudad: ${client.city}
-    - Tono: ${client.tone}
-    - Objetivo: ${client.objective}
-    - Palabras clave: ${(client.keywords || []).join(', ')}
-    
-    ${reelsContext}
-    
-    Genera:
-    1. Los reels organizados con planos detallados y orden óptimo de grabación
-    2. 6 planos extra de apoyo adaptados al negocio (plano exterior, ambiente, detalle producto, manos trabajando, cliente disfrutando, profesional explicando)
-    
-    Los planos deben ser realistas y grabables en el negocio.
-    Distribuye el trabajo realísticamente en ${numDays || 1} día(s).`;
+      userPrompt = `Prepara un plan de grabación para ${numDays || 1} día(s) en este negocio:
+      - Nombre: ${client.name}
+      - Tipo: ${client.type}
+      - Ciudad: ${client.city}
+      - Tono: ${client.tone}
+      - Objetivo: ${client.objective}
+      - Palabras clave: ${(client.keywords || []).join(', ')}
+      
+      ${reelsContext}
+      
+      Genera:
+      1. Los reels organizados con planos detallados y orden óptimo de grabación
+      2. 6 planos extra de apoyo adaptados al negocio
+      
+      Los planos deben ser realistas y grabables en el negocio.
+      Distribuye el trabajo realísticamente en ${numDays || 1} día(s).
+      Todo el contenido en ${langName}.`;
+    }
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
