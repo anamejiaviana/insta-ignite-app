@@ -129,8 +129,8 @@ export default function Library() {
           {posts.length === 0 && (
             <div className="glass rounded-2xl p-12 text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Sin contenido</h3>
-              <p className="text-muted-foreground text-sm">El contenido generado aparecerá aquí.</p>
+              <h3 className="text-lg font-medium mb-2">{t("noContent")}</h3>
+              <p className="text-muted-foreground text-sm">{t("generatedContentAppearsHere")}</p>
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
