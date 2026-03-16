@@ -341,7 +341,7 @@ export default function CreateContent() {
                     )}
                   </Button>
                   {imageSource === "edit" && uploadedImage && (
-                    <Textarea placeholder="Instrucciones de edición (opcional)..." value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
+                    <Textarea placeholder={t("editInstructions")} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
                   )}
                 </div>
               )}
