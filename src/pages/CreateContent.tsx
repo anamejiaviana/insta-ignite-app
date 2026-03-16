@@ -208,9 +208,9 @@ export default function CreateContent() {
 
       const { error } = await (supabase as any).from("generated_posts").insert(insertData);
       if (error) throw error;
-      toast({ title: "Post guardado en biblioteca" });
+      toast({ title: t("savedToLibrary") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al guardar", description: error.message });
+      toast({ variant: "destructive", title: t("errorSaving"), description: error.message });
     }
   };
 
