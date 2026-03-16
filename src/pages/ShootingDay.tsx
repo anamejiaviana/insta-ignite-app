@@ -184,9 +184,9 @@ export default function ShootingDay() {
           plan_data: { ...data, customIdea: customIdea.trim() },
         });
       }
-      toast({ title: "¡Plan de grabación generado!" });
+      toast({ title: t("shootingPlanGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+      toast({ variant: "destructive", title: t("errorGeneratingShootingPlan"), description: error.message });
     } finally {
       setLoading(false);
     }
