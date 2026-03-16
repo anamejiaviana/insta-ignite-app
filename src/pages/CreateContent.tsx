@@ -293,7 +293,7 @@ export default function CreateContent() {
 
           {/* Visual Style */}
           <div className="space-y-2">
-            <Label>Estilo visual</Label>
+            <Label>{t("visualStyle")}</Label>
             <Select value={visualStyle} onValueChange={setVisualStyle}>
               <SelectTrigger className="bg-secondary border-border">
                 <SelectValue placeholder="Seleccionar estilo visual" />
