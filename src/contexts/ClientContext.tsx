@@ -11,6 +11,8 @@ export interface Client {
   objective: string | null;
   keywords: string[];
   default_visual_style: string | null;
+  content_language: string;
+  inspiration_account: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +50,7 @@ export function ClientProvider({ children, userId }: { children: ReactNode; user
       const mapped = (data as any[]).map((c: any) => ({
         ...c,
         keywords: (c.keywords as string[]) || [],
+        content_language: c.content_language || "es",
       })) as Client[];
       setClients(mapped);
       if (!activeClientId && mapped.length > 0) {
