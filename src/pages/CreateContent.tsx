@@ -110,7 +110,7 @@ export default function CreateContent() {
 
   const generateContent = async () => {
     if (!title.trim()) {
-      toast({ variant: "destructive", title: "Introduce un título" });
+      toast({ variant: "destructive", title: t("enterTitle") });
       return;
     }
     setLoading(true);
