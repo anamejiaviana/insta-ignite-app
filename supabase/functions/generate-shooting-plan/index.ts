@@ -24,30 +24,34 @@ serve(async (req) => {
 
     if (customIdea) {
       // MODE 2: Generate from a specific idea/topic
-      systemPrompt = `Eres un director de producción audiovisual especializado en contenido para Instagram de negocios locales.
-      Creas planes de grabación detallados con storyboard paso a paso.
+      systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales.
+      Creas planes de grabación extremadamente detallados con storyboard paso a paso, incluyendo tipo de plano, movimiento de cámara, y textos en pantalla.
       
       TODO el contenido generado DEBE estar en ${langName}.
       
-      Responde SIEMPRE en formato JSON válido con esta estructura:
+      Responde SIEMPRE en formato JSON válido con esta estructura exacta:
       {
-        "hook": "Frase gancho de los primeros 3 segundos",
+        "hook": "Frase gancho potente de los primeros 3 segundos",
         "storyboard": [
           {
             "paso": 1,
-            "descripcion": "Descripción detallada del plano",
-            "tipo_plano": "primer plano / plano medio / plano general / detalle",
-            "duracion_segundos": 3
+            "nombre": "Plano de contexto",
+            "descripcion": "Descripción detallada de qué se graba, cómo y desde qué ángulo",
+            "tipo_plano": "plano general / plano medio / primer plano / detalle / cenital / contrapicado",
+            "movimiento": "estático / paneo / seguimiento / zoom in / zoom out",
+            "duracion_segundos": 3,
+            "texto_pantalla": "Texto superpuesto sugerido o null"
           }
         ],
-        "shots": ["plano 1", "plano 2", "plano 3"],
-        "textos_pantalla": ["texto superpuesto 1", "texto superpuesto 2"],
+        "shots": ["descripción completa del plano 1", "descripción completa del plano 2"],
+        "textos_pantalla": ["texto superpuesto 1", "texto superpuesto 2", "texto superpuesto 3", "texto superpuesto 4"],
+        "orden_grabacion": ["Plano 3 (no requiere preparación)", "Plano 1 (preparar escena)", "Plano 2 (acción principal)"],
         "duracion_estimada": "15-20 minutos",
-        "caption": "Caption optimizado para Instagram con CTA",
+        "caption": "Caption optimizado para Instagram con CTA y palabras clave",
         "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
       }`;
 
-      userPrompt = `Crea un plan de grabación detallado para este contenido de Instagram:
+      userPrompt = `Crea un plan de grabación PROFESIONAL y DETALLADO para este contenido de Instagram:
 
       IDEA: ${customIdea}
       
@@ -60,17 +64,24 @@ serve(async (req) => {
       
       Genera:
       1. Un hook potente para los primeros 3 segundos
-      2. Un storyboard paso a paso (6-10 pasos) describiendo cada plano
-      3. Lista de planos necesarios
-      4. 3-4 textos sugeridos para superponer en pantalla
-      5. Duración estimada de grabación
-      6. Caption optimizado con CTA
-      7. 5 hashtags estratégicos (sin #)
+      2. Un storyboard MUY DETALLADO de 6-10 pasos. Cada paso debe tener:
+         - Nombre del plano (ej: "Plano de contexto", "Plano de acción", "Plano detalle", "Plano resultado")
+         - Descripción detallada de qué grabar y cómo
+         - Tipo de plano exacto
+         - Movimiento de cámara
+         - Duración en segundos
+         - Texto sugerido para superponer (si aplica)
+      3. Lista completa de planos necesarios (shots)
+      4. 4-5 textos sugeridos para superponer en pantalla durante el reel
+      5. Orden óptimo de grabación (puede diferir del orden final del reel)
+      6. Duración estimada de grabación total
+      7. Caption optimizado con CTA y palabras clave del negocio
+      8. 5 hashtags estratégicos (sin #)
       
       Todo debe ser grabable en el propio negocio en 15-30 minutos.
       Todo el contenido en ${langName}.`;
     } else {
-      // MODE 1: Organize existing weekly plan content
+      // MODE 1: Organize existing weekly plan content into detailed shooting plan
       const reelsContext = existingReels && existingReels.length > 0
         ? `REELS YA PLANIFICADOS (del plan semanal):
 ${existingReels.map((r: any, i: number) => `${i + 1}. "${r.idea}" - Hook: "${r.hook}" - Planos sugeridos: ${(r.shots || []).join(', ')}`).join('\n')}
@@ -78,25 +89,45 @@ ${existingReels.map((r: any, i: number) => `${i + 1}. "${r.idea}" - Hook: "${r.h
 Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
         : `Genera 3-4 reels para grabar en ${numDays || 1} día(s) para este negocio.`;
 
-      systemPrompt = `Eres un director de producción audiovisual especializado en contenido para Instagram de negocios locales.
-      Planificas sesiones de grabación eficientes de 30-40 minutos por día.
+      systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales.
+      Planificas sesiones de grabación eficientes y detalladas de 30-40 minutos por día.
       
       TODO el contenido generado DEBE estar en ${langName}.
       
-      Responde SIEMPRE en formato JSON válido con esta estructura:
+      Responde SIEMPRE en formato JSON válido con esta estructura exacta:
       {
         "reels": [
           {
-            "reel": "Nombre del reel",
-            "hook": "Hook de los primeros 3 segundos",
-            "planos": ["plano detallado 1", "plano 2", "plano 3"],
-            "duracion": "estimación en minutos"
+            "reel": "Nombre descriptivo del reel",
+            "hook": "Hook potente de los primeros 3 segundos",
+            "storyboard": [
+              {
+                "paso": 1,
+                "nombre": "Plano de contexto",
+                "descripcion": "Descripción detallada del plano",
+                "tipo_plano": "plano general / plano medio / primer plano / detalle",
+                "movimiento": "estático / paneo / seguimiento / zoom in",
+                "duracion_segundos": 3,
+                "texto_pantalla": "Texto superpuesto sugerido o null"
+              }
+            ],
+            "textos_pantalla": ["texto 1", "texto 2"],
+            "duracion": "estimación en minutos de grabación",
+            "orden_grabacion": 1
           }
         ],
-        "planosApoyo": ["plano exterior del local", "plano ambiente", "detalle de producto", "manos trabajando", "cliente disfrutando", "profesional explicando"]
+        "planosApoyo": [
+          {
+            "nombre": "Plano exterior del local",
+            "descripcion": "Grabar fachada con luz natural, incluir letrero",
+            "tipo_plano": "plano general",
+            "uso": "intro / transición / contexto"
+          }
+        ],
+        "orden_sesion": ["Paso 1: preparar escena X", "Paso 2: grabar planos de contexto", "Paso 3: grabar acciones"]
       }`;
 
-      userPrompt = `Prepara un plan de grabación para ${numDays || 1} día(s) en este negocio:
+      userPrompt = `Prepara un plan de grabación PROFESIONAL y DETALLADO para ${numDays || 1} día(s) en este negocio:
       - Nombre: ${client.name}
       - Tipo: ${client.type}
       - Ciudad: ${client.city}
@@ -106,9 +137,22 @@ Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
       
       ${reelsContext}
       
-      Genera:
-      1. Los reels organizados con planos detallados y orden óptimo de grabación
-      2. 6 planos extra de apoyo adaptados al negocio
+      Para CADA reel genera:
+      1. Nombre y hook potente
+      2. Storyboard detallado de 4-6 pasos con:
+         - Nombre del plano (ej: "Plano de contexto", "Plano de acción", "Plano detalle", "Plano resultado")
+         - Descripción precisa de qué grabar
+         - Tipo de plano
+         - Movimiento de cámara
+         - Duración en segundos
+         - Texto sugerido para pantalla (si aplica)
+      3. Textos en pantalla sugeridos (2-3 por reel)
+      4. Duración estimada de grabación
+      5. Número de orden de grabación recomendado
+      
+      También genera:
+      6. 6-8 planos extra de apoyo DETALLADOS adaptados al negocio, cada uno con nombre, descripción, tipo de plano y uso sugerido
+      7. Un orden de sesión optimizado (los pasos a seguir durante la grabación)
       
       Los planos deben ser realistas y grabables en el negocio.
       Distribuye el trabajo realísticamente en ${numDays || 1} día(s).
