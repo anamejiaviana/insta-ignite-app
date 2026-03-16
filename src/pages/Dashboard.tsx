@@ -306,9 +306,9 @@ export default function Dashboard() {
             </Card>
           ))}
 
-          {/* Post */}
-          {weeklyPlan.post && (
-            <Card className="bg-card border-border">
+          {/* Posts */}
+          {weeklyPlan.posts?.map((post, idx) => (
+            <Card key={idx} className="bg-card border-border">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -316,15 +316,15 @@ export default function Dashboard() {
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">
                         POST
                       </span>
-                      <span className="text-xs text-muted-foreground">{weeklyPlan.post.day}</span>
+                      <span className="text-xs text-muted-foreground">{post.day}</span>
                     </div>
-                    <p className="font-semibold text-sm mb-1">{weeklyPlan.post.idea}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{weeklyPlan.post.caption}</p>
+                    <p className="font-semibold text-sm mb-1">{post.idea}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{post.caption}</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => generateContent(weeklyPlan.post)}
+                    onClick={() => generateContent(post)}
                     className="shrink-0"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1" />
@@ -333,7 +333,7 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          ))}
 
           {/* Stories */}
           {weeklyPlan.stories && weeklyPlan.stories.length > 0 && (
