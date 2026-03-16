@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Calendar, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, Calendar, CheckCircle2, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface WeeklyPlanItem {
   id: string;
@@ -38,9 +39,14 @@ export default function ContentCalendar() {
   const [plans, setPlans] = useState<StoredPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<StoredPlan | null>(null);
+  const [generatedTitles, setGeneratedTitles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadPlans();
+  }, [activeClient]);
+
+  useEffect(() => {
+    if (activeClient) loadGeneratedPosts();
   }, [activeClient]);
 
   const loadPlans = async () => {
@@ -65,9 +71,25 @@ export default function ContentCalendar() {
     setLoading(false);
   };
 
+  const loadGeneratedPosts = async () => {
+    const { data } = await (supabase as any)
+      .from("generated_posts")
+      .select("title")
+      .eq("client_id", activeClient!.id);
+    if (data) {
+      setGeneratedTitles(new Set(data.map((p: any) => p.title?.toLowerCase().trim())));
+    }
+  };
+
+  const isGenerated = (item: WeeklyPlanItem) => {
+    return generatedTitles.has(item.idea?.toLowerCase().trim());
+  };
+
   const generateContent = (item: WeeklyPlanItem) => {
     navigate("/create", {
       state: {
+        fromCalendar: true,
+        planId: selectedPlan?.id,
         prefill: {
           title: item.idea,
           postType: item.type,
@@ -155,36 +177,53 @@ export default function ContentCalendar() {
 
           {/* Plan detail */}
           <div className="lg:col-span-3 space-y-4">
-            {allItems.map((item, idx) => (
-              <Card key={idx} className="bg-card border-border">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
-                          {item.type}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{item.day}</span>
-                      </div>
-                      <p className="font-semibold text-sm mb-1">{item.idea}</p>
-                      <p className="text-xs text-primary font-medium mb-2">🎬 "{item.hook}"</p>
-                      <p className="text-xs text-muted-foreground">{item.script}</p>
-                      {item.shots && item.shots.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {item.shots.map((s, i) => (
-                            <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
-                          ))}
+            {allItems.map((item, idx) => {
+              const generated = isGenerated(item);
+              return (
+                <Card key={idx} className="bg-card border-border">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
+                            {item.type}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{item.day}</span>
+                          {generated && (
+                            <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              generado
+                            </Badge>
+                          )}
                         </div>
-                      )}
+                        <p className="font-semibold text-sm mb-1">{item.idea}</p>
+                        <p className="text-xs text-primary font-medium mb-2">🎬 "{item.hook}"</p>
+                        <p className="text-xs text-muted-foreground">{item.script}</p>
+                        {item.shots && item.shots.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {item.shots.map((s, i) => (
+                              <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant={generated ? "outline" : "outline"}
+                        size="sm"
+                        onClick={() => generateContent(item)}
+                        className="shrink-0"
+                      >
+                        {generated ? (
+                          <><Pencil className="h-3.5 w-3.5 mr-1" /> Editar contenido</>
+                        ) : (
+                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> Generar este contenido</>
+                        )}
+                      </Button>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => generateContent(item)} className="shrink-0">
-                      <Sparkles className="h-3.5 w-3.5 mr-1" />
-                      Generar este contenido
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {/* Stories */}
             {planData?.stories && planData.stories.length > 0 && (
