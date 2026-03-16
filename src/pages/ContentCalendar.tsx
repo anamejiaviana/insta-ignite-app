@@ -106,7 +106,10 @@ export default function ContentCalendar() {
   const selectedPlan = plans[selectedPlanIndex] || null;
   const planData = selectedPlan?.plan_data;
   const allItems = planData
-    ? [...(planData.reels || []), ...(planData.post ? [planData.post] : [])]
+    ? [
+        ...(planData.reels || []),
+        ...(planData.posts || (planData.post ? [planData.post] : [])),
+      ]
     : [];
 
   const canGoPrev = selectedPlanIndex > 0;
