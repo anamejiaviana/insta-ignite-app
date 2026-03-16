@@ -52,7 +52,30 @@ interface CustomIdeaPlan {
   hashtags: string[];
 }
 
-type Mode = "calendar" | "custom";
+interface OptimizedContentItem {
+  tipo: string;
+  idea: string;
+  hook: string;
+  planos_necesarios: string[];
+}
+
+interface PlanoReutilizable {
+  nombre: string;
+  descripcion: string;
+  tipo_plano: string;
+  reutilizado_en: string[];
+}
+
+interface OptimizedPlanData {
+  contenidos: OptimizedContentItem[];
+  planos_reutilizables: PlanoReutilizable[];
+  orden_grabacion: string[];
+  total_planos: number;
+  duracion_estimada: string;
+  resumen: string;
+}
+
+type Mode = "calendar" | "custom" | "optimize";
 
 export default function ShootingDay() {
   const { activeClient } = useClients();
