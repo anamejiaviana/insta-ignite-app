@@ -248,7 +248,7 @@ export default function CreateContent() {
           <h3 className="text-sm font-medium text-primary">{t("weeklyPlanContent")}</h3>
           {prefill?.hook && (
             <div>
-              <span className="text-xs text-muted-foreground">Hook:</span>
+              <span className="text-xs text-muted-foreground">{t("hook")}:</span>
               <p className="text-sm font-medium">"{prefill.hook}"</p>
             </div>
           )}
