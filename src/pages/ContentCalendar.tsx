@@ -26,7 +26,8 @@ interface StoredPlan {
   week_start: string;
   plan_data: {
     reels: WeeklyPlanItem[];
-    post: WeeklyPlanItem;
+    post?: WeeklyPlanItem;
+    posts?: WeeklyPlanItem[];
     stories: { idea: string; tipo: string }[];
   };
   created_at: string;
