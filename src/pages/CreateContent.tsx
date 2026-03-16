@@ -373,8 +373,8 @@ export default function CreateContent() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>CTA</Label>
-                <Input placeholder="Ej: Guarda este post" value={cta} onChange={(e) => setCta(e.target.value)} className="bg-secondary border-border" />
+                <Label>{t("ctaLabel")}</Label>
+                <Input placeholder={t("ctaPlaceholder")} value={cta} onChange={(e) => setCta(e.target.value)} className="bg-secondary border-border" />
               </div>
             </div>
           </div>
