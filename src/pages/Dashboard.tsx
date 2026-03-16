@@ -181,10 +181,61 @@ export default function Dashboard() {
               ¿Qué publico esta semana?
             </h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Genera tu plan de contenido: 2 reels, 1 post e ideas de stories
+              Personaliza tu plan de contenido semanal
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Number of publications */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  ¿Cuántas publicaciones quieres esta semana?
+                </Label>
+                <div className="flex gap-2">
+                  {["2", "3", "4", "5"].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setNumPublications(n)}
+                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        numPublications === n
+                          ? "text-primary-foreground"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                      style={numPublications === n ? { background: "var(--gradient-primary)" } : undefined}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Content type preference */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  ¿Qué tipo de contenido prefieres?
+                </Label>
+                <div className="flex gap-2">
+                  {[
+                    { value: "more_reels", label: "Más reels" },
+                    { value: "balanced", label: "Equilibrado" },
+                    { value: "more_posts", label: "Más posts" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setContentPreference(opt.value)}
+                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        contentPreference === opt.value
+                          ? "text-primary-foreground"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                      style={contentPreference === opt.value ? { background: "var(--gradient-primary)" } : undefined}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Special dates */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
                   ¿Hay fechas especiales esta semana? (opcional)

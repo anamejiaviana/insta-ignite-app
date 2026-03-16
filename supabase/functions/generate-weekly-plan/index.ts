@@ -104,8 +104,8 @@ ${postExamples}
     ${specialDatesBlock}
     
     Genera:
-    1. Exactamente 2 reels (distribuidos en la semana)
-    2. Exactamente 1 post estático (con prompt para imagen)
+    1. Exactamente ${numReels} reel${numReels > 1 ? 's' : ''} (distribuidos en la semana)
+    2. Exactamente ${numPosts} post${numPosts > 1 ? 's' : ''} estático${numPosts > 1 ? 's' : ''} (cada uno con prompt para imagen en inglés)
     3. 3-4 ideas de stories
     
     Requisitos:
