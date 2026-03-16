@@ -359,12 +359,12 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
         {quickActions.map((action) => (
           <button
             key={action.label}
             onClick={() => navigate(action.path)}
-            className="glass glass-hover rounded-xl p-5 flex flex-col items-center gap-2.5 text-center transition-all hover:shadow-glow"
+            className="glass glass-hover rounded-xl p-3 md:p-5 flex flex-col items-center gap-2 md:gap-2.5 text-center transition-all hover:shadow-glow"
           >
             <div
               className="h-10 w-10 rounded-xl flex items-center justify-center"
