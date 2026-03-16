@@ -281,7 +281,7 @@ export default function ShootingDay() {
           style={mode === "calendar" ? { background: "var(--gradient-primary)" } : undefined}
         >
           <CalendarDays className="h-4 w-4" />
-          Desde plan semanal
+          {t("fromWeeklyPlan")}
         </button>
         <button
           onClick={() => setMode("custom")}
