@@ -166,19 +166,19 @@ export default function ContentCalendar() {
       {loading && (
         <div className="glass rounded-2xl p-12 text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Cargando planes...</p>
+          <p className="text-muted-foreground">{t("loadingPlans")}</p>
         </div>
       )}
 
       {!loading && plans.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Sin planes aún</h3>
+          <h3 className="text-lg font-medium mb-2">{t("noPlansYet")}</h3>
           <p className="text-muted-foreground text-sm max-w-md mx-auto mb-4">
-            Genera tu primer plan semanal desde el Dashboard.
+            {t("generateFirstPlan")}
           </p>
           <Button variant="gradient" onClick={() => navigate("/")}>
-            Ir al Dashboard
+            {t("goToDashboard")}
           </Button>
         </div>
       )}
