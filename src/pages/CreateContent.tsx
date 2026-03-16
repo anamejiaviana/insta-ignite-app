@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedPostPreview } from "@/components/post/GeneratedPostPreview";
-import { Loader2, Sparkles, Upload, Wand2, Image, Copy, Check } from "lucide-react";
+import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft } from "lucide-react";
 
 const POST_TYPES = [
   { value: "post", label: "Post" },
@@ -63,7 +63,10 @@ export default function CreateContent() {
   const { activeClient } = useClients();
   const { toast } = useToast();
   const location = useLocation();
-  const prefill = (location.state as any)?.prefill as PrefillData | undefined;
+  const navigate = useNavigate();
+  const locState = location.state as any;
+  const prefill = locState?.prefill as PrefillData | undefined;
+  const fromCalendar = locState?.fromCalendar === true;
 
   const [postType, setPostType] = useState(prefill?.postType || "post");
   const [visualStyle, setVisualStyle] = useState("");
@@ -79,7 +82,6 @@ export default function CreateContent() {
   const [step, setStep] = useState<"content" | "image">("content");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // If we have a prefill with caption/hashtags, show it directly
   useEffect(() => {
     if (prefill?.caption) {
       setGeneratedPost({
@@ -88,8 +90,6 @@ export default function CreateContent() {
         hashtags: prefill.hashtags || [],
         imagePrompt: prefill.imagePrompt || "",
       });
-
-      // Auto-generate image for posts
       if (prefill.postType === "post" && prefill.imagePrompt) {
         setStep("image");
         generateImage(prefill.imagePrompt);
@@ -111,10 +111,8 @@ export default function CreateContent() {
       toast({ variant: "destructive", title: "Introduce un título" });
       return;
     }
-
     setLoading(true);
     setStep("content");
-
     try {
       const clientContext = activeClient
         ? {
@@ -139,7 +137,6 @@ export default function CreateContent() {
           language: activeClient?.content_language || "es",
         },
       });
-
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
@@ -153,7 +150,6 @@ export default function CreateContent() {
       } else if (imageSource === "upload" && uploadedImage) {
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
       }
-
       toast({ title: "¡Contenido generado!" });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error al generar", description: error.message });
@@ -227,11 +223,21 @@ export default function CreateContent() {
     setStep("content");
   };
 
-  // If prefilled with script/shots, show a pre-filled view
   const hasPrefillDetails = prefill?.hook || prefill?.shots;
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
+      {/* Back to calendar link */}
+      {fromCalendar && (
+        <button
+          onClick={() => navigate("/calendar")}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Volver al calendario
+        </button>
+      )}
+
       <h1 className="text-3xl font-bold mb-8">Crear contenido</h1>
 
       {/* Show prefill details if coming from weekly plan */}
