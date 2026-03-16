@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check, Video, Eye, Move, Clock } from "lucide-react";
+import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check, Video, Eye, Move, Clock, Zap, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,7 +52,30 @@ interface CustomIdeaPlan {
   hashtags: string[];
 }
 
-type Mode = "calendar" | "custom";
+interface OptimizedContentItem {
+  tipo: string;
+  idea: string;
+  hook: string;
+  planos_necesarios: string[];
+}
+
+interface PlanoReutilizable {
+  nombre: string;
+  descripcion: string;
+  tipo_plano: string;
+  reutilizado_en: string[];
+}
+
+interface OptimizedPlanData {
+  contenidos: OptimizedContentItem[];
+  planos_reutilizables: PlanoReutilizable[];
+  orden_grabacion: string[];
+  total_planos: number;
+  duracion_estimada: string;
+  resumen: string;
+}
+
+type Mode = "calendar" | "custom" | "optimize";
 
 export default function ShootingDay() {
   const { activeClient } = useClients();
@@ -63,6 +86,7 @@ export default function ShootingDay() {
   const [shootingPlan, setShootingPlan] = useState<ShootingPlanData | null>(null);
   const [customIdea, setCustomIdea] = useState("");
   const [customPlan, setCustomPlan] = useState<CustomIdeaPlan | null>(null);
+  const [optimizedPlan, setOptimizedPlan] = useState<OptimizedPlanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(true);
   const [copiedCaption, setCopiedCaption] = useState(false);
@@ -166,6 +190,51 @@ export default function ShootingDay() {
     }
   };
 
+  const generateOptimized = async () => {
+    if (!latestPlan) {
+      toast({ variant: "destructive", title: "No hay plan semanal. Genera uno primero desde el Dashboard." });
+      return;
+    }
+    setLoading(true);
+    try {
+      const planData = latestPlan.plan_data;
+      const allContent = [
+        ...(planData.reels || []),
+        ...(planData.posts || (planData.post ? [planData.post] : [])),
+      ];
+      const stories = planData.stories || [];
+
+      const { data, error } = await supabase.functions.invoke("generate-shooting-plan", {
+        body: {
+          client: getClientBody(),
+          optimizeMode: true,
+          allContent,
+          stories,
+          language: activeClient!.content_language || "es",
+        },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      setOptimizedPlan(data);
+
+      const user = (await supabase.auth.getUser()).data.user;
+      if (user) {
+        await (supabase as any).from("shooting_plans").insert({
+          user_id: user.id,
+          client_id: activeClient!.id,
+          weekly_plan_id: latestPlan.id,
+          num_days: 1,
+          plan_data: { ...data, mode: "optimize" },
+        });
+      }
+      toast({ title: "¡Plan optimizado generado!" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error al generar plan", description: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const copyText = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedCaption(true);
@@ -223,6 +292,18 @@ export default function ShootingDay() {
         >
           <Lightbulb className="h-4 w-4" />
           Desde una idea
+        </button>
+        <button
+          onClick={() => setMode("optimize")}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            mode === "optimize"
+              ? "text-primary-foreground"
+              : "bg-secondary text-muted-foreground hover:text-foreground"
+          }`}
+          style={mode === "optimize" ? { background: "var(--gradient-primary)" } : undefined}
+        >
+          <Zap className="h-4 w-4" />
+          Optimizar grabación
         </button>
       </div>
 
@@ -335,6 +416,160 @@ export default function ShootingDay() {
             <CustomShootingResults plan={customPlan} onCopy={copyText} copied={copiedCaption} />
           )}
         </div>
+      )}
+
+      {/* MODE 3: Optimize recording */}
+      {mode === "optimize" && (
+        <>
+          {loadingPlan ? (
+            <div className="glass rounded-2xl p-12 text-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Cargando plan semanal...</p>
+            </div>
+          ) : !latestPlan ? (
+            <div className="glass rounded-2xl p-12 text-center">
+              <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Sin plan semanal</h3>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                Primero genera tu plan de contenido semanal desde el Dashboard.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <Card className="bg-card border-border">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+                      <Zap className="h-5 w-5 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">Optimizar grabación de la semana</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Analiza todo el contenido planificado en tu calendario, identifica planos reutilizables y crea un plan de grabación eficiente.
+                      </p>
+                      <Button variant="gradient" onClick={generateOptimized} disabled={loading} className="w-full">
+                        {loading ? (
+                          <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Optimizando sesión...</>
+                        ) : (
+                          <><Zap className="h-4 w-4 mr-2" /> Optimizar grabación de la semana</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {optimizedPlan && <OptimizedResults plan={optimizedPlan} />}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ───────── MODE 3 RESULTS: OPTIMIZED ───────── */
+function OptimizedResults({ plan }: { plan: OptimizedPlanData }) {
+  return (
+    <div className="space-y-6">
+      {/* Summary */}
+      <Card className="bg-card border-border">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <Clock className="h-5 w-5 text-primary" />
+            <p className="text-sm font-medium">{plan.resumen}</p>
+          </div>
+          <div className="flex gap-4 text-sm text-muted-foreground">
+            <span><strong className="text-foreground">{plan.total_planos}</strong> planos totales</span>
+            <span><strong className="text-foreground">{plan.planos_reutilizables?.length || 0}</strong> reutilizables</span>
+            <span>⏱ <strong className="text-foreground">{plan.duracion_estimada}</strong></span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content items */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Clapperboard className="h-5 w-5 text-primary" />
+            Plan de sesión
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Contenido a grabar en esta sesión</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {plan.contenidos?.map((item, idx) => (
+            <div key={idx} className="p-4 rounded-lg bg-secondary/50 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${
+                  item.tipo === "reel" ? "bg-blue-500/20 text-blue-400" : "bg-green-500/20 text-green-400"
+                }`}>
+                  {item.tipo}
+                </span>
+                <span className="font-semibold text-sm">{item.idea}</span>
+              </div>
+              <p className="text-xs text-primary font-medium">🎬 "{item.hook}"</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {item.planos_necesarios?.map((p, i) => (
+                  <span key={i} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">{p}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Reusable shots */}
+      {plan.planos_reutilizables && plan.planos_reutilizables.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-primary" />
+              Planos reutilizables
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Graba estos planos una sola vez y úsalos en varios contenidos</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {plan.planos_reutilizables.map((p, i) => (
+                <div key={i} className="bg-secondary/50 rounded-lg px-4 py-3 space-y-1.5">
+                  <p className="text-sm font-medium">{p.nombre}</p>
+                  <p className="text-xs text-muted-foreground">{p.descripcion}</p>
+                  <div className="flex flex-wrap gap-1">
+                    <Badge variant="outline" className="text-[10px]">📷 {p.tipo_plano}</Badge>
+                    {p.reutilizado_en?.map((uso, j) => (
+                      <Badge key={j} variant="outline" className="text-[10px] text-primary border-primary/30">{uso}</Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recording order */}
+      {plan.orden_grabacion && plan.orden_grabacion.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Move className="h-5 w-5 text-primary" />
+              Orden de grabación optimizado
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Sigue estos pasos para una sesión eficiente</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {plan.orden_grabacion.map((paso, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
+                  <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm pt-1">{paso}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
