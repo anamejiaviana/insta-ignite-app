@@ -11,7 +11,9 @@ serve(async (req) => {
   }
 
   try {
-    const { client } = await req.json();
+    const { client, language } = await req.json();
+    const langMap: Record<string, string> = { es: 'español', ca: 'català', en: 'English' };
+    const langName = langMap[language] || 'español';
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
