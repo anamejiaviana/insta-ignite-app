@@ -156,6 +156,11 @@ const translations = {
     sessionsAppearHere: "Las sesiones planificadas aparecerán aquí.",
     contentDeleted: "Contenido eliminado",
     planDeleted: "Plan eliminado",
+    backToLibrary: "Volver a biblioteca",
+    weekOfLabel: "Semana del",
+    sessionOfDays: "Sesión de",
+    reels: "reels",
+    stories: "stories",
 
     // Settings
     myBusinesses: "Mis negocios",
