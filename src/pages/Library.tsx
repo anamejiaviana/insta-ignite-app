@@ -18,6 +18,7 @@ type TabType = "posts" | "plans" | "shooting";
 
 export default function Library() {
   const { clients, activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("posts");
   const [posts, setPosts] = useState<any[]>([]);
