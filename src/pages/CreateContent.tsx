@@ -366,9 +366,9 @@ export default function CreateContent() {
                     <SelectValue placeholder={t("select")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="descubrir">Descubrir</SelectItem>
-                    <SelectItem value="confiar">Confiar</SelectItem>
-                    <SelectItem value="comprar">Comprar</SelectItem>
+                    <SelectItem value="descubrir">{t("discover")}</SelectItem>
+                    <SelectItem value="confiar">{t("trust")}</SelectItem>
+                    <SelectItem value="comprar">{t("buy")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
