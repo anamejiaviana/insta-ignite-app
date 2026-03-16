@@ -95,7 +95,7 @@ export default function Library() {
         <h1 className="text-3xl font-bold">{t("library")}</h1>
         <Select value={filterClient} onValueChange={setFilterClient}>
           <SelectTrigger className="w-[180px] bg-secondary border-border">
-            <SelectValue placeholder="Todos los negocios" />
+            <SelectValue placeholder={t("allBusinesses")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
