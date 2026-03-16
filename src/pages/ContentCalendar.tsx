@@ -200,7 +200,7 @@ export default function ContentCalendar() {
             <div className="text-center">
               <p className="font-semibold text-sm">{formatWeekLabel(selectedPlan)}</p>
               <p className="text-[10px] text-muted-foreground">
-                Creado el {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+                {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
               </p>
             </div>
             <Button
