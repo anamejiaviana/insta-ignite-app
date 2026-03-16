@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
+import { useLanguage, UILanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, Save, X, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Loader2, Globe } from "lucide-react";
 
 const BUSINESS_TYPES = [
   "restaurante",
@@ -44,6 +45,11 @@ const VISUAL_STYLES = [
   "fondo claro",
 ];
 
+const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
+  { value: "es", label: "Español" },
+  { value: "en", label: "English" },
+];
+
 interface ClientForm {
   name: string;
   type: string;
@@ -70,6 +76,7 @@ const emptyForm: ClientForm = {
 
 export default function Settings() {
   const { clients, refreshClients } = useClients();
+  const { t, uiLanguage, setUILanguage } = useLanguage();
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -100,7 +107,7 @@ export default function Settings() {
 
   const saveClient = async () => {
     if (!form.name.trim()) {
-      toast({ variant: "destructive", title: "El nombre es obligatorio" });
+      toast({ variant: "destructive", title: t("nameRequired") });
       return;
     }
 
@@ -124,12 +131,12 @@ export default function Settings() {
       if (editingId) {
         const { error } = await (supabase as any).from("clients").update(payload).eq("id", editingId);
         if (error) throw error;
-        toast({ title: "Negocio actualizado" });
+        toast({ title: t("businessUpdated") });
       } else {
         payload.user_id = user.id;
         const { error } = await (supabase as any).from("clients").insert(payload);
         if (error) throw error;
-        toast({ title: "Negocio creado" });
+        toast({ title: t("businessCreated") });
       }
 
       setShowForm(false);
@@ -137,7 +144,7 @@ export default function Settings() {
       setEditingId(null);
       await refreshClients();
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al guardar", description: error.message });
+      toast({ variant: "destructive", title: t("errorSavingBusiness"), description: error.message });
     } finally {
       setSaving(false);
     }
@@ -146,29 +153,58 @@ export default function Settings() {
   const deleteClient = async (id: string) => {
     const { error } = await (supabase as any).from("clients").delete().eq("id", id);
     if (error) {
-      toast({ variant: "destructive", title: "Error al eliminar" });
+      toast({ variant: "destructive", title: t("errorDeletingBusiness") });
     } else {
-      toast({ title: "Negocio eliminado" });
+      toast({ title: t("businessDeleted") });
       await refreshClients();
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
-      <h1 className="text-3xl font-bold mb-8">Configuración</h1>
+      <h1 className="text-3xl font-bold mb-8">{t("settings")}</h1>
+
+      {/* Interface Language */}
+      <Card className="bg-card border-border mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            {t("interfaceLanguage")}
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">{t("interfaceLanguageDesc")}</p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            {UI_LANGUAGES.map((lang) => (
+              <button
+                key={lang.value}
+                onClick={() => setUILanguage(lang.value)}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  uiLanguage === lang.value
+                    ? "text-primary-foreground"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+                style={uiLanguage === lang.value ? { background: "var(--gradient-primary)" } : undefined}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Mis negocios</CardTitle>
+          <CardTitle className="text-lg">{t("myBusinesses")}</CardTitle>
           <Button variant="gradient" size="sm" onClick={startNew}>
             <Plus className="h-4 w-4 mr-1" />
-            Añadir negocio
+            {t("addBusiness")}
           </Button>
         </CardHeader>
         <CardContent>
           {clients.length === 0 && !showForm && (
             <p className="text-muted-foreground text-sm">
-              Añade tu negocio para empezar a generar contenido.
+              {t("addBusinessToStart")}
             </p>
           )}
 
@@ -201,7 +237,7 @@ export default function Settings() {
             <div className="mt-4 p-4 rounded-xl border border-border bg-secondary/30 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-sm">
-                  {editingId ? "Editar negocio" : "Nuevo negocio"}
+                  {editingId ? t("editBusiness") : t("newBusiness")}
                 </h4>
                 <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
                   <X className="h-4 w-4" />
@@ -210,28 +246,28 @@ export default function Settings() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs">Nombre del negocio *</Label>
+                  <Label className="text-xs">{t("businessName")}</Label>
                   <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-secondary border-border h-9" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Tipo de negocio</Label>
+                  <Label className="text-xs">{t("businessType")}</Label>
                   <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                     <SelectTrigger className="bg-secondary border-border h-9">
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue placeholder={t("select")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {BUSINESS_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>
+                      {BUSINESS_TYPES.map((bt) => (
+                        <SelectItem key={bt} value={bt}>{bt.charAt(0).toUpperCase() + bt.slice(1)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Ciudad</Label>
-                  <Input placeholder="Ej: Barcelona" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="bg-secondary border-border h-9" />
+                  <Label className="text-xs">{t("city")}</Label>
+                  <Input placeholder={t("cityPlaceholder")} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="bg-secondary border-border h-9" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Idioma del contenido</Label>
+                  <Label className="text-xs">{t("contentLanguage")}</Label>
                   <Select value={form.content_language} onValueChange={(v) => setForm({ ...form, content_language: v })}>
                     <SelectTrigger className="bg-secondary border-border h-9">
                       <SelectValue />
@@ -246,25 +282,25 @@ export default function Settings() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Cuenta de inspiración (opcional)</Label>
-                <Input placeholder="Ej: @cuentainspiración" value={form.inspiration_account} onChange={(e) => setForm({ ...form, inspiration_account: e.target.value })} className="bg-secondary border-border h-9" />
+                <Label className="text-xs">{t("inspirationAccount")}</Label>
+                <Input placeholder={t("inspirationPlaceholder")} value={form.inspiration_account} onChange={(e) => setForm({ ...form, inspiration_account: e.target.value })} className="bg-secondary border-border h-9" />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Tono de marca</Label>
-                <Input placeholder="Ej: cercano, profesional, elegante..." value={form.tone} onChange={(e) => setForm({ ...form, tone: e.target.value })} className="bg-secondary border-border h-9" />
+                <Label className="text-xs">{t("brandTone")}</Label>
+                <Input placeholder={t("tonePlaceholder")} value={form.tone} onChange={(e) => setForm({ ...form, tone: e.target.value })} className="bg-secondary border-border h-9" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs">Objetivo</Label>
-                  <Input placeholder="Ej: atraer clientes locales" value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} className="bg-secondary border-border h-9" />
+                  <Label className="text-xs">{t("objectiveSetting")}</Label>
+                  <Input placeholder={t("objectivePlaceholder")} value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} className="bg-secondary border-border h-9" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Estilo visual</Label>
+                  <Label className="text-xs">{t("visualStyleSetting")}</Label>
                   <Select value={form.default_visual_style} onValueChange={(v) => setForm({ ...form, default_visual_style: v })}>
                     <SelectTrigger className="bg-secondary border-border h-9">
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue placeholder={t("select")} />
                     </SelectTrigger>
                     <SelectContent>
                       {VISUAL_STYLES.map((s) => (
@@ -276,13 +312,13 @@ export default function Settings() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs">Palabras clave (separadas por coma)</Label>
-                <Input placeholder="Ej: gourmet, vinos, local..." value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} className="bg-secondary border-border h-9" />
+                <Label className="text-xs">{t("keywords")}</Label>
+                <Input placeholder={t("keywordsPlaceholder")} value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} className="bg-secondary border-border h-9" />
               </div>
 
               <Button variant="gradient" size="sm" onClick={saveClient} disabled={saving} className="w-full">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                {editingId ? "Actualizar" : "Crear negocio"}
+                {editingId ? t("update") : t("createBusiness")}
               </Button>
             </div>
           )}

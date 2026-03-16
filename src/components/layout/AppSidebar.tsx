@@ -18,19 +18,21 @@ import {
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useLanguage, TranslationKey } from "@/contexts/LanguageContext";
 
-const items = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Crear contenido", url: "/create", icon: PenSquare },
-  { title: "Calendario", url: "/strategy/calendar", icon: Calendar },
-  { title: "Día de grabación", url: "/shooting", icon: Camera },
-  { title: "Biblioteca", url: "/library", icon: FolderOpen },
-  { title: "Configuración", url: "/settings", icon: Settings },
+const items: { titleKey: TranslationKey; url: string; icon: any }[] = [
+  { titleKey: "dashboard", url: "/", icon: LayoutDashboard },
+  { titleKey: "createContent", url: "/create", icon: PenSquare },
+  { titleKey: "calendar", url: "/strategy/calendar", icon: Calendar },
+  { titleKey: "shootingDay", url: "/shooting", icon: Camera },
+  { titleKey: "library", url: "/library", icon: FolderOpen },
+  { titleKey: "settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { t } = useLanguage();
 
   return (
     <Sidebar collapsible="icon">
@@ -52,7 +54,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
@@ -61,7 +63,7 @@ export function AppSidebar() {
                       activeClassName="bg-primary/10 text-primary font-medium"
                     >
                       <item.icon className="mr-2 h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && <span>{t(item.titleKey)}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
