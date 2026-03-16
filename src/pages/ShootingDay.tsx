@@ -293,7 +293,7 @@ export default function ShootingDay() {
           style={mode === "custom" ? { background: "var(--gradient-primary)" } : undefined}
         >
           <Lightbulb className="h-4 w-4" />
-          Desde una idea
+          {t("fromIdea")}
         </button>
         <button
           onClick={() => setMode("optimize")}
