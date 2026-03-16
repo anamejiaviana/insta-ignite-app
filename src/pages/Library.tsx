@@ -61,7 +61,7 @@ export default function Library() {
     const { error } = await supabase.from("generated_posts").delete().eq("id", id);
     if (!error) {
       setPosts((prev) => prev.filter((p) => p.id !== id));
-      toast({ title: "Contenido eliminado" });
+      toast({ title: t("contentDeleted") });
     }
   };
 
@@ -69,7 +69,7 @@ export default function Library() {
     const { error } = await (supabase as any).from("weekly_plans").delete().eq("id", id);
     if (!error) {
       setWeeklyPlans((prev) => prev.filter((p) => p.id !== id));
-      toast({ title: "Plan eliminado" });
+      toast({ title: t("planDeleted") });
     }
   };
 
@@ -77,7 +77,7 @@ export default function Library() {
     const { error } = await (supabase as any).from("shooting_plans").delete().eq("id", id);
     if (!error) {
       setShootingPlans((prev) => prev.filter((p) => p.id !== id));
-      toast({ title: "Plan eliminado" });
+      toast({ title: t("planDeleted") });
     }
   };
 
