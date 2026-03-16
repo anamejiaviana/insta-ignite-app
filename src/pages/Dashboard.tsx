@@ -74,6 +74,8 @@ export default function Dashboard() {
           },
           specialDates: specialDates || undefined,
           language: activeClient.content_language || "es",
+          numPublications: parseInt(numPublications),
+          contentPreference,
         },
       });
 
