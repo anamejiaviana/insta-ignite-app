@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   PenSquare,
-  Lightbulb,
+  Calendar,
   Camera,
   FolderOpen,
   Settings,
