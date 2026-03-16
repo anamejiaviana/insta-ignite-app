@@ -254,7 +254,7 @@ export default function CreateContent() {
           )}
           {prefill?.shots && prefill.shots.length > 0 && (
             <div>
-              <span className="text-xs text-muted-foreground">Planos:</span>
+              <span className="text-xs text-muted-foreground">{t("shots")}:</span>
               <ul className="mt-1 space-y-0.5">
                 {prefill.shots.map((s, i) => (
                   <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
