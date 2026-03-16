@@ -141,24 +141,24 @@ export default function ContentCalendar() {
     <div className="max-w-5xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Calendario</h1>
+          <h1 className="text-3xl font-bold">{t("calendar")}</h1>
           {activeClient && (
             <p className="text-muted-foreground mt-1">
-              Planes para{" "}
+              {t("plans")}{" "}
               <span className="text-primary font-medium">{activeClient.name}</span>
             </p>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate("/strategy/reels")}>
-            <Film className="h-4 w-4 mr-1" /> Ideas de reels
+            <Film className="h-4 w-4 mr-1" /> {t("reelIdeas")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate("/strategy/hooks")}>
-            <Zap className="h-4 w-4 mr-1" /> Hooks
+            <Zap className="h-4 w-4 mr-1" /> {t("hooks")}
           </Button>
           <Button variant="gradient" onClick={() => navigate("/")} size="sm">
             <Sparkles className="h-4 w-4 mr-2" />
-            Generar plan semanal
+            {t("generateWeeklyPlanBtn")}
           </Button>
         </div>
       </div>
