@@ -288,7 +288,7 @@ export default function ContentCalendar() {
             {planData?.stories && planData.stories.length > 0 && (
               <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Ideas de Stories</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2">
