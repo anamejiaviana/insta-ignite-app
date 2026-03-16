@@ -80,6 +80,7 @@ type Mode = "calendar" | "custom" | "optimize";
 
 export default function ShootingDay() {
   const { activeClient } = useClients();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [mode, setMode] = useState<Mode>("calendar");
   const [latestPlan, setLatestPlan] = useState<any>(null);
