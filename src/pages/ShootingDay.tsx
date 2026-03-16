@@ -159,7 +159,7 @@ export default function ShootingDay() {
 
   const generateFromIdea = async () => {
     if (!customIdea.trim()) {
-      toast({ variant: "destructive", title: "Escribe una idea o tema para grabar." });
+      toast({ variant: "destructive", title: t("writeIdeaFirst") });
       return;
     }
     setLoading(true);
