@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check, Video, Eye, Move, Clock } from "lucide-react";
+import { Loader2, Sparkles, Camera, Clapperboard, Lightbulb, CalendarDays, Copy, Check, Video, Eye, Move, Clock, Zap, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
