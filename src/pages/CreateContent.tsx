@@ -152,9 +152,9 @@ export default function CreateContent() {
       } else if (imageSource === "upload" && uploadedImage) {
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
       }
-      toast({ title: "¡Contenido generado!" });
+      toast({ title: t("contentGenerated") });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error al generar", description: error.message });
+      toast({ variant: "destructive", title: t("errorGenerating"), description: error.message });
     } finally {
       setLoading(false);
     }
