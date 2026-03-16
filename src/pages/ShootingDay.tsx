@@ -417,6 +417,53 @@ export default function ShootingDay() {
           )}
         </div>
       )}
+
+      {/* MODE 3: Optimize recording */}
+      {mode === "optimize" && (
+        <>
+          {loadingPlan ? (
+            <div className="glass rounded-2xl p-12 text-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-muted-foreground">Cargando plan semanal...</p>
+            </div>
+          ) : !latestPlan ? (
+            <div className="glass rounded-2xl p-12 text-center">
+              <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Sin plan semanal</h3>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                Primero genera tu plan de contenido semanal desde el Dashboard.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <Card className="bg-card border-border">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+                      <Zap className="h-5 w-5 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">Optimizar grabación de la semana</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Analiza todo el contenido planificado en tu calendario, identifica planos reutilizables y crea un plan de grabación eficiente.
+                      </p>
+                      <Button variant="gradient" onClick={generateOptimized} disabled={loading} className="w-full">
+                        {loading ? (
+                          <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Optimizando sesión...</>
+                        ) : (
+                          <><Zap className="h-4 w-4 mr-2" /> Optimizar grabación de la semana</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {optimizedPlan && <OptimizedResults plan={optimizedPlan} />}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
