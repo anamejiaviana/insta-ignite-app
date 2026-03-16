@@ -251,7 +251,7 @@ export default function ContentCalendar() {
                           {generated && (
                             <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
                               <CheckCircle2 className="h-3 w-3" />
-                              generado
+                              {t("generated")}
                             </Badge>
                           )}
                         </div>
