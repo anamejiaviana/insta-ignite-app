@@ -336,7 +336,7 @@ export default function CreateContent() {
                     ) : (
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <Image className="h-8 w-8" />
-                        <span className="text-sm">Subir imagen</span>
+                        <span className="text-sm">{t("uploadImage")}</span>
                       </div>
                     )}
                   </Button>
