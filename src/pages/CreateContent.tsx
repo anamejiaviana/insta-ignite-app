@@ -351,8 +351,8 @@ export default function CreateContent() {
           {/* Content Fields */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Idea o título *</Label>
-              <Input placeholder="Ej: 5 tips para mejorar tu productividad" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-secondary border-border" />
+              <Label>{t("ideaOrTitle")}</Label>
+              <Input placeholder={t("ideaPlaceholder")} value={title} onChange={(e) => setTitle(e.target.value)} className="bg-secondary border-border" />
             </div>
             <div className="space-y-2">
               <Label>Contexto (opcional)</Label>
