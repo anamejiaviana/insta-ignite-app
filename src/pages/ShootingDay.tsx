@@ -86,6 +86,7 @@ export default function ShootingDay() {
   const [shootingPlan, setShootingPlan] = useState<ShootingPlanData | null>(null);
   const [customIdea, setCustomIdea] = useState("");
   const [customPlan, setCustomPlan] = useState<CustomIdeaPlan | null>(null);
+  const [optimizedPlan, setOptimizedPlan] = useState<OptimizedPlanData | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(true);
   const [copiedCaption, setCopiedCaption] = useState(false);
