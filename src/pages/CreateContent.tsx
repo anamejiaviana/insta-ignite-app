@@ -360,10 +360,10 @@ export default function CreateContent() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Objetivo</Label>
+                <Label>{t("objective")}</Label>
                 <Select value={objective} onValueChange={setObjective}>
                   <SelectTrigger className="bg-secondary border-border">
-                    <SelectValue placeholder="Seleccionar" />
+                    <SelectValue placeholder={t("select")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="descubrir">Descubrir</SelectItem>
