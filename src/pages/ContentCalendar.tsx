@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Calendar, CheckCircle2, Pencil } from "lucide-react";
+import { Loader2, Sparkles, Calendar, CheckCircle2, Pencil, ChevronLeft, ChevronRight, Film, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -38,7 +38,7 @@ export default function ContentCalendar() {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<StoredPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState<StoredPlan | null>(null);
+  const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [generatedTitles, setGeneratedTitles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function ContentCalendar() {
       .from("weekly_plans")
       .select("*")
       .order("week_start", { ascending: false })
-      .limit(20);
+      .limit(50);
 
     if (activeClient) {
       query = query.eq("client_id", activeClient.id);
@@ -64,9 +64,7 @@ export default function ContentCalendar() {
     const { data } = await query;
     if (data) {
       setPlans(data);
-      if (data.length > 0 && !selectedPlan) {
-        setSelectedPlan(data[0]);
-      }
+      setSelectedPlanIndex(0);
     }
     setLoading(false);
   };
@@ -104,10 +102,29 @@ export default function ContentCalendar() {
     });
   };
 
+  const selectedPlan = plans[selectedPlanIndex] || null;
   const planData = selectedPlan?.plan_data;
   const allItems = planData
     ? [...(planData.reels || []), ...(planData.post ? [planData.post] : [])]
     : [];
+
+  const canGoPrev = selectedPlanIndex > 0;
+  const canGoNext = selectedPlanIndex < plans.length - 1;
+
+  const goToPrevWeek = () => {
+    if (canGoPrev) setSelectedPlanIndex(selectedPlanIndex - 1);
+  };
+
+  const goToNextWeek = () => {
+    if (canGoNext) setSelectedPlanIndex(selectedPlanIndex + 1);
+  };
+
+  const formatWeekLabel = (plan: StoredPlan) => {
+    const start = new Date(plan.week_start);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return `${start.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${end.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
+  };
 
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
@@ -116,7 +133,7 @@ export default function ContentCalendar() {
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Calendario</h1>
           {activeClient && (
@@ -126,10 +143,18 @@ export default function ContentCalendar() {
             </p>
           )}
         </div>
-        <Button variant="gradient" onClick={() => navigate("/")} size="sm">
-          <Sparkles className="h-4 w-4 mr-2" />
-          Generar plan semanal
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate("/strategy/reels")}>
+            <Film className="h-4 w-4 mr-1" /> Ideas de reels
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate("/strategy/hooks")}>
+            <Zap className="h-4 w-4 mr-1" /> Hooks
+          </Button>
+          <Button variant="gradient" onClick={() => navigate("/")} size="sm">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Generar plan semanal
+          </Button>
+        </div>
       </div>
 
       {loading && (
@@ -152,31 +177,59 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && plans.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Plan list */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">Planes anteriores</h3>
-            {plans.map((plan) => (
-              <button
-                key={plan.id}
-                onClick={() => setSelectedPlan(plan)}
-                className={`w-full text-left p-3 rounded-lg text-sm transition-all ${
-                  selectedPlan?.id === plan.id
-                    ? "bg-primary/10 text-primary font-medium border border-primary/20"
-                    : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <p className="font-medium">Semana {new Date(plan.week_start).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</p>
-                <p className="text-xs mt-0.5 opacity-70">
-                  {new Date(plan.created_at).toLocaleDateString("es-ES")}
-                </p>
-              </button>
-            ))}
+      {!loading && plans.length > 0 && selectedPlan && (
+        <div className="space-y-6">
+          {/* Week navigator */}
+          <div className="flex items-center justify-between glass rounded-xl px-4 py-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToNextWeek}
+              disabled={!canGoNext}
+              className="gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Semana anterior
+            </Button>
+            <div className="text-center">
+              <p className="font-semibold text-sm">{formatWeekLabel(selectedPlan)}</p>
+              <p className="text-[10px] text-muted-foreground">
+                Creado el {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToPrevWeek}
+              disabled={!canGoPrev}
+              className="gap-1"
+            >
+              Semana siguiente
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
 
-          {/* Plan detail */}
-          <div className="lg:col-span-3 space-y-4">
+          {/* Plan selector if many plans for same period */}
+          {plans.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {plans.map((plan, idx) => (
+                <button
+                  key={plan.id}
+                  onClick={() => setSelectedPlanIndex(idx)}
+                  className={`shrink-0 text-left px-3 py-2 rounded-lg text-xs transition-all ${
+                    selectedPlanIndex === idx
+                      ? "bg-primary/10 text-primary font-medium border border-primary/20"
+                      : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Semana {new Date(plan.week_start).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Content items */}
+          <div className="space-y-4">
             {allItems.map((item, idx) => {
               const generated = isGenerated(item);
               return (

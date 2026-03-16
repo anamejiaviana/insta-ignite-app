@@ -1,7 +1,7 @@
 import {
   LayoutDashboard,
   PenSquare,
-  Lightbulb,
+  Calendar,
   Camera,
   FolderOpen,
   Settings,
@@ -22,7 +22,7 @@ import {
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Crear contenido", url: "/create", icon: PenSquare },
-  { title: "Estrategia", url: "/strategy", icon: Lightbulb },
+  { title: "Calendario", url: "/strategy/calendar", icon: Calendar },
   { title: "Día de grabación", url: "/shooting", icon: Camera },
   { title: "Biblioteca", url: "/library", icon: FolderOpen },
   { title: "Configuración", url: "/settings", icon: Settings },
