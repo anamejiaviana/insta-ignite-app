@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface WeeklyPlanItem {
   id: string;
@@ -24,7 +25,7 @@ interface WeeklyPlanItem {
 
 interface WeeklyPlan {
   reels: WeeklyPlanItem[];
-  post: WeeklyPlanItem;
+  posts: WeeklyPlanItem[];
   stories: { idea: string; tipo: string }[];
 }
 
@@ -36,6 +37,8 @@ export default function Dashboard() {
   const [specialDates, setSpecialDates] = useState("");
   const [loading, setLoading] = useState(false);
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
+  const [numPublications, setNumPublications] = useState("3");
+  const [contentPreference, setContentPreference] = useState("balanced");
 
   useEffect(() => {
     loadRecentPosts();
@@ -71,6 +74,8 @@ export default function Dashboard() {
           },
           specialDates: specialDates || undefined,
           language: activeClient.content_language || "es",
+          numPublications: parseInt(numPublications),
+          contentPreference,
         },
       });
 
@@ -176,10 +181,61 @@ export default function Dashboard() {
               ¿Qué publico esta semana?
             </h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Genera tu plan de contenido: 2 reels, 1 post e ideas de stories
+              Personaliza tu plan de contenido semanal
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Number of publications */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  ¿Cuántas publicaciones quieres esta semana?
+                </Label>
+                <div className="flex gap-2">
+                  {["2", "3", "4", "5"].map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setNumPublications(n)}
+                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        numPublications === n
+                          ? "text-primary-foreground"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                      style={numPublications === n ? { background: "var(--gradient-primary)" } : undefined}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Content type preference */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  ¿Qué tipo de contenido prefieres?
+                </Label>
+                <div className="flex gap-2">
+                  {[
+                    { value: "more_reels", label: "Más reels" },
+                    { value: "balanced", label: "Equilibrado" },
+                    { value: "more_posts", label: "Más posts" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setContentPreference(opt.value)}
+                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        contentPreference === opt.value
+                          ? "text-primary-foreground"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      }`}
+                      style={contentPreference === opt.value ? { background: "var(--gradient-primary)" } : undefined}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Special dates */}
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
                   ¿Hay fechas especiales esta semana? (opcional)
@@ -250,9 +306,9 @@ export default function Dashboard() {
             </Card>
           ))}
 
-          {/* Post */}
-          {weeklyPlan.post && (
-            <Card className="bg-card border-border">
+          {/* Posts */}
+          {weeklyPlan.posts?.map((post, idx) => (
+            <Card key={idx} className="bg-card border-border">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -260,15 +316,15 @@ export default function Dashboard() {
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">
                         POST
                       </span>
-                      <span className="text-xs text-muted-foreground">{weeklyPlan.post.day}</span>
+                      <span className="text-xs text-muted-foreground">{post.day}</span>
                     </div>
-                    <p className="font-semibold text-sm mb-1">{weeklyPlan.post.idea}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{weeklyPlan.post.caption}</p>
+                    <p className="font-semibold text-sm mb-1">{post.idea}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{post.caption}</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => generateContent(weeklyPlan.post)}
+                    onClick={() => generateContent(post)}
                     className="shrink-0"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1" />
@@ -277,7 +333,7 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          ))}
 
           {/* Stories */}
           {weeklyPlan.stories && weeklyPlan.stories.length > 0 && (

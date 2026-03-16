@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { client, specialDates, language } = await req.json();
+    const { client, specialDates, language, numPublications = 3, contentPreference = 'balanced' } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
@@ -27,6 +27,48 @@ serve(async (req) => {
       ? `\nFECHAS ESPECIALES esta semana: ${specialDates}. Prioriza crear contenido relacionado con estas fechas.`
       : '';
 
+    // Calculate content distribution
+    const total = Math.max(2, Math.min(5, numPublications));
+    let numReels: number, numPosts: number;
+    if (contentPreference === 'more_reels') {
+      numReels = Math.min(total, Math.ceil(total * 0.75));
+      numPosts = total - numReels;
+      if (numPosts < 1) { numPosts = 1; numReels = total - 1; }
+    } else if (contentPreference === 'more_posts') {
+      numPosts = Math.min(total, Math.ceil(total * 0.75));
+      numReels = total - numPosts;
+      if (numReels < 1) { numReels = 1; numPosts = total - 1; }
+    } else {
+      numReels = Math.ceil(total / 2);
+      numPosts = total - numReels;
+      if (numPosts < 1) { numPosts = 1; numReels = total - 1; }
+    }
+
+    const reelExamples = Array.from({ length: numReels }, (_, i) => `        {
+          "id": "reel-${i + 1}",
+          "type": "reel",
+          "day": "Día de la semana",
+          "idea": "Título de la idea",
+          "hook": "Frase gancho de 3 segundos",
+          "script": "Mini guión paso a paso",
+          "shots": ["plano 1", "plano 2", "plano 3"],
+          "caption": "Caption optimizado para Instagram con CTA",
+          "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
+        }`).join(',\n');
+
+    const postExamples = Array.from({ length: numPosts }, (_, i) => `        {
+          "id": "post-${i + 1}",
+          "type": "post",
+          "day": "Día de la semana",
+          "idea": "Título de la idea",
+          "hook": "Primera línea del caption",
+          "script": "Descripción de lo que debe mostrar la imagen",
+          "shots": [],
+          "caption": "Caption optimizado con CTA",
+          "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"],
+          "imagePrompt": "Prompt detallado en inglés para generar la imagen del post"
+        }`).join(',\n');
+
     const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales.
     Generas planes de contenido semanales prácticos y grabables.
     
@@ -35,37 +77,20 @@ serve(async (req) => {
     Responde SIEMPRE en formato JSON válido con esta estructura exacta:
     {
       "reels": [
-        {
-          "id": "reel-1",
-          "type": "reel",
-          "day": "Lunes",
-          "idea": "Título de la idea",
-          "hook": "Frase gancho de 3 segundos",
-          "script": "Mini guión paso a paso",
-          "shots": ["plano 1", "plano 2", "plano 3"],
-          "caption": "Caption optimizado para Instagram con CTA",
-          "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
-        }
+${reelExamples}
       ],
-      "post": {
-        "id": "post-1",
-        "type": "post",
-        "day": "Miércoles",
-        "idea": "Título de la idea",
-        "hook": "Primera línea del caption",
-        "script": "Descripción de lo que debe mostrar la imagen",
-        "shots": [],
-        "caption": "Caption optimizado con CTA",
-        "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"],
-        "imagePrompt": "Prompt detallado para generar la imagen del post"
-      },
+      "posts": [
+${postExamples}
+      ],
       "stories": [
         {
           "idea": "Idea para story",
           "tipo": "encuesta/pregunta/behind the scenes/promoción"
         }
       ]
-    }`;
+    }
+    
+    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos. Cada post debe incluir "imagePrompt".`;
 
     const userPrompt = `Genera un plan de contenido semanal para Instagram:
     
@@ -79,8 +104,8 @@ serve(async (req) => {
     ${specialDatesBlock}
     
     Genera:
-    1. Exactamente 2 reels (distribuidos en la semana)
-    2. Exactamente 1 post estático (con prompt para imagen)
+    1. Exactamente ${numReels} reel${numReels > 1 ? 's' : ''} (distribuidos en la semana)
+    2. Exactamente ${numPosts} post${numPosts > 1 ? 's' : ''} estático${numPosts > 1 ? 's' : ''} (cada uno con prompt para imagen en inglés)
     3. 3-4 ideas de stories
     
     Requisitos:
@@ -135,6 +160,12 @@ serve(async (req) => {
       else throw new Error('No JSON found');
     } catch {
       throw new Error('Failed to parse AI response');
+    }
+
+    // Normalize: if AI returned "post" (singular), convert to "posts" array
+    if (parsed.post && !parsed.posts) {
+      parsed.posts = [parsed.post];
+      delete parsed.post;
     }
 
     return new Response(JSON.stringify(parsed), {
