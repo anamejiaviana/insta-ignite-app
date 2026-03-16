@@ -296,7 +296,7 @@ export default function CreateContent() {
             <Label>{t("visualStyle")}</Label>
             <Select value={visualStyle} onValueChange={setVisualStyle}>
               <SelectTrigger className="bg-secondary border-border">
-                <SelectValue placeholder="Seleccionar estilo visual" />
+                <SelectValue placeholder={t("selectVisualStyle")} />
               </SelectTrigger>
               <SelectContent>
                 {VISUAL_STYLES.map((s) => (
