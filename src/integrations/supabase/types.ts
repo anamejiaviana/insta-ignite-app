@@ -53,8 +53,53 @@ export type Database = {
         }
         Relationships: []
       }
+      clients: {
+        Row: {
+          city: string | null
+          created_at: string
+          default_visual_style: string | null
+          id: string
+          keywords: string[] | null
+          name: string
+          objective: string | null
+          tone: string | null
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          default_visual_style?: string | null
+          id?: string
+          keywords?: string[] | null
+          name: string
+          objective?: string | null
+          tone?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          default_visual_style?: string | null
+          id?: string
+          keywords?: string[] | null
+          name?: string
+          objective?: string | null
+          tone?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_posts: {
         Row: {
+          client_id: string | null
+          content_category: string | null
+          content_data: Json | null
           created_at: string
           cta: string | null
           description: string | null
@@ -62,13 +107,18 @@ export type Database = {
           hashtags: string[] | null
           id: string
           main_copy: string | null
+          objective: string | null
           original_image_url: string | null
           post_type: string
           story_copy: string | null
           title: string
           user_id: string
+          visual_style: string | null
         }
         Insert: {
+          client_id?: string | null
+          content_category?: string | null
+          content_data?: Json | null
           created_at?: string
           cta?: string | null
           description?: string | null
@@ -76,13 +126,18 @@ export type Database = {
           hashtags?: string[] | null
           id?: string
           main_copy?: string | null
+          objective?: string | null
           original_image_url?: string | null
           post_type: string
           story_copy?: string | null
           title: string
           user_id: string
+          visual_style?: string | null
         }
         Update: {
+          client_id?: string | null
+          content_category?: string | null
+          content_data?: Json | null
           created_at?: string
           cta?: string | null
           description?: string | null
@@ -90,13 +145,23 @@ export type Database = {
           hashtags?: string[] | null
           id?: string
           main_copy?: string | null
+          objective?: string | null
           original_image_url?: string | null
           post_type?: string
           story_copy?: string | null
           title?: string
           user_id?: string
+          visual_style?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "generated_posts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
