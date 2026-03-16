@@ -56,9 +56,11 @@ export type Database = {
       clients: {
         Row: {
           city: string | null
+          content_language: string | null
           created_at: string
           default_visual_style: string | null
           id: string
+          inspiration_account: string | null
           keywords: string[] | null
           name: string
           objective: string | null
@@ -69,9 +71,11 @@ export type Database = {
         }
         Insert: {
           city?: string | null
+          content_language?: string | null
           created_at?: string
           default_visual_style?: string | null
           id?: string
+          inspiration_account?: string | null
           keywords?: string[] | null
           name: string
           objective?: string | null
@@ -82,9 +86,11 @@ export type Database = {
         }
         Update: {
           city?: string | null
+          content_language?: string | null
           created_at?: string
           default_visual_style?: string | null
           id?: string
+          inspiration_account?: string | null
           keywords?: string[] | null
           name?: string
           objective?: string | null
@@ -156,6 +162,92 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "generated_posts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shooting_plans: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          id: string
+          num_days: number | null
+          plan_data: Json
+          user_id: string
+          weekly_plan_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          num_days?: number | null
+          plan_data?: Json
+          user_id: string
+          weekly_plan_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          num_days?: number | null
+          plan_data?: Json
+          user_id?: string
+          weekly_plan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_plans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shooting_plans_weekly_plan_id_fkey"
+            columns: ["weekly_plan_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_plans: {
+        Row: {
+          client_id: string | null
+          content_language: string | null
+          created_at: string
+          id: string
+          plan_data: Json
+          special_dates: string | null
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          client_id?: string | null
+          content_language?: string | null
+          created_at?: string
+          id?: string
+          plan_data?: Json
+          special_dates?: string | null
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          client_id?: string | null
+          content_language?: string | null
+          created_at?: string
+          id?: string
+          plan_data?: Json
+          special_dates?: string | null
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_plans_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
