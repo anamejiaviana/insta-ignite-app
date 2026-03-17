@@ -195,7 +195,7 @@ const translations = {
   },
   en: {
     // Sidebar
-    dashboard: "Dashboard",
+    dashboard: "Home",
     createContent: "Create content",
     calendar: "Calendar",
     shootingDay: "Recording day",
