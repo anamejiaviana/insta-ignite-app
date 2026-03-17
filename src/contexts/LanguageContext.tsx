@@ -192,6 +192,9 @@ const translations = {
     nameRequired: "El nombre es obligatorio",
     interfaceLanguage: "Idioma de la interfaz",
     interfaceLanguageDesc: "Cambia el idioma de los menús y botones de la aplicación. No afecta al idioma del contenido generado.",
+    prepareShootingDay: "Preparar día de grabación",
+    backToCalendarPrimary: "← Volver al calendario",
+    generateAnotherPost: "Generar otro post",
   },
   en: {
     // Sidebar
