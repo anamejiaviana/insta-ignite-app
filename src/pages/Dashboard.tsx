@@ -386,9 +386,10 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-2">
               {recentPosts.map((post) => (
-                <div
+                <button
                   key={post.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
+                  onClick={() => navigate("/library", { state: { openPost: post.id } })}
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 w-full text-left hover:bg-secondary/80 transition-colors"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-sm truncate">{post.title}</p>
@@ -399,7 +400,7 @@ export default function Dashboard() {
                   {post.generated_image_url && (
                     <img src={post.generated_image_url} alt="" className="h-10 w-10 rounded object-cover ml-3 shrink-0" />
                   )}
-                </div>
+                </button>
               ))}
             </div>
           </CardContent>
