@@ -1,5 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Copy,
   Download,
@@ -10,6 +12,8 @@ import {
   Hash,
   MessageSquare,
   Smartphone,
+  Camera,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +32,13 @@ interface GeneratedPostPreviewProps {
   onSave: () => void;
   onReset: () => void;
   onRegenerateImage: () => void;
+  fromCalendar?: boolean;
+  prefillData?: {
+    title?: string;
+    hook?: string;
+    shots?: string[];
+    script?: string;
+  };
 }
 
 export function GeneratedPostPreview({
@@ -37,8 +48,12 @@ export function GeneratedPostPreview({
   onSave,
   onReset,
   onRegenerateImage,
+  fromCalendar,
+  prefillData,
 }: GeneratedPostPreviewProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -47,7 +62,6 @@ export function GeneratedPostPreview({
 
   const downloadImage = () => {
     if (!post.imageUrl) return;
-
     const link = document.createElement("a");
     link.href = post.imageUrl;
     link.download = `instagram-${postType}-${Date.now()}.png`;
@@ -56,19 +70,47 @@ export function GeneratedPostPreview({
     document.body.removeChild(link);
   };
 
+  const handlePrepareShootingDay = () => {
+    navigate("/shooting", {
+      state: {
+        prefillIdea: prefillData?.title || "",
+        fromContent: true,
+      },
+    });
+  };
+
   const hashtagsText = post.hashtags.map((h) => `#${h}`).join(" ");
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onReset}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Crear otro post
-        </Button>
-        <Button variant="gradient" onClick={onSave}>
-          <Save className="h-4 w-4 mr-2" />
-          Guardar en historial
-        </Button>
+      {/* Top actions - calendar-aware */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        {fromCalendar ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/strategy/calendar")}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            {t("backToCalendarPrimary")}
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm" onClick={onReset}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t("generateAnotherPost")}
+          </Button>
+        )}
+        <div className="flex items-center gap-2">
+          {fromCalendar && (
+            <Button variant="ghost" size="sm" onClick={onReset}>
+              {t("generateAnotherPost")}
+            </Button>
+          )}
+          <Button variant="gradient" onClick={onSave}>
+            <Save className="h-4 w-4 mr-2" />
+            Guardar en historial
+          </Button>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -104,21 +146,11 @@ export function GeneratedPostPreview({
             )}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRegenerateImage}
-              disabled={loading}
-            >
+            <Button variant="outline" size="sm" onClick={onRegenerateImage} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Regenerar
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={downloadImage}
-              disabled={!post.imageUrl || loading}
-            >
+            <Button variant="outline" size="sm" onClick={downloadImage} disabled={!post.imageUrl || loading}>
               <Download className="h-4 w-4 mr-2" />
               Descargar
             </Button>
@@ -134,11 +166,7 @@ export function GeneratedPostPreview({
                 <MessageSquare className="h-4 w-4 text-primary" />
                 Copy principal
               </h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => copyToClipboard(post.mainCopy, "Copy principal")}
-              >
+              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(post.mainCopy, "Copy principal")}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -154,11 +182,7 @@ export function GeneratedPostPreview({
                 <Smartphone className="h-4 w-4 text-primary" />
                 Copy para Stories
               </h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => copyToClipboard(post.storyCopy, "Copy de story")}
-              >
+              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(post.storyCopy, "Copy de story")}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -174,21 +198,14 @@ export function GeneratedPostPreview({
                 <Hash className="h-4 w-4 text-primary" />
                 Hashtags ({post.hashtags.length})
               </h4>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => copyToClipboard(hashtagsText, "Hashtags")}
-              >
+              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(hashtagsText, "Hashtags")}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
             <div className="glass rounded-lg p-4">
               <div className="flex flex-wrap gap-2">
                 {post.hashtags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full"
-                  >
+                  <span key={i} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
                     #{tag}
                   </span>
                 ))}
@@ -196,20 +213,27 @@ export function GeneratedPostPreview({
             </div>
           </div>
 
-          {/* Copy All Button */}
+          {/* Copy All */}
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() =>
-              copyToClipboard(
-                `${post.mainCopy}\n\n${hashtagsText}`,
-                "Contenido completo"
-              )
-            }
+            onClick={() => copyToClipboard(`${post.mainCopy}\n\n${hashtagsText}`, "Contenido completo")}
           >
             <Copy className="h-4 w-4 mr-2" />
             Copiar todo (copy + hashtags)
           </Button>
+
+          {/* Prepare shooting day - for reels from calendar */}
+          {(postType === "reel" || postType === "story") && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handlePrepareShootingDay}
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              {t("prepareShootingDay")}
+            </Button>
+          )}
         </div>
       </div>
     </div>
