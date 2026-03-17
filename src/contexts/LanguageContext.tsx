@@ -5,7 +5,7 @@ export type UILanguage = "es" | "en";
 const translations = {
   es: {
     // Sidebar
-    dashboard: "Dashboard",
+    dashboard: "Inicio",
     createContent: "Crear contenido",
     calendar: "Calendario",
     shootingDay: "Día de grabación",
@@ -43,8 +43,8 @@ const translations = {
     previousWeek: "Semana anterior",
     nextWeek: "Semana siguiente",
     noPlansYet: "Sin planes aún",
-    generateFirstPlan: "Genera tu primer plan semanal desde el Dashboard.",
-    goToDashboard: "Ir al Dashboard",
+    generateFirstPlan: "Genera tu primer plan semanal desde Inicio.",
+    goToDashboard: "Ir a Inicio",
     generateWeeklyPlanBtn: "Generar plan semanal",
     reelIdeas: "Ideas de reels",
     hooks: "Hooks",
@@ -192,10 +192,13 @@ const translations = {
     nameRequired: "El nombre es obligatorio",
     interfaceLanguage: "Idioma de la interfaz",
     interfaceLanguageDesc: "Cambia el idioma de los menús y botones de la aplicación. No afecta al idioma del contenido generado.",
+    prepareShootingDay: "Preparar día de grabación",
+    backToCalendarPrimary: "← Volver al calendario",
+    generateAnotherPost: "Generar otro post",
   },
   en: {
     // Sidebar
-    dashboard: "Dashboard",
+    dashboard: "Home",
     createContent: "Create content",
     calendar: "Calendar",
     shootingDay: "Recording day",
@@ -382,6 +385,9 @@ const translations = {
     nameRequired: "Name is required",
     interfaceLanguage: "Interface language",
     interfaceLanguageDesc: "Changes the language of app menus and buttons. Does not affect generated content language.",
+    prepareShootingDay: "Prepare recording day",
+    backToCalendarPrimary: "← Back to calendar",
+    generateAnotherPost: "Generate another post",
   },
 } as const;
 

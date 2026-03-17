@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -26,6 +27,7 @@ export default function Library() {
   const { clients } = useClients();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabType>("posts");
   const [posts, setPosts] = useState<any[]>([]);
   const [weeklyPlans, setWeeklyPlans] = useState<any[]>([]);
@@ -37,6 +39,19 @@ export default function Library() {
   useEffect(() => {
     loadData();
   }, [filterClient, activeTab]);
+
+  // Handle deep-link from Dashboard recent content
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.openPost && posts.length > 0) {
+      const found = posts.find((p) => p.id === state.openPost);
+      if (found) {
+        setDetail({ type: "post", data: found });
+        // Clear state so it doesn't re-trigger
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location.state, posts]);
 
   const loadData = async () => {
     if (activeTab === "posts") {

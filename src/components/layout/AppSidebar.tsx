@@ -6,7 +6,7 @@ import {
   FolderOpen,
   Settings,
 } from "lucide-react";
-import { NavLink } from "@/components/NavLink";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +19,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useLanguage, TranslationKey } from "@/contexts/LanguageContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const items: { titleKey: TranslationKey; url: string; icon: any }[] = [
   { titleKey: "dashboard", url: "/", icon: LayoutDashboard },
@@ -30,9 +32,24 @@ const items: { titleKey: TranslationKey; url: string; icon: any }[] = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavigation = (url: string) => {
+    navigate(url);
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
+  const isActive = (url: string) => {
+    if (url === "/") return location.pathname === "/";
+    return location.pathname.startsWith(url);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -56,15 +73,16 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-primary/10 text-primary font-medium"
+                    <button
+                      onClick={() => handleNavigation(item.url)}
+                      className={cn(
+                        "flex items-center w-full hover:bg-sidebar-accent/50",
+                        isActive(item.url) && "bg-primary/10 text-primary font-medium"
+                      )}
                     >
                       <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       {!collapsed && <span>{t(item.titleKey)}</span>}
-                    </NavLink>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
