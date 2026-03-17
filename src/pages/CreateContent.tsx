@@ -396,6 +396,8 @@ export default function CreateContent() {
             onSave={savePost}
             onReset={resetGenerator}
             onRegenerateImage={() => generatedPost.imagePrompt && generateImage(generatedPost.imagePrompt)}
+            fromCalendar={fromCalendar}
+            prefillData={prefill ? { title: prefill.title, hook: prefill.hook, shots: prefill.shots, script: prefill.description } : undefined}
           />
         </div>
       )}
