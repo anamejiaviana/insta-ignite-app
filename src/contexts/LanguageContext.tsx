@@ -385,6 +385,9 @@ const translations = {
     nameRequired: "Name is required",
     interfaceLanguage: "Interface language",
     interfaceLanguageDesc: "Changes the language of app menus and buttons. Does not affect generated content language.",
+    prepareShootingDay: "Prepare recording day",
+    backToCalendarPrimary: "← Back to calendar",
+    generateAnotherPost: "Generate another post",
   },
 } as const;
 
