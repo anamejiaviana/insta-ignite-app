@@ -5,7 +5,7 @@ export type UILanguage = "es" | "en";
 const translations = {
   es: {
     // Sidebar
-    dashboard: "Dashboard",
+    dashboard: "Inicio",
     createContent: "Crear contenido",
     calendar: "Calendario",
     shootingDay: "Día de grabación",
