@@ -27,6 +27,7 @@ export default function Library() {
   const { clients } = useClients();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabType>("posts");
   const [posts, setPosts] = useState<any[]>([]);
   const [weeklyPlans, setWeeklyPlans] = useState<any[]>([]);
