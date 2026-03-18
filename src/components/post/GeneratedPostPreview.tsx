@@ -27,6 +27,29 @@ interface GeneratedPost {
   imageUrl?: string;
 }
 
+const SaveSection = ({ onSave, saved }: { onSave: () => void; saved: boolean }) => (
+  <div className="mt-8 border-t border-border pt-6 space-y-3">
+    {!saved && (
+      <p className="text-sm text-muted-foreground text-center">
+        ⚠️ Este contenido no se guardará automáticamente. Guárdalo en el historial para no perderlo.
+      </p>
+    )}
+    <Button
+      variant={saved ? "outline" : "gradient"}
+      size="xl"
+      className="w-full"
+      onClick={onSave}
+      disabled={saved}
+    >
+      {saved ? (
+        <><Check className="h-5 w-5 mr-2 text-green-500" /> Contenido guardado en el historial</>
+      ) : (
+        <><Save className="h-5 w-5 mr-2" /> Guardar en historial</>
+      )}
+    </Button>
+  </div>
+);
+
 interface GeneratedPostPreviewProps {
   post: GeneratedPost;
   postType: string;
