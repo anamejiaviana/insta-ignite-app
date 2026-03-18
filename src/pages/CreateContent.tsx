@@ -397,6 +397,7 @@ export default function CreateContent() {
             onSave={savePost}
             onReset={resetGenerator}
             onRegenerateImage={() => generatedPost.imagePrompt && generateImage(generatedPost.imagePrompt)}
+            onCopyChange={(mainCopy, storyCopy) => { editedCopiesRef.current = { mainCopy, storyCopy }; }}
             fromCalendar={fromCalendar}
             prefillData={prefill ? { title: prefill.title, hook: prefill.hook, shots: prefill.shots, script: prefill.description } : undefined}
           />
