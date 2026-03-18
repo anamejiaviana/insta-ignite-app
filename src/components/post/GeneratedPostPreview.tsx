@@ -16,6 +16,7 @@ import {
   Smartphone,
   Camera,
   Calendar,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +32,7 @@ interface GeneratedPostPreviewProps {
   post: GeneratedPost;
   postType: string;
   loading: boolean;
-  onSave: () => void;
+  onSave: () => Promise<void> | void;
   onReset: () => void;
   onRegenerateImage: () => void;
   onCopyChange?: (mainCopy: string, storyCopy: string) => void;
@@ -60,6 +61,7 @@ export function GeneratedPostPreview({
   const navigate = useNavigate();
   const [editedMainCopy, setEditedMainCopy] = useState(post.mainCopy);
   const [editedStoryCopy, setEditedStoryCopy] = useState(post.storyCopy);
+  const [saved, setSaved] = useState(false);
 
   const handleMainCopyChange = (val: string) => {
     setEditedMainCopy(val);
@@ -95,6 +97,11 @@ export function GeneratedPostPreview({
     });
   };
 
+  const handleSave = async () => {
+    await onSave();
+    setSaved(true);
+  };
+
   const hashtagsText = post.hashtags.map((h) => `#${h}`).join(" ");
 
   return (
@@ -122,10 +129,6 @@ export function GeneratedPostPreview({
               {t("generateAnotherPost")}
             </Button>
           )}
-          <Button variant="gradient" onClick={onSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Guardar en historial
-          </Button>
         </div>
       </div>
 
@@ -237,6 +240,28 @@ export function GeneratedPostPreview({
             </Button>
           )}
         </div>
+      </div>
+
+      {/* Bottom save section */}
+      <div className="border-t border-border pt-6 space-y-3">
+        {!saved && (
+          <p className="text-sm text-muted-foreground text-center">
+            ⚠️ Este contenido no se guardará automáticamente. Guárdalo en el historial para no perderlo.
+          </p>
+        )}
+        <Button
+          variant={saved ? "outline" : "gradient"}
+          size="xl"
+          className="w-full"
+          onClick={handleSave}
+          disabled={saved}
+        >
+          {saved ? (
+            <><Check className="h-5 w-5 mr-2 text-green-500" /> Contenido guardado en el historial</>
+          ) : (
+            <><Save className="h-5 w-5 mr-2" /> Guardar en historial</>
+          )}
+        </Button>
       </div>
     </div>
   );
