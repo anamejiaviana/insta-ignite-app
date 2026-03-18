@@ -34,6 +34,7 @@ interface GeneratedPostPreviewProps {
   onSave: () => void;
   onReset: () => void;
   onRegenerateImage: () => void;
+  onCopyChange?: (mainCopy: string, storyCopy: string) => void;
   fromCalendar?: boolean;
   prefillData?: {
     title?: string;
