@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft } from "lucide-react";
+import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
