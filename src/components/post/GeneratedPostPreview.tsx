@@ -219,7 +219,7 @@ export function GeneratedPostPreview({
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => copyToClipboard(`${post.mainCopy}\n\n${hashtagsText}`, "Contenido completo")}
+            onClick={() => copyToClipboard(`${editedMainCopy}\n\n${hashtagsText}`, "Contenido completo")}
           >
             <Copy className="h-4 w-4 mr-2" />
             Copiar todo (copy + hashtags)
