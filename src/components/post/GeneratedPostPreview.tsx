@@ -122,10 +122,6 @@ export function GeneratedPostPreview({
               {t("generateAnotherPost")}
             </Button>
           )}
-          <Button variant="gradient" onClick={onSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Guardar en historial
-          </Button>
         </div>
       </div>
 
