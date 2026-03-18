@@ -295,7 +295,29 @@ function DetailHeader({ onBack, onDelete, id, t }: { onBack: () => void; onDelet
 // --- Post Detail ---
 
 function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName }: any) {
-  const fullCaption = `${post.main_copy || ""}\n\n${(post.hashtags || []).map((h: string) => `#${h}`).join(" ")}`;
+  const [editedMainCopy, setEditedMainCopy] = useState(post.main_copy || "");
+  const [editedStoryCopy, setEditedStoryCopy] = useState(post.story_copy || "");
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("generated_posts")
+        .update({ main_copy: editedMainCopy, story_copy: editedStoryCopy })
+        .eq("id", post.id);
+      if (error) throw error;
+      post.main_copy = editedMainCopy;
+      post.story_copy = editedStoryCopy;
+      toast({ title: "Cambios guardados" });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error al guardar", description: error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
       <DetailHeader onBack={onBack} onDelete={onDelete} id={post.id} t={t} />
@@ -313,25 +335,26 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
           </p>
         </div>
         {post.main_copy && (
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start gap-2 mb-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase">Caption</p>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => copyText(fullCaption, post.id)}>
-                  {copiedId === post.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                </Button>
-              </div>
-              <p className="text-sm whitespace-pre-wrap">{post.main_copy}</p>
-            </CardContent>
-          </Card>
+          <EditableCopyBlock
+            label="Copy principal"
+            icon={<MessageSquare className="h-4 w-4 text-primary" />}
+            value={editedMainCopy}
+            originalValue={post.main_copy}
+            onChange={setEditedMainCopy}
+            onSave={handleSave}
+            saving={saving}
+          />
         )}
         {post.story_copy && (
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase mb-2">Story</p>
-              <p className="text-sm whitespace-pre-wrap">{post.story_copy}</p>
-            </CardContent>
-          </Card>
+          <EditableCopyBlock
+            label="Copy para Stories"
+            icon={<Smartphone className="h-4 w-4 text-primary" />}
+            value={editedStoryCopy}
+            originalValue={post.story_copy}
+            onChange={setEditedStoryCopy}
+            onSave={handleSave}
+            saving={saving}
+          />
         )}
         {post.cta && (
           <Card className="bg-card border-border">
