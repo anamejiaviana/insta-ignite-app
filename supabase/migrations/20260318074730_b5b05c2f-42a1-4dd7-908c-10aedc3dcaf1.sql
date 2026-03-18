@@ -1,0 +1,1 @@
+CREATE POLICY "Users can update their own posts" ON public.generated_posts FOR UPDATE TO public USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
