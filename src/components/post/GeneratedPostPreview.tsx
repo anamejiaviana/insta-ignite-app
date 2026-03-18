@@ -51,12 +51,25 @@ export function GeneratedPostPreview({
   onSave,
   onReset,
   onRegenerateImage,
+  onCopyChange,
   fromCalendar,
   prefillData,
 }: GeneratedPostPreviewProps) {
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [editedMainCopy, setEditedMainCopy] = useState(post.mainCopy);
+  const [editedStoryCopy, setEditedStoryCopy] = useState(post.storyCopy);
+
+  const handleMainCopyChange = (val: string) => {
+    setEditedMainCopy(val);
+    onCopyChange?.(val, editedStoryCopy);
+  };
+
+  const handleStoryCopyChange = (val: string) => {
+    setEditedStoryCopy(val);
+    onCopyChange?.(editedMainCopy, val);
+  };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
