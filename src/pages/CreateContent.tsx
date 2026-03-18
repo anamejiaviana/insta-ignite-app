@@ -82,6 +82,7 @@ export default function CreateContent() {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"content" | "image">("content");
+  const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -197,8 +198,8 @@ export default function CreateContent() {
         cta,
         generated_image_url: generatedPost.imageUrl,
         original_image_url: uploadedImage,
-        main_copy: generatedPost.mainCopy,
-        story_copy: generatedPost.storyCopy,
+        main_copy: editedCopiesRef.current?.mainCopy ?? generatedPost.mainCopy,
+        story_copy: editedCopiesRef.current?.storyCopy ?? generatedPost.storyCopy,
         hashtags: generatedPost.hashtags,
         client_id: activeClient?.id || null,
         visual_style: visualStyle,
@@ -396,6 +397,7 @@ export default function CreateContent() {
             onSave={savePost}
             onReset={resetGenerator}
             onRegenerateImage={() => generatedPost.imagePrompt && generateImage(generatedPost.imagePrompt)}
+            onCopyChange={(mainCopy, storyCopy) => { editedCopiesRef.current = { mainCopy, storyCopy }; }}
             fromCalendar={fromCalendar}
             prefillData={prefill ? { title: prefill.title, hook: prefill.hook, shots: prefill.shots, script: prefill.description } : undefined}
           />
