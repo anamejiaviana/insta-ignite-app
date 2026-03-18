@@ -175,37 +175,23 @@ export function GeneratedPostPreview({
 
         {/* Content Preview */}
         <div className="space-y-5">
-          {/* Main Copy */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-primary" />
-                Copy principal
-              </h4>
-              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(post.mainCopy, "Copy principal")}>
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="glass rounded-lg p-4 text-sm whitespace-pre-wrap max-h-[200px] overflow-y-auto">
-              {post.mainCopy}
-            </div>
-          </div>
+          {/* Main Copy - Editable */}
+          <EditableCopyBlock
+            label="Copy principal"
+            icon={<MessageSquare className="h-4 w-4 text-primary" />}
+            value={editedMainCopy}
+            originalValue={post.mainCopy}
+            onChange={handleMainCopyChange}
+          />
 
-          {/* Story Copy */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium flex items-center gap-2">
-                <Smartphone className="h-4 w-4 text-primary" />
-                Copy para Stories
-              </h4>
-              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(post.storyCopy, "Copy de story")}>
-                <Copy className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="glass rounded-lg p-4 text-sm">
-              {post.storyCopy}
-            </div>
-          </div>
+          {/* Story Copy - Editable */}
+          <EditableCopyBlock
+            label="Copy para Stories"
+            icon={<Smartphone className="h-4 w-4 text-primary" />}
+            value={editedStoryCopy}
+            originalValue={post.storyCopy}
+            onChange={handleStoryCopyChange}
+          />
 
           {/* Hashtags */}
           <div className="space-y-2">
