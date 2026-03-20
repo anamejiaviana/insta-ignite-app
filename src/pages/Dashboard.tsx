@@ -275,6 +275,7 @@ export default function Dashboard() {
                       <CalendarPicker
                         mode="single"
                         selected={selectedWeek}
+                        weekStartsOn={1}
                         onSelect={(date) => {
                           if (date) {
                             setSelectedWeek(getMonday(date));
