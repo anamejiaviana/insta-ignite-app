@@ -244,34 +244,61 @@ export default function Dashboard() {
                 <Label className="text-sm font-medium">
                   {t("selectWeek")}
                 </Label>
-                <Popover open={weekPickerOpen} onOpenChange={setWeekPickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal bg-secondary border-border",
-                        !selectedWeek && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {t("weekOf")} {format(selectedWeek, "d MMM", { locale: es })} – {format(addDays(selectedWeek, 6), "d MMM yyyy", { locale: es })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarPicker
-                      mode="single"
-                      selected={selectedWeek}
-                      onSelect={(date) => {
-                        if (date) {
-                          setSelectedWeek(getMonday(date));
-                          setWeekPickerOpen(false);
-                        }
-                      }}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0 bg-secondary border-border"
+                    onClick={() => setSelectedWeek(prev => {
+                      const d = new Date(prev);
+                      d.setDate(d.getDate() - 7);
+                      return d;
+                    })}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Popover open={weekPickerOpen} onOpenChange={setWeekPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "flex-1 justify-center text-center font-medium bg-secondary border-border"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                        <span>
+                          {format(selectedWeek, "d MMM", { locale: es })} – {format(addDays(selectedWeek, 6), "d MMM yyyy", { locale: es })}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="center">
+                      <CalendarPicker
+                        mode="single"
+                        selected={selectedWeek}
+                        onSelect={(date) => {
+                          if (date) {
+                            setSelectedWeek(getMonday(date));
+                            setWeekPickerOpen(false);
+                          }
+                        }}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0 bg-secondary border-border"
+                    onClick={() => setSelectedWeek(prev => {
+                      const d = new Date(prev);
+                      d.setDate(d.getDate() + 7);
+                      return d;
+                    })}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               {/* Special dates */}
