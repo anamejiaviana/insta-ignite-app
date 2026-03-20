@@ -48,6 +48,8 @@ export default function Dashboard() {
   const getMonday = (d: Date) => startOfWeek(d, { weekStartsOn: 1 });
   const [selectedWeek, setSelectedWeek] = useState<Date>(getMonday(new Date()));
   const [weekPickerOpen, setWeekPickerOpen] = useState(false);
+
+  useEffect(() => {
     loadRecentPosts();
   }, [activeClient]);
 
