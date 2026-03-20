@@ -93,21 +93,17 @@ export default function Dashboard() {
 
       setWeeklyPlan(data);
 
-      const user = (await supabase.auth.getUser()).data.user;
-      if (user) {
-        const now = new Date();
-        const monday = new Date(now);
-        monday.setDate(now.getDate() - now.getDay() + 1);
-
-        await (supabase as any).from("weekly_plans").insert({
-          user_id: user.id,
-          client_id: activeClient.id,
-          week_start: monday.toISOString().split("T")[0],
-          special_dates: specialDates || null,
-          content_language: activeClient.content_language || "es",
-          plan_data: data,
-        });
-      }
+        const user = (await supabase.auth.getUser()).data.user;
+        if (user) {
+          await (supabase as any).from("weekly_plans").insert({
+            user_id: user.id,
+            client_id: activeClient.id,
+            week_start: format(selectedWeek, "yyyy-MM-dd"),
+            special_dates: specialDates || null,
+            content_language: activeClient.content_language || "es",
+            plan_data: data,
+          });
+        }
 
       toast({ title: t("weeklyPlanGenerated") });
     } catch (error: any) {
