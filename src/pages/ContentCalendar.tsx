@@ -29,7 +29,7 @@ interface StoredPlan {
     reels: WeeklyPlanItem[];
     post?: WeeklyPlanItem;
     posts?: WeeklyPlanItem[];
-    stories: { idea: string; tipo: string }[];
+    stories: { idea: string; tipo: string; text?: string }[];
     completed_items?: string[];
   };
   created_at: string;
