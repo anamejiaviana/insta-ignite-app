@@ -25,7 +25,6 @@ const translations = {
     specialDatesOptional: "¿Hay fechas especiales esta semana? (opcional)",
     specialDatesPlaceholder: "Ej: Black Friday, aniversario del local, nueva carta...",
     generateWeeklyContent: "Generar mi contenido semanal",
-    weekOf: "Semana del",
     selectWeek: "Selecciona la semana",
     generatingPlan: "Generando plan...",
     yourWeeklyPlan: "Tu plan semanal",
