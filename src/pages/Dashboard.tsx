@@ -26,7 +26,7 @@ interface WeeklyPlanItem {
 interface WeeklyPlan {
   reels: WeeklyPlanItem[];
   posts: WeeklyPlanItem[];
-  stories: { idea: string; tipo: string }[];
+  stories: { idea: string; tipo: string; text?: string }[];
 }
 
 export default function Dashboard() {
