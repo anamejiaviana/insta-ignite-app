@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { EditableCopyBlock } from "@/components/post/EditableCopyBlock";
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone } from "lucide-react";
+import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -379,12 +379,38 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
 // --- Weekly Plan Detail ---
 
 function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
-  const pd = plan.plan_data;
-  const allItems = [...(pd?.reels || []), ...(pd?.posts || (pd?.post ? [pd.post] : []))];
+  const [planData, setPlanData] = useState(plan.plan_data);
+  const completedItems = new Set(planData?.completed_items || []);
+
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
     post: "bg-green-500/20 text-green-400",
+    carrusel: "bg-amber-500/20 text-amber-400",
+    story: "bg-purple-500/20 text-purple-400",
   };
+
+  const toggleCompleted = useCallback(async (itemKey: string) => {
+    const current = new Set(planData?.completed_items || []);
+    if (current.has(itemKey)) {
+      current.delete(itemKey);
+    } else {
+      current.add(itemKey);
+    }
+    const newCompleted = Array.from(current);
+    const updated = { ...planData, completed_items: newCompleted };
+    setPlanData(updated);
+    plan.plan_data = updated;
+
+    await (supabase as any)
+      .from("weekly_plans")
+      .update({ plan_data: updated })
+      .eq("id", plan.id);
+  }, [planData, plan]);
+
+  const allItems = [
+    ...(planData?.reels || []).map((item: any, i: number) => ({ ...item, _key: `reel-${i}` })),
+    ...(planData?.posts || (planData?.post ? [planData.post] : [])).map((item: any, i: number) => ({ ...item, _key: `post-${i}` })),
+  ];
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
@@ -400,50 +426,94 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
       </div>
 
       <div className="space-y-4">
-        {allItems.map((item: any, idx: number) => (
-          <Card key={idx} className="bg-card border-border">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
-                  {item.type}
-                </span>
-                {item.day && <span className="text-xs text-muted-foreground">{item.day}</span>}
-              </div>
-              <p className="font-semibold text-sm mb-1">{item.idea}</p>
-              {item.hook && <p className="text-xs text-primary font-medium mb-2">🎬 "{item.hook}"</p>}
-              {item.script && <p className="text-xs text-muted-foreground mb-2">{item.script}</p>}
-              {item.shots && item.shots.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {item.shots.map((s: string, i: number) => (
-                    <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
-                  ))}
+        {allItems.map((item: any) => {
+          const isCompleted = completedItems.has(item._key);
+          return (
+            <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <button
+                    onClick={() => toggleCompleted(item._key)}
+                    className="mt-0.5 shrink-0 transition-colors"
+                    title={isCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <Circle className="h-5 w-5 text-muted-foreground/40 hover:text-muted-foreground" />
+                    )}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
+                        {item.type}
+                      </span>
+                      {item.day && <span className="text-xs text-muted-foreground">{item.day}</span>}
+                      {isCompleted && (
+                        <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          {t("completed")}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className={`font-semibold text-sm mb-1 ${isCompleted ? "line-through text-muted-foreground" : ""}`}>{item.idea}</p>
+                    {item.hook && <p className="text-xs text-primary font-medium mb-2">🎬 "{item.hook}"</p>}
+                    {item.script && <p className="text-xs text-muted-foreground mb-2">{item.script}</p>}
+                    {item.shots && item.shots.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {item.shots.map((s: string, i: number) => (
+                          <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
+                        ))}
+                      </div>
+                    )}
+                    {item.caption && <p className="text-xs text-muted-foreground italic">"{item.caption}"</p>}
+                    {item.hashtags && item.hashtags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {item.hashtags.map((h: string, i: number) => (
+                          <span key={i} className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">#{h}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              {item.caption && <p className="text-xs text-muted-foreground italic">"{item.caption}"</p>}
-              {item.hashtags && item.hashtags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {item.hashtags.map((h: string, i: number) => (
-                    <span key={i} className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">#{h}</span>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
 
-        {pd?.stories && pd.stories.length > 0 && (
+        {planData?.stories && planData.stories.length > 0 && (
           <Card className="bg-card border-border">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-2">
-                {pd.stories.map((story: any, idx: number) => (
-                  <div key={idx} className="flex items-center gap-3 text-sm">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
-                    <span className="text-muted-foreground">{story.idea}</span>
-                  </div>
-                ))}
+                {planData.stories.map((story: any, idx: number) => {
+                  const storyKey = `story-${idx}`;
+                  const isStoryCompleted = completedItems.has(storyKey);
+                  return (
+                    <div key={idx} className={`flex items-center gap-3 text-sm transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
+                      <button
+                        onClick={() => toggleCompleted(storyKey)}
+                        className="shrink-0 transition-colors"
+                        title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                      >
+                        {isStoryCompleted ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
+                        )}
+                      </button>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
+                      <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
+                      {isStoryCompleted && (
+                        <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
+                          <CheckCircle2 className="h-3 w-3" />
+                        </Badge>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
