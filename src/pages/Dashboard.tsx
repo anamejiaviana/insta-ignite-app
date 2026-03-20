@@ -3,12 +3,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { Sparkles, Calendar, Camera, FolderOpen, Loader2 } from "lucide-react";
+import { Sparkles, Calendar, Camera, FolderOpen, Loader2, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format, startOfWeek, addDays } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface WeeklyPlanItem {
   id: string;
