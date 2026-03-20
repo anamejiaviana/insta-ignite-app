@@ -3,12 +3,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { Sparkles, Calendar, Camera, FolderOpen, Loader2 } from "lucide-react";
+import { Sparkles, Calendar, Camera, FolderOpen, Loader2, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format, startOfWeek, addDays } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface WeeklyPlanItem {
   id: string;
@@ -40,6 +45,9 @@ export default function Dashboard() {
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
   const [numPublications, setNumPublications] = useState("3");
   const [contentPreference, setContentPreference] = useState("balanced");
+  const getMonday = (d: Date) => startOfWeek(d, { weekStartsOn: 1 });
+  const [selectedWeek, setSelectedWeek] = useState<Date>(getMonday(new Date()));
+  const [weekPickerOpen, setWeekPickerOpen] = useState(false);
 
   useEffect(() => {
     loadRecentPosts();
@@ -85,21 +93,17 @@ export default function Dashboard() {
 
       setWeeklyPlan(data);
 
-      const user = (await supabase.auth.getUser()).data.user;
-      if (user) {
-        const now = new Date();
-        const monday = new Date(now);
-        monday.setDate(now.getDate() - now.getDay() + 1);
-
-        await (supabase as any).from("weekly_plans").insert({
-          user_id: user.id,
-          client_id: activeClient.id,
-          week_start: monday.toISOString().split("T")[0],
-          special_dates: specialDates || null,
-          content_language: activeClient.content_language || "es",
-          plan_data: data,
-        });
-      }
+        const user = (await supabase.auth.getUser()).data.user;
+        if (user) {
+          await (supabase as any).from("weekly_plans").insert({
+            user_id: user.id,
+            client_id: activeClient.id,
+            week_start: format(selectedWeek, "yyyy-MM-dd"),
+            special_dates: specialDates || null,
+            content_language: activeClient.content_language || "es",
+            plan_data: data,
+          });
+        }
 
       toast({ title: t("weeklyPlanGenerated") });
     } catch (error: any) {
@@ -233,6 +237,41 @@ export default function Dashboard() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Week selector */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {t("selectWeek")}
+                </Label>
+                <Popover open={weekPickerOpen} onOpenChange={setWeekPickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-secondary border-border",
+                        !selectedWeek && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {t("weekOf")} {format(selectedWeek, "d MMM", { locale: es })} – {format(addDays(selectedWeek, 6), "d MMM yyyy", { locale: es })}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarPicker
+                      mode="single"
+                      selected={selectedWeek}
+                      onSelect={(date) => {
+                        if (date) {
+                          setSelectedWeek(getMonday(date));
+                          setWeekPickerOpen(false);
+                        }
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Special dates */}
