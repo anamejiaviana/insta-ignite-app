@@ -91,7 +91,7 @@ ${postExamples}
       ]
     }
     
-    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos. Cada post debe incluir "imagePrompt".`;
+    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos. Cada post debe incluir "imagePrompt". Cada story DEBE incluir el campo "text" con el texto completo para publicar en la story.`;
 
     const userPrompt = `Genera un plan de contenido semanal para Instagram:
     
