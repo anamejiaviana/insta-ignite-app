@@ -85,7 +85,8 @@ ${postExamples}
       "stories": [
         {
           "idea": "Idea para story",
-          "tipo": "encuesta/pregunta/behind the scenes/promoción"
+          "tipo": "encuesta/pregunta/behind the scenes/promoción",
+          "text": "Texto completo para la story, incluyendo copy, opciones de encuesta si aplica, y CTA"
         }
       ]
     }
