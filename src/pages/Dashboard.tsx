@@ -45,8 +45,9 @@ export default function Dashboard() {
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan | null>(null);
   const [numPublications, setNumPublications] = useState("3");
   const [contentPreference, setContentPreference] = useState("balanced");
-
-  useEffect(() => {
+  const getMonday = (d: Date) => startOfWeek(d, { weekStartsOn: 1 });
+  const [selectedWeek, setSelectedWeek] = useState<Date>(getMonday(new Date()));
+  const [weekPickerOpen, setWeekPickerOpen] = useState(false);
     loadRecentPosts();
   }, [activeClient]);
 
