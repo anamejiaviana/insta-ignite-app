@@ -222,7 +222,6 @@ const translations = {
     specialDatesOptional: "Any special dates this week? (optional)",
     specialDatesPlaceholder: "E.g.: Black Friday, store anniversary, new menu...",
     generateWeeklyContent: "Generate my weekly content",
-    weekOf: "Week of",
     selectWeek: "Select the week",
     generatingPlan: "Generating plan...",
     yourWeeklyPlan: "Your weekly plan",
