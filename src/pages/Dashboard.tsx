@@ -26,7 +26,7 @@ interface WeeklyPlanItem {
 interface WeeklyPlan {
   reels: WeeklyPlanItem[];
   posts: WeeklyPlanItem[];
-  stories: { idea: string; tipo: string }[];
+  stories: { idea: string; tipo: string; text?: string }[];
 }
 
 export default function Dashboard() {
@@ -344,11 +344,18 @@ export default function Dashboard() {
               <CardContent className="pt-0">
                 <div className="space-y-2">
                   {weeklyPlan.stories.map((story, idx) => (
-                    <div key={idx} className="flex items-center gap-3 text-sm">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">
-                        {story.tipo}
-                      </span>
-                      <span className="text-muted-foreground">{story.idea}</span>
+                    <div key={idx} className="space-y-1">
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">
+                          {story.tipo}
+                        </span>
+                        <span className="text-muted-foreground">{story.idea}</span>
+                      </div>
+                      {story.text && (
+                        <p className="text-xs text-muted-foreground/70 ml-[calc(theme(spacing.3)+theme(spacing.2)+4ch)] pl-1 border-l-2 border-purple-500/20">
+                          {story.text}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

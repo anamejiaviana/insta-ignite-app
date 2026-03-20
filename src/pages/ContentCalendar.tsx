@@ -29,7 +29,7 @@ interface StoredPlan {
     reels: WeeklyPlanItem[];
     post?: WeeklyPlanItem;
     posts?: WeeklyPlanItem[];
-    stories: { idea: string; tipo: string }[];
+    stories: { idea: string; tipo: string; text?: string }[];
     completed_items?: string[];
   };
   created_at: string;
@@ -311,24 +311,31 @@ export default function ContentCalendar() {
                       const storyKey = `story-${idx}`;
                       const isStoryCompleted = completedItems.has(storyKey);
                       return (
-                        <div key={idx} className={`flex items-center gap-3 text-sm transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
-                          <button
-                            onClick={() => toggleCompleted(storyKey)}
-                            className="shrink-0 transition-colors"
-                            title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
-                          >
-                            {isStoryCompleted ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
+                        <div key={idx} className={`space-y-1 transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
+                          <div className="flex items-center gap-3 text-sm">
+                            <button
+                              onClick={() => toggleCompleted(storyKey)}
+                              className="shrink-0 transition-colors"
+                              title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                            >
+                              {isStoryCompleted ? (
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
+                              )}
+                            </button>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
+                            <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
+                            {isStoryCompleted && (
+                              <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
+                                <CheckCircle2 className="h-3 w-3" />
+                              </Badge>
                             )}
-                          </button>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
-                          <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
-                          {isStoryCompleted && (
-                            <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
-                              <CheckCircle2 className="h-3 w-3" />
-                            </Badge>
+                          </div>
+                          {story.text && (
+                            <p className="text-xs text-muted-foreground/70 ml-7 pl-1 border-l-2 border-purple-500/20">
+                              {story.text}
+                            </p>
                           )}
                         </div>
                       );
