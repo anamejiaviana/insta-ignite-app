@@ -36,9 +36,9 @@ const VISUAL_STYLES = [
 ];
 
 const IMAGE_SOURCES = [
-  { value: "generate", label: "Generar con IA", icon: Sparkles },
-  { value: "upload", label: "Subir imagen", icon: Upload },
-  { value: "edit", label: "Editar con IA", icon: Wand2 },
+  { value: "generate", label: "generateWithAI", icon: Sparkles },
+  { value: "upload", label: "uploadImage", icon: Upload },
+  { value: "edit", label: "editWithAI", icon: Wand2 },
 ];
 
 interface GeneratedPost {
@@ -324,10 +324,13 @@ export default function CreateContent() {
                     style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
                   >
                     <src.icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{src.label}</span>
+                    <span className="hidden sm:inline">{t(src.label as any)}</span>
                   </button>
                 ))}
               </div>
+              {imageSource === "edit" && (
+                <p className="text-xs text-muted-foreground mt-1">{t("editWithAIDesc")}</p>
+              )}
               {(imageSource === "upload" || imageSource === "edit") && (
                 <div className="space-y-3 mt-3">
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
