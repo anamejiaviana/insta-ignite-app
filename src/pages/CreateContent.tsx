@@ -87,12 +87,53 @@ export default function CreateContent() {
 
   useEffect(() => {
     if (prefill?.caption) {
-      setGeneratedPost({
+      // Set initial post with caption data, then generate storyCopy via AI
+      const initialPost: GeneratedPost = {
         mainCopy: prefill.caption,
         storyCopy: "",
         hashtags: prefill.hashtags || [],
         imagePrompt: prefill.imagePrompt || "",
-      });
+      };
+      setGeneratedPost(initialPost);
+
+      // Generate storyCopy from the caption
+      const generateStoryCopy = async () => {
+        try {
+          const clientContext = activeClient
+            ? {
+                name: activeClient.name,
+                type: activeClient.type,
+                city: activeClient.city,
+                tone: activeClient.tone,
+                objective: activeClient.objective,
+                keywords: activeClient.keywords,
+              }
+            : null;
+
+          const { data, error } = await supabase.functions.invoke("generate-post", {
+            body: {
+              title: prefill.title,
+              description: prefill.description || prefill.caption,
+              postType: prefill.postType,
+              clientContext,
+              language: activeClient?.content_language || "es",
+              customFormat: true,
+              formatInstructions: `A partir del siguiente copy principal, genera SOLO una versión corta para Stories de Instagram (máx 200 caracteres, directo e impactante). Responde en JSON: { "storyCopy": "..." }`,
+            },
+          });
+
+          if (!error && data && !data.error && data.storyCopy) {
+            setGeneratedPost((prev) =>
+              prev ? { ...prev, storyCopy: data.storyCopy } : null
+            );
+          }
+        } catch (e) {
+          console.error("Error generating storyCopy:", e);
+        }
+      };
+
+      generateStoryCopy();
+
       if (prefill.postType === "post" && prefill.imagePrompt) {
         setStep("image");
         generateImage(prefill.imagePrompt);
