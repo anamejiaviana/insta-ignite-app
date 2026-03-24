@@ -124,7 +124,7 @@ export default function HookGenerator() {
                 variant="ghost"
                 size="sm"
                 onClick={() => copyHook(hook, idx)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
               >
                 {copiedIdx === idx ? (
                   <Check className="h-4 w-4 text-green-500" />

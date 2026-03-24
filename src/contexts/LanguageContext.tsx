@@ -199,6 +199,35 @@ const translations = {
     prepareShootingDay: "Preparar día de grabación",
     backToCalendarPrimary: "← Volver al calendario",
     generateAnotherPost: "Generar otro post",
+
+    // Settings - delete confirmation
+    deleteBusinessTitle: "¿Eliminar negocio?",
+    deleteBusinessWarning: "Esta acción es irreversible. Se eliminará el negocio y toda su configuración.",
+    cancel: "Cancelar",
+    confirmDelete: "Eliminar",
+
+    // Strategy
+    strategy: "Estrategia",
+    strategyPlanningFor: "Planificación para",
+    strategyWeeklyCalendar: "Calendario semanal",
+    strategyWeeklyCalendarDesc: "Consulta y gestiona tus planes de contenido",
+    strategyReelIdeas: "Ideas de reels",
+    strategyReelIdeasDesc: "Genera 10 ideas de reels adaptadas a tu negocio",
+    strategyHookGenerator: "Generador de hooks",
+    strategyHookGeneratorDesc: "Crea hooks irresistibles para tus contenidos",
+    strategyContentMatrix: "Matriz de contenido",
+    strategyEducational: "Educativo",
+    strategyTipsTutorials: "Tips, tutoriales",
+    strategyProcessExpertise: "Procesos, expertise",
+    strategyComparativesGuides: "Comparativas, guías",
+    strategyEntertainment: "Entretenimiento",
+    strategyTrendsHumor: "Tendencias, humor",
+    strategyBehindScenes: "Behind the scenes",
+    strategyExperiencesUGC: "Experiencias, UGC",
+    strategyProduct: "Producto",
+    strategyDemosReveals: "Demos, reveals",
+    strategyTestimonialsCases: "Testimonios, casos",
+    strategyOffersCTAs: "Ofertas, CTAs directos",
   },
   en: {
     // Sidebar
@@ -396,6 +425,35 @@ const translations = {
     prepareShootingDay: "Prepare recording day",
     backToCalendarPrimary: "← Back to calendar",
     generateAnotherPost: "Generate another post",
+
+    // Settings - delete confirmation
+    deleteBusinessTitle: "Delete business?",
+    deleteBusinessWarning: "This action is irreversible. The business and all its configuration will be deleted.",
+    cancel: "Cancel",
+    confirmDelete: "Delete",
+
+    // Strategy
+    strategy: "Strategy",
+    strategyPlanningFor: "Planning for",
+    strategyWeeklyCalendar: "Weekly calendar",
+    strategyWeeklyCalendarDesc: "View and manage your content plans",
+    strategyReelIdeas: "Reel ideas",
+    strategyReelIdeasDesc: "Generate 10 reel ideas tailored to your business",
+    strategyHookGenerator: "Hook generator",
+    strategyHookGeneratorDesc: "Create irresistible hooks for your content",
+    strategyContentMatrix: "Content matrix",
+    strategyEducational: "Educational",
+    strategyTipsTutorials: "Tips, tutorials",
+    strategyProcessExpertise: "Processes, expertise",
+    strategyComparativesGuides: "Comparatives, guides",
+    strategyEntertainment: "Entertainment",
+    strategyTrendsHumor: "Trends, humor",
+    strategyBehindScenes: "Behind the scenes",
+    strategyExperiencesUGC: "Experiences, UGC",
+    strategyProduct: "Product",
+    strategyDemosReveals: "Demos, reveals",
+    strategyTestimonialsCases: "Testimonials, cases",
+    strategyOffersCTAs: "Offers, direct CTAs",
   },
 } as const;
 
