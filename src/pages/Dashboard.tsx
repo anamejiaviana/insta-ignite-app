@@ -54,12 +54,16 @@ export default function Dashboard() {
   }, [activeClient]);
 
   const loadRecentPosts = async () => {
-    const { data } = await supabase
-      .from("generated_posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(5);
-    if (data) setRecentPosts(data);
+    try {
+      const { data } = await supabase
+        .from("generated_posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (data) setRecentPosts(data);
+    } catch {
+      // fail silently – recent posts is non-critical
+    }
   };
 
   const generateWeeklyPlan = async () => {
@@ -145,7 +149,7 @@ export default function Dashboard() {
       {/* Header with client selector */}
       <div>
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
-        {clients.length > 0 ? (
+        {clients.length > 1 ? (
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="text-sm text-muted-foreground">{t("business")}:</span>
             {clients.map((c) => (
@@ -167,6 +171,10 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
+        ) : clients.length === 1 ? (
+          <p className="text-muted-foreground mt-1 text-sm">
+            {activeClient?.name}
+          </p>
         ) : (
           <p className="text-muted-foreground mt-1 text-sm">
             {t("startAddingBusiness")}{" "}

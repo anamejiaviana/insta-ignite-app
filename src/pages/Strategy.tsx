@@ -1,39 +1,41 @@
 import { useNavigate } from "react-router-dom";
 import { useClients } from "@/contexts/ClientContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, Film, Zap } from "lucide-react";
-
-const strategies = [
-  {
-    title: "Calendario semanal",
-    description: "Consulta y gestiona tus planes de contenido",
-    icon: Calendar,
-    path: "/strategy/calendar",
-  },
-  {
-    title: "Ideas de reels",
-    description: "Genera 10 ideas de reels adaptadas a tu negocio",
-    icon: Film,
-    path: "/strategy/reels",
-  },
-  {
-    title: "Generador de hooks",
-    description: "Crea hooks irresistibles para tus contenidos",
-    icon: Zap,
-    path: "/strategy/hooks",
-  },
-];
 
 export default function Strategy() {
   const navigate = useNavigate();
   const { activeClient } = useClients();
+  const { t } = useLanguage();
+
+  const strategies = [
+    {
+      title: t("strategyWeeklyCalendar"),
+      description: t("strategyWeeklyCalendarDesc"),
+      icon: Calendar,
+      path: "/strategy/calendar",
+    },
+    {
+      title: t("strategyReelIdeas"),
+      description: t("strategyReelIdeasDesc"),
+      icon: Film,
+      path: "/strategy/reels",
+    },
+    {
+      title: t("strategyHookGenerator"),
+      description: t("strategyHookGeneratorDesc"),
+      icon: Zap,
+      path: "/strategy/hooks",
+    },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Estrategia</h1>
+        <h1 className="text-3xl font-bold">{t("strategy")}</h1>
         {activeClient && (
           <p className="text-muted-foreground mt-1">
-            Planificación para{" "}
+            {t("strategyPlanningFor")}{" "}
             <span className="text-primary font-medium">{activeClient.name}</span>
           </p>
         )}
@@ -62,35 +64,35 @@ export default function Strategy() {
 
       {/* Content Matrix Reference */}
       <div className="glass rounded-2xl p-6 mt-8">
-        <h3 className="font-semibold text-lg mb-4">Matriz de contenido</h3>
+        <h3 className="font-semibold text-lg mb-4">{t("strategyContentMatrix")}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-2 pr-4 text-muted-foreground font-medium"></th>
-                <th className="text-left py-2 px-4 text-muted-foreground font-medium">Descubrir</th>
-                <th className="text-left py-2 px-4 text-muted-foreground font-medium">Confiar</th>
-                <th className="text-left py-2 px-4 text-muted-foreground font-medium">Comprar</th>
+                <th className="text-left py-2 px-4 text-muted-foreground font-medium">{t("discover")}</th>
+                <th className="text-left py-2 px-4 text-muted-foreground font-medium">{t("trust")}</th>
+                <th className="text-left py-2 px-4 text-muted-foreground font-medium">{t("buy")}</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-border/50">
-                <td className="py-3 pr-4 font-medium">Educativo</td>
-                <td className="py-3 px-4 text-muted-foreground">Tips, tutoriales</td>
-                <td className="py-3 px-4 text-muted-foreground">Procesos, expertise</td>
-                <td className="py-3 px-4 text-muted-foreground">Comparativas, guías</td>
+                <td className="py-3 pr-4 font-medium">{t("strategyEducational")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyTipsTutorials")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyProcessExpertise")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyComparativesGuides")}</td>
               </tr>
               <tr className="border-b border-border/50">
-                <td className="py-3 pr-4 font-medium">Entretenimiento</td>
-                <td className="py-3 px-4 text-muted-foreground">Tendencias, humor</td>
-                <td className="py-3 px-4 text-muted-foreground">Behind the scenes</td>
-                <td className="py-3 px-4 text-muted-foreground">Experiencias, UGC</td>
+                <td className="py-3 pr-4 font-medium">{t("strategyEntertainment")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyTrendsHumor")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyBehindScenes")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyExperiencesUGC")}</td>
               </tr>
               <tr>
-                <td className="py-3 pr-4 font-medium">Producto</td>
-                <td className="py-3 px-4 text-muted-foreground">Demos, reveals</td>
-                <td className="py-3 px-4 text-muted-foreground">Testimonios, casos</td>
-                <td className="py-3 px-4 text-muted-foreground">Ofertas, CTAs directos</td>
+                <td className="py-3 pr-4 font-medium">{t("strategyProduct")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyDemosReveals")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyTestimonialsCases")}</td>
+                <td className="py-3 px-4 text-muted-foreground">{t("strategyOffersCTAs")}</td>
               </tr>
             </tbody>
           </table>

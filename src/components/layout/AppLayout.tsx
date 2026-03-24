@@ -28,7 +28,7 @@ export function AppLayout() {
           <header className="h-14 flex items-center justify-between border-b border-border px-4 shrink-0 bg-card/40 backdrop-blur-md">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="text-muted-foreground" />
-              {clients.length > 0 && (
+              {clients.length > 1 && (
                 <Select
                   value={activeClient?.id || ""}
                   onValueChange={setActiveClientId}
