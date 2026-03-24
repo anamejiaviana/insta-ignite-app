@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -62,6 +62,14 @@ export function GeneratedPostPreview({
   const [editedMainCopy, setEditedMainCopy] = useState(post.mainCopy);
   const [editedStoryCopy, setEditedStoryCopy] = useState(post.storyCopy);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setEditedMainCopy(post.mainCopy);
+  }, [post.mainCopy]);
+
+  useEffect(() => {
+    setEditedStoryCopy(post.storyCopy);
+  }, [post.storyCopy]);
 
   const handleMainCopyChange = (val: string) => {
     setEditedMainCopy(val);
