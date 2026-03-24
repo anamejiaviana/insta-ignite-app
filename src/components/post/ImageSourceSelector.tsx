@@ -11,7 +11,7 @@ const IMAGE_SOURCES = [
   {
     id: "edit",
     name: "Editar con IA",
-    description: "Modifica una imagen existente",
+    description: "Sube una foto y la IA la mejorará o adaptará",
     icon: Wand2,
   },
   {
