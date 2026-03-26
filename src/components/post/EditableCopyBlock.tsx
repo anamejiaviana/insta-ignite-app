@@ -27,8 +27,9 @@ export function EditableCopyBlock({
   const [copied, setCopied] = useState(false);
   const isModified = value !== originalValue;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(value);
+  const handleCopy = async () => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    await copyToClipboard(value);
     setCopied(true);
     toast({ title: `${label} copiado` });
     setTimeout(() => setCopied(false), 2000);

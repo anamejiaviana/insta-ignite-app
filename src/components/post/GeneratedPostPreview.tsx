@@ -81,8 +81,9 @@ export function GeneratedPostPreview({
     onCopyChange?.(editedMainCopy, val);
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string, label: string) => {
+    const { copyToClipboard: copy } = await import("@/lib/clipboard");
+    await copy(text);
     toast({ title: `${label} copiado` });
   };
 

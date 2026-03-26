@@ -73,8 +73,9 @@ export default function Library() {
     }
   };
 
-  const copyText = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
+  const copyText = async (text: string, id: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    await copyToClipboard(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
