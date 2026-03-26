@@ -140,18 +140,18 @@ export default function ContentCalendar() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl mx-auto animate-fade-in px-1 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{t("calendar")}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("calendar")}</h1>
           {activeClient && (
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-sm">
               {t("plans")}{" "}
               <span className="text-primary font-medium">{activeClient.name}</span>
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => navigate("/strategy/reels")}>
             <Film className="h-4 w-4 mr-1" /> {t("reelIdeas")}
           </Button>
