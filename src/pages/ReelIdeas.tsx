@@ -60,8 +60,9 @@ export default function ReelIdeas() {
     }
   };
 
-  const copyToClipboard = (text: string, idx: number) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string, idx: number) => {
+    const { copyToClipboard: copy } = await import("@/lib/clipboard");
+    await copy(text);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 2000);
   };

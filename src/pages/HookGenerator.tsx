@@ -52,8 +52,9 @@ export default function HookGenerator() {
     }
   };
 
-  const copyHook = (hook: string, idx: number) => {
-    navigator.clipboard.writeText(hook);
+  const copyHook = async (hook: string, idx: number) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    await copyToClipboard(hook);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 2000);
   };
