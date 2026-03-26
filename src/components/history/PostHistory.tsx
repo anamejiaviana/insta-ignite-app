@@ -86,8 +86,9 @@ export function PostHistory({ userId }: PostHistoryProps) {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string) => {
+    const { copyToClipboard: copy } = await import("@/lib/clipboard");
+    await copy(text);
     toast({ title: "Copiado al portapapeles" });
   };
 

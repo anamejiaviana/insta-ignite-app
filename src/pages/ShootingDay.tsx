@@ -237,8 +237,9 @@ export default function ShootingDay() {
     }
   };
 
-  const copyText = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyText = async (text: string) => {
+    const { copyToClipboard } = await import("@/lib/clipboard");
+    await copyToClipboard(text);
     setCopiedCaption(true);
     setTimeout(() => setCopiedCaption(false), 2000);
   };
