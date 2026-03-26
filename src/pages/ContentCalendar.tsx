@@ -188,19 +188,19 @@ export default function ContentCalendar() {
       {!loading && plans.length > 0 && selectedPlan && (
         <div className="space-y-6">
           {/* Week navigator */}
-          <div className="flex items-center justify-between glass rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => canGoNext && setSelectedPlanIndex(selectedPlanIndex + 1)}
               disabled={!canGoNext}
-              className="gap-1"
+              className="gap-1 px-1 sm:px-3"
             >
               <ChevronLeft className="h-4 w-4" />
-              {t("previousWeek")}
+              <span className="hidden sm:inline">{t("previousWeek")}</span>
             </Button>
-            <div className="text-center">
-              <p className="font-semibold text-sm">{formatWeekLabel(selectedPlan)}</p>
+            <div className="text-center min-w-0 flex-1">
+              <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
               <p className="text-[10px] text-muted-foreground">
                 {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
               </p>
@@ -210,9 +210,9 @@ export default function ContentCalendar() {
               size="sm"
               onClick={() => canGoPrev && setSelectedPlanIndex(selectedPlanIndex - 1)}
               disabled={!canGoPrev}
-              className="gap-1"
+              className="gap-1 px-1 sm:px-3"
             >
-              {t("nextWeek")}
+              <span className="hidden sm:inline">{t("nextWeek")}</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -242,8 +242,8 @@ export default function ContentCalendar() {
               const isCompleted = completedItems.has(item._key);
               return (
                 <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between gap-4">
+                  <CardContent className="p-3 sm:p-5">
+                    <div className="flex items-start gap-3 sm:gap-4">
                       {/* Completion toggle */}
                       <button
                         onClick={() => toggleCompleted(item._key)}
@@ -258,7 +258,7 @@ export default function ContentCalendar() {
                       </button>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
                             {item.type}
                           </span>
@@ -271,8 +271,8 @@ export default function ContentCalendar() {
                           )}
                         </div>
                         <p className={`font-semibold text-sm mb-1 ${isCompleted ? "line-through text-muted-foreground" : ""}`}>{item.idea}</p>
-                        <p className="text-xs text-primary font-medium mb-2">🎬 "{item.hook}"</p>
-                        <p className="text-xs text-muted-foreground">{item.script}</p>
+                        <p className="text-xs text-primary font-medium mb-2 break-words">🎬 "{item.hook}"</p>
+                        <p className="text-xs text-muted-foreground break-words">{item.script}</p>
                         {item.shots && item.shots.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {item.shots.map((s: string, i: number) => (
@@ -280,12 +280,26 @@ export default function ContentCalendar() {
                             ))}
                           </div>
                         )}
+                        <div className="mt-3 sm:hidden">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateContent(item)}
+                            className="w-full"
+                          >
+                            {isCompleted ? (
+                              <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
+                            ) : (
+                              <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => generateContent(item)}
-                        className="shrink-0"
+                        className="shrink-0 hidden sm:inline-flex"
                       >
                         {isCompleted ? (
                           <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
