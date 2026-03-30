@@ -316,6 +316,11 @@ export default function Settings() {
               </div>
 
               <div className="space-y-1">
+                <Label className="text-xs">{t("businessAddress")}</Label>
+                <Input placeholder={t("addressPlaceholder")} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="bg-secondary border-border h-9" />
+              </div>
+
+              <div className="space-y-1">
                 <Label className="text-xs">{t("inspirationAccount")}</Label>
                 <Input placeholder={t("inspirationPlaceholder")} value={form.inspiration_account} onChange={(e) => setForm({ ...form, inspiration_account: e.target.value })} className="bg-secondary border-border h-9" />
               </div>

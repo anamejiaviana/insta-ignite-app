@@ -416,6 +416,8 @@ const translations = {
     visualStyleSetting: "Visual style",
     keywords: "Keywords (comma-separated)",
     keywordsPlaceholder: "E.g.: gourmet, wines, local...",
+    businessAddress: "Business address (optional)",
+    addressPlaceholder: "E.g.: 12 Main Street, Barcelona",
     update: "Update",
     createBusiness: "Create business",
     businessUpdated: "Business updated",
