@@ -134,6 +134,7 @@ export default function Settings() {
         name: form.name,
         type: form.type || null,
         city: form.city || null,
+        address: form.address || null,
         tone: form.tone || null,
         objective: form.objective || null,
         keywords: form.keywords.split(",").map((k) => k.trim()).filter(Boolean),
