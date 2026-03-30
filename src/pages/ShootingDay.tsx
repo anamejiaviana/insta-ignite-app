@@ -114,6 +114,7 @@ export default function ShootingDay() {
     name: activeClient!.name,
     type: activeClient!.type,
     city: activeClient!.city,
+    address: activeClient!.address,
     tone: activeClient!.tone,
     objective: activeClient!.objective,
     keywords: activeClient!.keywords,

@@ -7,6 +7,7 @@ export interface Client {
   name: string;
   type: string | null;
   city: string | null;
+  address: string | null;
   tone: string | null;
   objective: string | null;
   keywords: string[];

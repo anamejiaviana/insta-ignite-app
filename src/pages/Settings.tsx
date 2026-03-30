@@ -65,6 +65,7 @@ interface ClientForm {
   name: string;
   type: string;
   city: string;
+  address: string;
   tone: string;
   objective: string;
   keywords: string;
@@ -77,6 +78,7 @@ const emptyForm: ClientForm = {
   name: "",
   type: "",
   city: "",
+  address: "",
   tone: "",
   objective: "",
   keywords: "",
@@ -100,6 +102,7 @@ export default function Settings() {
       name: client.name,
       type: client.type || "",
       city: client.city || "",
+      address: client.address || "",
       tone: client.tone || "",
       objective: client.objective || "",
       keywords: (client.keywords || []).join(", "),
@@ -131,6 +134,7 @@ export default function Settings() {
         name: form.name,
         type: form.type || null,
         city: form.city || null,
+        address: form.address || null,
         tone: form.tone || null,
         objective: form.objective || null,
         keywords: form.keywords.split(",").map((k) => k.trim()).filter(Boolean),
@@ -309,6 +313,11 @@ export default function Settings() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">{t("businessAddress")}</Label>
+                <Input placeholder={t("addressPlaceholder")} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="bg-secondary border-border h-9" />
               </div>
 
               <div className="space-y-1">

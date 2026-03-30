@@ -35,6 +35,7 @@ serve(async (req) => {
     - Ciudad: ${client.city}
     - Tono: ${client.tone}
     - Objetivo: ${client.objective}
+    ${client.address ? `- Dirección: ${client.address}` : '- Dirección: NO proporcionada. NO inventes direcciones.'}
     
     Los hooks deben:
     - Captar la atención en 3 segundos
@@ -42,7 +43,8 @@ serve(async (req) => {
     - Ser directos y concisos
     - Adaptarse al tono del negocio
     - Ser variados (preguntas, afirmaciones impactantes, datos, provocaciones)
-    - Poder usarse tanto en reels como en captions`;
+    - Poder usarse tanto en reels como en captions
+    - NUNCA inventar direcciones ni ubicaciones exactas que no se hayan proporcionado`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
