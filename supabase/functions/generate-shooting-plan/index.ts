@@ -63,6 +63,7 @@ serve(async (req) => {
       Negocio: ${client.name || 'Mi negocio'}
       Tipo: ${client.type || 'negocio local'}
       Ciudad: ${client.city || ''}
+      ${client.address ? `Dirección: ${client.address}` : 'NO inventes direcciones ni ubicaciones exactas del negocio.'}
 
       CONTENIDO PLANIFICADO:
 ${contentList}
