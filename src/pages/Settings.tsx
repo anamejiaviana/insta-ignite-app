@@ -102,6 +102,7 @@ export default function Settings() {
       name: client.name,
       type: client.type || "",
       city: client.city || "",
+      address: client.address || "",
       tone: client.tone || "",
       objective: client.objective || "",
       keywords: (client.keywords || []).join(", "),
