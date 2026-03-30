@@ -114,6 +114,7 @@ ${storiesList ? `\nIDEAS DE STORIES:\n${storiesList}` : ''}
       Negocio: ${client.name || 'Mi negocio'}
       Tipo: ${client.type || 'negocio local'}
       Ciudad: ${client.city || ''}
+      ${client.address ? `Dirección: ${client.address}` : 'NO inventes direcciones ni ubicaciones exactas.'}
       Tono: ${client.tone || 'cercano y profesional'}
       Objetivo: ${client.objective || 'atraer clientes'}
       Palabras clave: ${(client.keywords || []).join(', ')}
