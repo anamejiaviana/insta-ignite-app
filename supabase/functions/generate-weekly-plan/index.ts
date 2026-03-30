@@ -93,11 +93,16 @@ ${postExamples}
     
     IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos. Cada post debe incluir "imagePrompt". Cada story DEBE incluir el campo "text" con el texto completo para publicar en la story.`;
 
+    const addressInstruction = client.address
+      ? `Dirección real del negocio: ${client.address}. Puedes usarla en CTAs cuando sea natural.`
+      : 'IMPORTANTE: Este negocio NO tiene dirección registrada. NUNCA inventes direcciones, calles, números ni ubicaciones exactas. Usa frases genéricas como "Ven a vernos", "Te esperamos", "Visítanos" si necesitas referirte a la ubicación.';
+
     const userPrompt = `Genera un plan de contenido semanal para Instagram:
     
     Negocio: ${client.name || 'Mi negocio'}
     Tipo: ${client.type || 'negocio local'}
     Ciudad: ${client.city || ''}
+    ${addressInstruction}
     Tono: ${client.tone || 'cercano y profesional'}
     Objetivo: ${client.objective || 'atraer clientes'}
     Palabras clave: ${(client.keywords || []).join(', ')}
@@ -114,6 +119,7 @@ ${postExamples}
     - Contenido grabable en 15-30 minutos en el propio negocio
     - Captions con palabras clave del negocio
     - Mencionar la ciudad cuando sea natural
+    - NO inventar direcciones ni ubicaciones exactas que no se hayan proporcionado
     - Incluir CTA en cada caption
     - 5 hashtags específicos del nicho por contenido (sin #)
     - Ideas prácticas y realistas para un negocio pequeño

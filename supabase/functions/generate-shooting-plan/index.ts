@@ -188,6 +188,7 @@ Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
       - Nombre: ${client.name}
       - Tipo: ${client.type}
       - Ciudad: ${client.city}
+      ${client.address ? `- Dirección: ${client.address}` : '- NO inventes direcciones ni ubicaciones exactas.'}
       - Tono: ${client.tone}
       - Objetivo: ${client.objective}
       - Palabras clave: ${(client.keywords || []).join(', ')}

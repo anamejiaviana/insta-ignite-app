@@ -37,10 +37,15 @@ serve(async (req) => {
       ]
     }`;
 
+    const addressInstruction = client.address
+      ? `- Dirección: ${client.address}`
+      : '- Dirección: NO proporcionada. NO inventes direcciones ni ubicaciones exactas.';
+
     const userPrompt = `Genera exactamente 10 ideas de reels para este negocio:
     - Nombre: ${client.name}
     - Tipo: ${client.type}
     - Ciudad: ${client.city}
+    ${addressInstruction}
     - Tono: ${client.tone}
     - Objetivo: ${client.objective}
     - Palabras clave: ${(client.keywords || []).join(', ')}
@@ -52,6 +57,7 @@ serve(async (req) => {
     - Generar curiosidad
     - Ser útiles o educativas
     - Mencionar la ciudad cuando tenga sentido
+    - NUNCA inventar direcciones ni ubicaciones exactas que no se hayan proporcionado
     - No ser ideas complejas o irreales
     - Cada caption debe incluir 5 hashtags específicos del nicho`;
 
