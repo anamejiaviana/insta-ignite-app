@@ -65,6 +65,7 @@ interface ClientForm {
   name: string;
   type: string;
   city: string;
+  address: string;
   tone: string;
   objective: string;
   keywords: string;
@@ -77,6 +78,7 @@ const emptyForm: ClientForm = {
   name: "",
   type: "",
   city: "",
+  address: "",
   tone: "",
   objective: "",
   keywords: "",
