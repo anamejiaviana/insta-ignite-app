@@ -187,6 +187,8 @@ const translations = {
     visualStyleSetting: "Estilo visual",
     keywords: "Palabras clave (separadas por coma)",
     keywordsPlaceholder: "Ej: gourmet, vinos, local...",
+    businessAddress: "Dirección del negocio (opcional)",
+    addressPlaceholder: "Ej: Calle Mayor 12, Barcelona",
     update: "Actualizar",
     createBusiness: "Crear negocio",
     businessUpdated: "Negocio actualizado",
