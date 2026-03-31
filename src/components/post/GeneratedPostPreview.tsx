@@ -17,6 +17,8 @@ import {
   Camera,
   Calendar,
   Check,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +28,8 @@ interface GeneratedPost {
   hashtags: string[];
   imagePrompt: string;
   imageUrl?: string;
+  slidePrompts?: string[];
+  imageUrls?: string[];
 }
 
 interface GeneratedPostPreviewProps {
