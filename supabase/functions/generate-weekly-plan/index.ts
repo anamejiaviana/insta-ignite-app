@@ -29,7 +29,7 @@ serve(async (req) => {
 
     // Calculate content distribution
     const total = Math.max(2, Math.min(5, numPublications));
-    let numReels: number, numPosts: number;
+    let numReels: number, numPosts: number, numCarousels = 0;
     if (contentPreference === 'more_reels') {
       numReels = Math.min(total, Math.ceil(total * 0.75));
       numPosts = total - numReels;
@@ -38,6 +38,11 @@ serve(async (req) => {
       numPosts = Math.min(total, Math.ceil(total * 0.75));
       numReels = total - numPosts;
       if (numReels < 1) { numReels = 1; numPosts = total - 1; }
+    } else if (contentPreference === 'with_carousels') {
+      numReels = Math.max(1, Math.floor(total * 0.4));
+      numCarousels = Math.max(1, Math.floor(total * 0.3));
+      numPosts = total - numReels - numCarousels;
+      if (numPosts < 0) { numPosts = 0; }
     } else {
       numReels = Math.ceil(total / 2);
       numPosts = total - numReels;
@@ -69,6 +74,28 @@ serve(async (req) => {
           "imagePrompt": "Prompt detallado en inglés para generar la imagen del post"
         }`).join(',\n');
 
+    const carouselExamples = numCarousels > 0 ? Array.from({ length: numCarousels }, (_, i) => `        {
+          "id": "carousel-${i + 1}",
+          "type": "carousel",
+          "day": "Día de la semana",
+          "idea": "Título de la idea del carrusel",
+          "hook": "Primera línea del caption del carrusel",
+          "script": "Descripción del contenido del carrusel y qué muestra cada slide",
+          "shots": [],
+          "caption": "Caption optimizado con CTA para el carrusel",
+          "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"],
+          "imagePrompt": "Prompt detallado en inglés para generar la primera imagen del carrusel"
+        }`).join(',\n') : '';
+
+    const carouselBlock = numCarousels > 0 ? `
+      "carousels": [
+${carouselExamples}
+      ],` : '';
+
+    const carouselRule = numCarousels > 0
+      ? ` El array "carousels" debe tener exactamente ${numCarousels} elementos. Cada carrusel debe incluir "imagePrompt".`
+      : '';
+
     const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales.
     Generas planes de contenido semanales prácticos y grabables.
     
@@ -81,7 +108,7 @@ ${reelExamples}
       ],
       "posts": [
 ${postExamples}
-      ],
+      ],${carouselBlock}
       "stories": [
         {
           "idea": "Idea para story",
@@ -91,7 +118,7 @@ ${postExamples}
       ]
     }
     
-    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos. Cada post debe incluir "imagePrompt". Cada story DEBE incluir el campo "text" con el texto completo para publicar en la story.`;
+    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos.${carouselRule} Cada post debe incluir "imagePrompt". Cada story DEBE incluir el campo "text" con el texto completo para publicar en la story.`;
 
     const addressInstruction = client.address
       ? `Dirección real del negocio: ${client.address}. Puedes usarla en CTAs cuando sea natural.`
@@ -111,8 +138,10 @@ ${postExamples}
     
     Genera:
     1. Exactamente ${numReels} reel${numReels > 1 ? 's' : ''} (distribuidos en la semana)
-    2. Exactamente ${numPosts} post${numPosts > 1 ? 's' : ''} estático${numPosts > 1 ? 's' : ''} (cada uno con prompt para imagen en inglés)
-    3. 3-4 ideas de stories
+    2. Exactamente ${numPosts} post${numPosts > 1 ? 's' : ''} estático${numPosts > 1 ? 's' : ''} (cada uno con prompt para imagen en inglés)${numCarousels > 0 ? `
+    3. Exactamente ${numCarousels} carrusel${numCarousels > 1 ? 'es' : ''} (contenido educativo o de producto con múltiples imágenes, cada uno con prompt para imagen en inglés)
+    4. 3-4 ideas de stories` : `
+    3. 3-4 ideas de stories`}
     
     Requisitos:
     - Hooks fuertes que capten atención en 3 segundos
@@ -173,6 +202,15 @@ ${postExamples}
     if (parsed.post && !parsed.posts) {
       parsed.posts = [parsed.post];
       delete parsed.post;
+    }
+    // Normalize: if AI returned "carousel" (singular), convert to "carousels" array
+    if (parsed.carousel && !parsed.carousels) {
+      parsed.carousels = [parsed.carousel];
+      delete parsed.carousel;
+    }
+    // Ensure carousels is always an array if present
+    if (!parsed.carousels) {
+      parsed.carousels = [];
     }
 
     return new Response(JSON.stringify(parsed), {

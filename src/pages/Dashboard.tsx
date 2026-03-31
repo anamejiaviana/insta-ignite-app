@@ -31,6 +31,7 @@ interface WeeklyPlanItem {
 interface WeeklyPlan {
   reels: WeeklyPlanItem[];
   posts: WeeklyPlanItem[];
+  carousels?: WeeklyPlanItem[];
   stories: { idea: string; tipo: string; text?: string }[];
 }
 
@@ -226,16 +227,17 @@ export default function Dashboard() {
                 <Label className="text-sm font-medium">
                   {t("contentTypePreference")}
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {[
                     { value: "more_reels", labelKey: "moreReels" as const },
                     { value: "balanced", labelKey: "balanced" as const },
                     { value: "more_posts", labelKey: "morePosts" as const },
+                    { value: "with_carousels", labelKey: "withCarousels" as const },
                   ].map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => setContentPreference(opt.value)}
-                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      className={`flex-1 min-w-[80px] py-2.5 rounded-lg text-sm font-medium transition-all ${
                         contentPreference === opt.value
                           ? "text-primary-foreground"
                           : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -401,6 +403,35 @@ export default function Dashboard() {
                     variant="outline"
                     size="sm"
                     onClick={() => generateContent(post)}
+                    className="shrink-0"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    {t("generate")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {/* Carousels */}
+          {weeklyPlan.carousels?.map((carousel, idx) => (
+            <Card key={idx} className="bg-card border-border">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                        CARRUSEL
+                      </span>
+                      <span className="text-xs text-muted-foreground">{carousel.day}</span>
+                    </div>
+                    <p className="font-semibold text-sm mb-1">{carousel.idea}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{carousel.caption}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateContent(carousel)}
                     className="shrink-0"
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1" />

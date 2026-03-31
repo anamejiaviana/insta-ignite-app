@@ -29,6 +29,7 @@ interface StoredPlan {
     reels: WeeklyPlanItem[];
     post?: WeeklyPlanItem;
     posts?: WeeklyPlanItem[];
+    carousels?: WeeklyPlanItem[];
     stories: { idea: string; tipo: string; text?: string }[];
     completed_items?: string[];
   };
@@ -100,6 +101,7 @@ export default function ContentCalendar() {
     ? [
         ...(planData.reels || []).map((item: WeeklyPlanItem, i: number) => ({ ...item, _key: `reel-${i}` })),
         ...(planData.posts || (planData.post ? [planData.post] : [])).map((item: WeeklyPlanItem, i: number) => ({ ...item, _key: `post-${i}` })),
+        ...(planData.carousels || []).map((item: WeeklyPlanItem, i: number) => ({ ...item, _key: `carousel-${i}` })),
       ]
     : [];
 
@@ -135,6 +137,7 @@ export default function ContentCalendar() {
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
     post: "bg-green-500/20 text-green-400",
+    carousel: "bg-amber-500/20 text-amber-400",
     carrusel: "bg-amber-500/20 text-amber-400",
     story: "bg-purple-500/20 text-purple-400",
   };
