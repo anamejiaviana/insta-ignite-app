@@ -87,6 +87,15 @@ serve(async (req) => {
           "imagePrompt": "Prompt detallado en inglés para generar la primera imagen del carrusel"
         }`).join(',\n') : '';
 
+    const carouselBlock = numCarousels > 0 ? `
+      "carousels": [
+${carouselExamples}
+      ],` : '';
+
+    const carouselRule = numCarousels > 0
+      ? ` El array "carousels" debe tener exactamente ${numCarousels} elementos. Cada carrusel debe incluir "imagePrompt".`
+      : '';
+
     const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales.
     Generas planes de contenido semanales prácticos y grabables.
     
@@ -99,7 +108,7 @@ ${reelExamples}
       ],
       "posts": [
 ${postExamples}
-      ],
+      ],${carouselBlock}
       "stories": [
         {
           "idea": "Idea para story",
@@ -109,7 +118,7 @@ ${postExamples}
       ]
     }
     
-    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos. Cada post debe incluir "imagePrompt". Cada story DEBE incluir el campo "text" con el texto completo para publicar en la story.`;
+    IMPORTANTE: El array "reels" debe tener exactamente ${numReels} elementos. El array "posts" debe tener exactamente ${numPosts} elementos.${carouselRule} Cada post debe incluir "imagePrompt". Cada story DEBE incluir el campo "text" con el texto completo para publicar en la story.`;
 
     const addressInstruction = client.address
       ? `Dirección real del negocio: ${client.address}. Puedes usarla en CTAs cuando sea natural.`
