@@ -138,8 +138,10 @@ ${postExamples}
     
     Genera:
     1. Exactamente ${numReels} reel${numReels > 1 ? 's' : ''} (distribuidos en la semana)
-    2. Exactamente ${numPosts} post${numPosts > 1 ? 's' : ''} estático${numPosts > 1 ? 's' : ''} (cada uno con prompt para imagen en inglés)
-    3. 3-4 ideas de stories
+    2. Exactamente ${numPosts} post${numPosts > 1 ? 's' : ''} estático${numPosts > 1 ? 's' : ''} (cada uno con prompt para imagen en inglés)${numCarousels > 0 ? `
+    3. Exactamente ${numCarousels} carrusel${numCarousels > 1 ? 'es' : ''} (contenido educativo o de producto con múltiples imágenes, cada uno con prompt para imagen en inglés)
+    4. 3-4 ideas de stories` : `
+    3. 3-4 ideas de stories`}
     
     Requisitos:
     - Hooks fuertes que capten atención en 3 segundos
