@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, cta, objective, postType, visualStyle, clientContext, brandConfig, language, customFormat, formatInstructions } = await req.json();
+    const { title, description, cta, objective, postType, visualStyle, clientContext, brandConfig, language, customFormat, formatInstructions, carouselSlideCount } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
