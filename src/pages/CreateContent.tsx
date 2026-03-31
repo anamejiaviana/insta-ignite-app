@@ -47,6 +47,8 @@ interface GeneratedPost {
   hashtags: string[];
   imagePrompt: string;
   imageUrl?: string;
+  slidePrompts?: string[];
+  imageUrls?: string[];
 }
 
 interface PrefillData {
