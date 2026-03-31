@@ -184,6 +184,7 @@ export default function CreateContent() {
           visualStyle: visualStyle || activeClient?.default_visual_style,
           clientContext,
           language: activeClient?.content_language || "es",
+          carouselSlideCount: postType === "carousel" ? carouselSlideCount : undefined,
         },
       });
       if (error) throw error;
@@ -192,7 +193,9 @@ export default function CreateContent() {
       setGeneratedPost(data);
       setStep("image");
 
-      if (imageSource === "generate") {
+      if (postType === "carousel" && data.slidePrompts?.length > 0) {
+        await generateCarouselImages(data.slidePrompts);
+      } else if (imageSource === "generate") {
         await generateImage(data.imagePrompt);
       } else if (imageSource === "edit" && uploadedImage) {
         await editImage(uploadedImage, data.imagePrompt);
