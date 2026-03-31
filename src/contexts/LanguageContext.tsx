@@ -468,6 +468,14 @@ const translations = {
     strategyDemosReveals: "Demos, reveals",
     strategyTestimonialsCases: "Testimonials, cases",
     strategyOffersCTAs: "Offers, direct CTAs",
+
+    // Carousel
+    carouselSlideCount: "How many images do you want in the carousel?",
+    carouselSlides: "images",
+    carouselSlideOf: "of",
+    generatingImages: "Generating images...",
+    generatingImageN: "Generating image",
+    regenerateAll: "Regenerate all",
   },
 } as const;
 
