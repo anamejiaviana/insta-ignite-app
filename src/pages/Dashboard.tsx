@@ -413,6 +413,35 @@ export default function Dashboard() {
             </Card>
           ))}
 
+          {/* Carousels */}
+          {weeklyPlan.carousels?.map((carousel, idx) => (
+            <Card key={idx} className="bg-card border-border">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                        CARRUSEL
+                      </span>
+                      <span className="text-xs text-muted-foreground">{carousel.day}</span>
+                    </div>
+                    <p className="font-semibold text-sm mb-1">{carousel.idea}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{carousel.caption}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateContent(carousel)}
+                    className="shrink-0"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    {t("generate")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
           {/* Stories */}
           {weeklyPlan.stories && weeklyPlan.stories.length > 0 && (
             <Card className="bg-card border-border">

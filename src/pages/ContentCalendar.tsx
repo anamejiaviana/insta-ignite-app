@@ -100,6 +100,7 @@ export default function ContentCalendar() {
     ? [
         ...(planData.reels || []).map((item: WeeklyPlanItem, i: number) => ({ ...item, _key: `reel-${i}` })),
         ...(planData.posts || (planData.post ? [planData.post] : [])).map((item: WeeklyPlanItem, i: number) => ({ ...item, _key: `post-${i}` })),
+        ...(planData.carousels || []).map((item: WeeklyPlanItem, i: number) => ({ ...item, _key: `carousel-${i}` })),
       ]
     : [];
 
