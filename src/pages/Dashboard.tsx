@@ -227,16 +227,17 @@ export default function Dashboard() {
                 <Label className="text-sm font-medium">
                   {t("contentTypePreference")}
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {[
                     { value: "more_reels", labelKey: "moreReels" as const },
                     { value: "balanced", labelKey: "balanced" as const },
                     { value: "more_posts", labelKey: "morePosts" as const },
+                    { value: "with_carousels", labelKey: "withCarousels" as const },
                   ].map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => setContentPreference(opt.value)}
-                      className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      className={`flex-1 min-w-[80px] py-2.5 rounded-lg text-sm font-medium transition-all ${
                         contentPreference === opt.value
                           ? "text-primary-foreground"
                           : "bg-secondary text-muted-foreground hover:text-foreground"
