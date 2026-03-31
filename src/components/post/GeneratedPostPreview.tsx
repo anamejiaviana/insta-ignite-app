@@ -96,10 +96,11 @@ export function GeneratedPostPreview({
   };
 
   const downloadImage = () => {
-    if (!post.imageUrl) return;
+    const url = isCarousel ? carouselImages[currentSlide] : post.imageUrl;
+    if (!url) return;
     const link = document.createElement("a");
-    link.href = post.imageUrl;
-    link.download = `instagram-${postType}-${Date.now()}.png`;
+    link.href = url;
+    link.download = `instagram-${postType}-${isCarousel ? `slide${currentSlide + 1}-` : ""}${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
