@@ -74,6 +74,19 @@ serve(async (req) => {
           "imagePrompt": "Prompt detallado en inglés para generar la imagen del post"
         }`).join(',\n');
 
+    const carouselExamples = numCarousels > 0 ? Array.from({ length: numCarousels }, (_, i) => `        {
+          "id": "carousel-${i + 1}",
+          "type": "carousel",
+          "day": "Día de la semana",
+          "idea": "Título de la idea del carrusel",
+          "hook": "Primera línea del caption del carrusel",
+          "script": "Descripción del contenido del carrusel y qué muestra cada slide",
+          "shots": [],
+          "caption": "Caption optimizado con CTA para el carrusel",
+          "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"],
+          "imagePrompt": "Prompt detallado en inglés para generar la primera imagen del carrusel"
+        }`).join(',\n') : '';
+
     const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales.
     Generas planes de contenido semanales prácticos y grabables.
     
