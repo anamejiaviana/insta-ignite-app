@@ -137,6 +137,7 @@ export default function ContentCalendar() {
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
     post: "bg-green-500/20 text-green-400",
+    carousel: "bg-amber-500/20 text-amber-400",
     carrusel: "bg-amber-500/20 text-amber-400",
     story: "bg-purple-500/20 text-purple-400",
   };
