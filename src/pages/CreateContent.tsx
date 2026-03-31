@@ -369,7 +369,29 @@ export default function CreateContent() {
             </div>
           </div>
 
-          {/* Visual Style */}
+          {/* Carousel slide count */}
+          {postType === "carousel" && (
+            <div className="space-y-2">
+              <Label>{t("carouselSlideCount")}</Label>
+              <div className="flex items-center gap-3">
+                {[2, 3, 4, 5, 6, 7, 8, 10].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setCarouselSlideCount(n)}
+                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                      carouselSlideCount === n
+                        ? "text-primary-foreground shadow-md"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                    style={carouselSlideCount === n ? { background: "var(--gradient-primary)" } : undefined}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>{t("visualStyle")}</Label>
             <Select value={visualStyle} onValueChange={setVisualStyle}>
