@@ -231,6 +231,14 @@ const translations = {
     strategyDemosReveals: "Demos, reveals",
     strategyTestimonialsCases: "Testimonios, casos",
     strategyOffersCTAs: "Ofertas, CTAs directos",
+
+    // Carousel
+    carouselSlideCount: "¿Cuántas imágenes quieres en el carrusel?",
+    carouselSlides: "imágenes",
+    carouselSlideOf: "de",
+    generatingImages: "Generando imágenes...",
+    generatingImageN: "Generando imagen",
+    regenerateAll: "Regenerar todas",
   },
   en: {
     // Sidebar
