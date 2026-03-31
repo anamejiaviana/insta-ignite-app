@@ -203,6 +203,15 @@ ${postExamples}
       parsed.posts = [parsed.post];
       delete parsed.post;
     }
+    // Normalize: if AI returned "carousel" (singular), convert to "carousels" array
+    if (parsed.carousel && !parsed.carousels) {
+      parsed.carousels = [parsed.carousel];
+      delete parsed.carousel;
+    }
+    // Ensure carousels is always an array if present
+    if (!parsed.carousels) {
+      parsed.carousels = [];
+    }
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
