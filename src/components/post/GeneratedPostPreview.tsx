@@ -17,6 +17,8 @@ import {
   Camera,
   Calendar,
   Check,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +28,8 @@ interface GeneratedPost {
   hashtags: string[];
   imagePrompt: string;
   imageUrl?: string;
+  slidePrompts?: string[];
+  imageUrls?: string[];
 }
 
 interface GeneratedPostPreviewProps {
@@ -62,6 +66,10 @@ export function GeneratedPostPreview({
   const [editedMainCopy, setEditedMainCopy] = useState(post.mainCopy);
   const [editedStoryCopy, setEditedStoryCopy] = useState(post.storyCopy);
   const [saved, setSaved] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const isCarousel = postType === "carousel" && (post.imageUrls?.length ?? 0) > 0;
+  const carouselImages = post.imageUrls || [];
+  const totalSlides = carouselImages.length;
 
   useEffect(() => {
     setEditedMainCopy(post.mainCopy);
@@ -88,10 +96,11 @@ export function GeneratedPostPreview({
   };
 
   const downloadImage = () => {
-    if (!post.imageUrl) return;
+    const url = isCarousel ? carouselImages[currentSlide] : post.imageUrl;
+    if (!url) return;
     const link = document.createElement("a");
-    link.href = post.imageUrl;
-    link.download = `instagram-${postType}-${Date.now()}.png`;
+    link.href = url;
+    link.download = `instagram-${postType}-${isCarousel ? `slide${currentSlide + 1}-` : ""}${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -146,7 +155,7 @@ export function GeneratedPostPreview({
         <div className="space-y-3">
           <h4 className="font-medium flex items-center gap-2">
             <Smartphone className="h-4 w-4 text-primary" />
-            Imagen
+            {isCarousel ? `Imagen ${currentSlide + 1} ${t("carouselSlideOf")} ${totalSlides}` : "Imagen"}
           </h4>
           <div
             className={cn(
@@ -160,9 +169,26 @@ export function GeneratedPostPreview({
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="text-sm text-muted-foreground">
-                  Generando imagen...
+                  {isCarousel
+                    ? `${t("generatingImageN")} ${carouselImages.length + 1}...`
+                    : t("generatingImages")}
                 </span>
               </div>
+            ) : isCarousel ? (
+              carouselImages[currentSlide] ? (
+                <img
+                  src={carouselImages[currentSlide]}
+                  alt={`Carousel slide ${currentSlide + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">
+                    {t("generatingImageN")} {currentSlide + 1}...
+                  </span>
+                </div>
+              )
             ) : post.imageUrl ? (
               <img
                 src={post.imageUrl}
@@ -172,13 +198,50 @@ export function GeneratedPostPreview({
             ) : (
               <span className="text-muted-foreground">Sin imagen</span>
             )}
+
+            {/* Carousel navigation arrows */}
+            {isCarousel && totalSlides > 1 && !loading && (
+              <>
+                <button
+                  onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
+                  disabled={currentSlide === 0}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 disabled:opacity-30 hover:bg-background transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setCurrentSlide((prev) => Math.min(totalSlides - 1, prev + 1))}
+                  disabled={currentSlide === totalSlides - 1}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 disabled:opacity-30 hover:bg-background transition-colors"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Carousel dots */}
+          {isCarousel && totalSlides > 1 && (
+            <div className="flex justify-center gap-1.5">
+              {carouselImages.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  className={cn(
+                    "w-2 h-2 rounded-full transition-all",
+                    i === currentSlide ? "bg-primary w-4" : "bg-muted-foreground/30"
+                  )}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={onRegenerateImage} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Regenerar
             </Button>
-            <Button variant="outline" size="sm" onClick={downloadImage} disabled={!post.imageUrl || loading}>
+            <Button variant="outline" size="sm" onClick={downloadImage} disabled={!(isCarousel ? carouselImages[currentSlide] : post.imageUrl) || loading}>
               <Download className="h-4 w-4 mr-2" />
               Descargar
             </Button>

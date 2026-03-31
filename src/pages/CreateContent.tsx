@@ -47,6 +47,8 @@ interface GeneratedPost {
   hashtags: string[];
   imagePrompt: string;
   imageUrl?: string;
+  slidePrompts?: string[];
+  imageUrls?: string[];
 }
 
 interface PrefillData {
@@ -82,6 +84,7 @@ export default function CreateContent() {
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"content" | "image">("content");
+  const [carouselSlideCount, setCarouselSlideCount] = useState(3);
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -181,6 +184,7 @@ export default function CreateContent() {
           visualStyle: visualStyle || activeClient?.default_visual_style,
           clientContext,
           language: activeClient?.content_language || "es",
+          carouselSlideCount: postType === "carousel" ? carouselSlideCount : undefined,
         },
       });
       if (error) throw error;
@@ -189,7 +193,9 @@ export default function CreateContent() {
       setGeneratedPost(data);
       setStep("image");
 
-      if (imageSource === "generate") {
+      if (postType === "carousel" && data.slidePrompts?.length > 0) {
+        await generateCarouselImages(data.slidePrompts);
+      } else if (imageSource === "generate") {
         await generateImage(data.imagePrompt);
       } else if (imageSource === "edit" && uploadedImage) {
         await editImage(uploadedImage, data.imagePrompt);
@@ -214,6 +220,34 @@ export default function CreateContent() {
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGeneratingImage"), description: error.message });
+    }
+  };
+
+  const generateCarouselImages = async (prompts: string[]) => {
+    const urls: string[] = [];
+    for (let i = 0; i < prompts.length; i++) {
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-image", {
+          body: {
+            prompt: prompts[i],
+            postType: "carousel",
+            brandConfig: { visual_style: visualStyle || activeClient?.default_visual_style },
+            slideIndex: i + 1,
+            totalSlides: prompts.length,
+          },
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
+        urls.push(data.imageUrl);
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls] } : null);
+      } catch (error: any) {
+        console.error(`Error generating carousel image ${i + 1}:`, error);
+        urls.push("");
+      }
+    }
+    // Set first image as imageUrl for backward compatibility
+    if (urls.length > 0 && urls[0]) {
+      setGeneratedPost((prev) => prev ? { ...prev, imageUrl: urls[0], imageUrls: urls } : null);
     }
   };
 
@@ -248,6 +282,9 @@ export default function CreateContent() {
         visual_style: visualStyle,
         objective,
         content_category: "post",
+        content_data: postType === "carousel" && generatedPost.imageUrls?.length
+          ? { carouselImageUrls: generatedPost.imageUrls }
+          : null,
       };
 
       const { error } = await (supabase as any).from("generated_posts").insert(insertData);
@@ -335,7 +372,29 @@ export default function CreateContent() {
             </div>
           </div>
 
-          {/* Visual Style */}
+          {/* Carousel slide count */}
+          {postType === "carousel" && (
+            <div className="space-y-2">
+              <Label>{t("carouselSlideCount")}</Label>
+              <div className="flex items-center gap-3">
+                {[2, 3, 4, 5, 6, 7, 8, 10].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setCarouselSlideCount(n)}
+                    className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                      carouselSlideCount === n
+                        ? "text-primary-foreground shadow-md"
+                        : "bg-secondary text-muted-foreground hover:text-foreground"
+                    }`}
+                    style={carouselSlideCount === n ? { background: "var(--gradient-primary)" } : undefined}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>{t("visualStyle")}</Label>
             <Select value={visualStyle} onValueChange={setVisualStyle}>
@@ -442,7 +501,13 @@ export default function CreateContent() {
             loading={loading && step === "image"}
             onSave={savePost}
             onReset={resetGenerator}
-            onRegenerateImage={() => generatedPost.imagePrompt && generateImage(generatedPost.imagePrompt)}
+            onRegenerateImage={() => {
+              if (postType === "carousel" && generatedPost.slidePrompts?.length) {
+                generateCarouselImages(generatedPost.slidePrompts);
+              } else if (generatedPost.imagePrompt) {
+                generateImage(generatedPost.imagePrompt);
+              }
+            }}
             onCopyChange={(mainCopy, storyCopy) => { editedCopiesRef.current = { mainCopy, storyCopy }; }}
             fromCalendar={fromCalendar}
             prefillData={prefill ? { title: prefill.title, hook: prefill.hook, shots: prefill.shots, script: prefill.description } : undefined}
