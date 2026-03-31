@@ -282,6 +282,9 @@ export default function CreateContent() {
         visual_style: visualStyle,
         objective,
         content_category: "post",
+        content_data: postType === "carousel" && generatedPost.imageUrls?.length
+          ? { carouselImageUrls: generatedPost.imageUrls }
+          : null,
       };
 
       const { error } = await (supabase as any).from("generated_posts").insert(insertData);
