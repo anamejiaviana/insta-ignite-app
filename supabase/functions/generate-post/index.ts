@@ -42,6 +42,15 @@ serve(async (req) => {
     let responseFormat = '';
     if (customFormat && formatInstructions) {
       responseFormat = formatInstructions;
+    } else if (postType === 'carousel' && carouselSlideCount && carouselSlideCount > 1) {
+      responseFormat = `Responde SIEMPRE en formato JSON válido con esta estructura exacta:
+    {
+      "mainCopy": "El copy principal del post (máx 2200 caracteres, optimizado para engagement)",
+      "storyCopy": "Versión corta para stories (máx 200 caracteres, directo e impactante)",
+      "hashtags": ["hashtag1", "hashtag2", ...] (entre 8 y 15 hashtags relevantes y específicos, sin el símbolo #),
+      "imagePrompt": "Descripción general del estilo visual del carrusel",
+      "slidePrompts": ["descripción detallada para la imagen de la slide 1", "descripción detallada para la imagen de la slide 2", ...] (exactamente ${carouselSlideCount} descripciones, cada una diferente pero coherente con el tema del carrusel. Cada slide debe aportar algo nuevo: un punto diferente, un dato, un ángulo visual distinto. NO repitas la misma descripción.)
+    }`;
     } else {
       responseFormat = `Responde SIEMPRE en formato JSON válido con esta estructura exacta:
     {
