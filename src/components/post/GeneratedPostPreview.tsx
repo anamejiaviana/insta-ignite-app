@@ -66,6 +66,10 @@ export function GeneratedPostPreview({
   const [editedMainCopy, setEditedMainCopy] = useState(post.mainCopy);
   const [editedStoryCopy, setEditedStoryCopy] = useState(post.storyCopy);
   const [saved, setSaved] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const isCarousel = postType === "carousel" && (post.imageUrls?.length ?? 0) > 0;
+  const carouselImages = post.imageUrls || [];
+  const totalSlides = carouselImages.length;
 
   useEffect(() => {
     setEditedMainCopy(post.mainCopy);
