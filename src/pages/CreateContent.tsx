@@ -223,6 +223,34 @@ export default function CreateContent() {
     }
   };
 
+  const generateCarouselImages = async (prompts: string[]) => {
+    const urls: string[] = [];
+    for (let i = 0; i < prompts.length; i++) {
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-image", {
+          body: {
+            prompt: prompts[i],
+            postType: "carousel",
+            brandConfig: { visual_style: visualStyle || activeClient?.default_visual_style },
+            slideIndex: i + 1,
+            totalSlides: prompts.length,
+          },
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
+        urls.push(data.imageUrl);
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls] } : null);
+      } catch (error: any) {
+        console.error(`Error generating carousel image ${i + 1}:`, error);
+        urls.push("");
+      }
+    }
+    // Set first image as imageUrl for backward compatibility
+    if (urls.length > 0 && urls[0]) {
+      setGeneratedPost((prev) => prev ? { ...prev, imageUrl: urls[0], imageUrls: urls } : null);
+    }
+  };
+
   const editImage = async (imageUrl: string, prompt: string) => {
     try {
       const { data, error } = await supabase.functions.invoke("edit-image", {
