@@ -29,7 +29,7 @@ serve(async (req) => {
 
     // Calculate content distribution
     const total = Math.max(2, Math.min(5, numPublications));
-    let numReels: number, numPosts: number;
+    let numReels: number, numPosts: number, numCarousels = 0;
     if (contentPreference === 'more_reels') {
       numReels = Math.min(total, Math.ceil(total * 0.75));
       numPosts = total - numReels;
@@ -38,6 +38,11 @@ serve(async (req) => {
       numPosts = Math.min(total, Math.ceil(total * 0.75));
       numReels = total - numPosts;
       if (numReels < 1) { numReels = 1; numPosts = total - 1; }
+    } else if (contentPreference === 'with_carousels') {
+      numReels = Math.max(1, Math.floor(total * 0.4));
+      numCarousels = Math.max(1, Math.floor(total * 0.3));
+      numPosts = total - numReels - numCarousels;
+      if (numPosts < 0) { numPosts = 0; }
     } else {
       numReels = Math.ceil(total / 2);
       numPosts = total - numReels;

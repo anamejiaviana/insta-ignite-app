@@ -31,6 +31,7 @@ interface WeeklyPlanItem {
 interface WeeklyPlan {
   reels: WeeklyPlanItem[];
   posts: WeeklyPlanItem[];
+  carousels?: WeeklyPlanItem[];
   stories: { idea: string; tipo: string; text?: string }[];
 }
 
