@@ -80,14 +80,22 @@ ${storiesList ? `\nIDEAS DE STORIES:\n${storiesList}` : ''}
       Todo en ${langName}.`;
     } else if (customIdea) {
       // MODE 2: Generate from a specific idea/topic
-      systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales.
+      systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales, con profundo conocimiento de retención y narrativa visual.
       Creas planes de grabación extremadamente detallados con storyboard paso a paso, incluyendo tipo de plano, movimiento de cámara, y textos en pantalla.
+      
+      PRINCIPIOS DE RETENCIÓN VISUAL PARA REELS:
+      - El primer plano (1-3 segundos) debe ser visualmente impactante para retener: movimiento, contraste, acción inmediata o plano inesperado
+      - Cambiar tipo de plano cada 2-4 segundos para mantener ritmo dinámico
+      - Los textos en pantalla deben REFORZAR el hook y crear curiosidad, no solo describir lo que se ve
+      - Incluir momentos de contraste visual (antes/después, problema/solución, detalle/general)
+      - El storyboard debe tener ritmo narrativo: tensión → desarrollo → revelación
+      - Los planos deben servir a la estructura emocional del guion, no solo documentar
       
       TODO el contenido generado DEBE estar en ${langName}.
       
       Responde SIEMPRE en formato JSON válido con esta estructura exacta:
       {
-        "hook": "Frase gancho potente de los primeros 3 segundos",
+        "hook": "Frase gancho potente que ROMPA PATRÓN en los primeros 3 segundos (contraste, error, verdad incómoda o frustración reconocible)",
         "storyboard": [
           {
             "paso": 1,
@@ -103,7 +111,7 @@ ${storiesList ? `\nIDEAS DE STORIES:\n${storiesList}` : ''}
         "textos_pantalla": ["texto superpuesto 1", "texto superpuesto 2", "texto superpuesto 3", "texto superpuesto 4"],
         "orden_grabacion": ["Plano 3 (no requiere preparación)", "Plano 1 (preparar escena)", "Plano 2 (acción principal)"],
         "duracion_estimada": "15-20 minutos",
-        "caption": "Caption optimizado para Instagram con CTA y palabras clave",
+        "caption": "Caption optimizado para Instagram con CTA emocional y palabras clave",
         "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
       }`;
 
@@ -120,19 +128,17 @@ ${storiesList ? `\nIDEAS DE STORIES:\n${storiesList}` : ''}
       Palabras clave: ${(client.keywords || []).join(', ')}
       
       Genera:
-      1. Un hook potente para los primeros 3 segundos
-      2. Un storyboard MUY DETALLADO de 6-10 pasos. Cada paso debe tener:
-         - Nombre del plano (ej: "Plano de contexto", "Plano de acción", "Plano detalle", "Plano resultado")
-         - Descripción detallada de qué grabar y cómo
-         - Tipo de plano exacto
-         - Movimiento de cámara
-         - Duración en segundos
-         - Texto sugerido para superponer (si aplica)
+      1. Un hook potente que ROMPA PATRÓN (contraste, error revelado, frustración reconocible, dato inesperado). NO uses "Hoy te enseño..." ni "¿Sabías que...?"
+      2. Un storyboard MUY DETALLADO de 6-10 pasos orientado a RETENCIÓN:
+         - El primer plano debe ser visualmente impactante (movimiento, acción, contraste)
+         - Cambiar tipo de plano cada 2-4 segundos para mantener ritmo
+         - Incluir momentos de contraste visual (antes/después, detalle/general)
+         - Cada paso debe tener: nombre del plano, descripción detallada, tipo de plano, movimiento de cámara, duración en segundos, texto sugerido para superponer
       3. Lista completa de planos necesarios (shots)
-      4. 4-5 textos sugeridos para superponer en pantalla durante el reel
+      4. 4-5 textos para superponer que REFUERCEN el hook y creen curiosidad (no solo describir lo visible)
       5. Orden óptimo de grabación (puede diferir del orden final del reel)
       6. Duración estimada de grabación total
-      7. Caption optimizado con CTA y palabras clave del negocio
+      7. Caption con estructura emocional: hook → tensión → valor → CTA natural que conecte con el dolor/deseo activado
       8. 5 hashtags estratégicos (sin #)
       
       Todo debe ser grabable en el propio negocio en 15-30 minutos.
