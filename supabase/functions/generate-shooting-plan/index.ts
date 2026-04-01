@@ -152,8 +152,15 @@ ${existingReels.map((r: any, i: number) => `${i + 1}. "${r.idea}" - Hook: "${r.h
 Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
         : `Genera 3-4 reels para grabar en ${numDays || 1} día(s) para este negocio.`;
 
-      systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales.
+      systemPrompt = `Eres un director de producción audiovisual profesional especializado en contenido para Instagram de negocios locales, con profundo conocimiento de retención y narrativa visual.
       Planificas sesiones de grabación eficientes y detalladas de 30-40 minutos por día.
+      
+      PRINCIPIOS DE RETENCIÓN VISUAL:
+      - Primer plano de cada reel debe ser visualmente impactante para retener (movimiento, contraste, acción inmediata)
+      - Cambiar tipo de plano cada 2-4 segundos para ritmo dinámico
+      - Textos en pantalla deben reforzar el hook y crear curiosidad
+      - Incluir momentos de contraste visual (antes/después, problema/solución)
+      - Los hooks deben ROMPER PATRÓN, no ser genéricos
       
       TODO el contenido generado DEBE estar en ${langName}.
       
@@ -162,16 +169,16 @@ Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
         "reels": [
           {
             "reel": "Nombre descriptivo del reel",
-            "hook": "Hook potente de los primeros 3 segundos",
+            "hook": "Hook potente que ROMPA PATRÓN en los primeros 3 segundos",
             "storyboard": [
               {
                 "paso": 1,
                 "nombre": "Plano de contexto",
-                "descripcion": "Descripción detallada del plano",
+                "descripcion": "Descripción detallada del plano orientada a retención",
                 "tipo_plano": "plano general / plano medio / primer plano / detalle",
                 "movimiento": "estático / paneo / seguimiento / zoom in",
                 "duracion_segundos": 3,
-                "texto_pantalla": "Texto superpuesto sugerido o null"
+                "texto_pantalla": "Texto superpuesto que refuerza hook o null"
               }
             ],
             "textos_pantalla": ["texto 1", "texto 2"],
@@ -202,20 +209,20 @@ Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
       ${reelsContext}
       
       Para CADA reel genera:
-      1. Nombre y hook potente
-      2. Storyboard detallado de 4-6 pasos con:
-         - Nombre del plano (ej: "Plano de contexto", "Plano de acción", "Plano detalle", "Plano resultado")
-         - Descripción precisa de qué grabar
-         - Tipo de plano
-         - Movimiento de cámara
+      1. Nombre y hook que ROMPA PATRÓN (contraste, error, verdad incómoda, frustración). NO uses hooks genéricos
+      2. Storyboard detallado de 4-6 pasos ORIENTADO A RETENCIÓN:
+         - Primer plano visualmente impactante (movimiento, acción, contraste)
+         - Cambiar tipo de plano cada 2-4 segundos
+         - Descripción precisa de qué grabar con indicaciones de ritmo
+         - Tipo de plano y movimiento de cámara
          - Duración en segundos
-         - Texto sugerido para pantalla (si aplica)
-      3. Textos en pantalla sugeridos (2-3 por reel)
+         - Textos en pantalla que refuercen el hook y creen curiosidad (no solo descriptivos)
+      3. Textos en pantalla sugeridos (2-3 por reel) que aporten tensión narrativa
       4. Duración estimada de grabación
       5. Número de orden de grabación recomendado
       
       También genera:
-      6. 6-8 planos extra de apoyo DETALLADOS adaptados al negocio, cada uno con nombre, descripción, tipo de plano y uso sugerido
+      6. 6-8 planos extra de apoyo DETALLADOS adaptados al negocio, incluyendo planos de contraste y transición dinámicos
       7. Un orden de sesión optimizado (los pasos a seguir durante la grabación)
       
       Los planos deben ser realistas y grabables en el negocio.

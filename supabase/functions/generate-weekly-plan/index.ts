@@ -154,7 +154,9 @@ ${postExamples}
     3. 3-4 ideas de stories`}
     
     Requisitos:
-    - Hooks fuertes que capten atención en 3 segundos
+    - Los hooks de los reels deben ROMPER PATRÓN: contraste, error revelado, frustración reconocible, dato inesperado. NO usar "Hoy te enseño...", "3 tips para..." ni "¿Sabías que...?"
+    - Los guiones de reels deben tener tensión emocional y valor CONCRETO (técnicas, datos, ejemplos), NO consejos vagos
+    - Los CTAs de reels deben conectar emocionalmente con el dolor o deseo activado, no ser genéricos
     - Contenido grabable en 15-30 minutos en el propio negocio
     - Captions con palabras clave del negocio
     - Mencionar la ciudad cuando sea natural
@@ -163,6 +165,7 @@ ${postExamples}
     - 5 hashtags específicos del nicho por contenido (sin #)
     - Ideas prácticas y realistas para un negocio pequeño
     - Equilibrar entre educativo, entretenimiento y producto
+    - Variar tono y ángulo entre contenidos para que no suenen repetitivos
     - Todo el contenido en ${langName}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
