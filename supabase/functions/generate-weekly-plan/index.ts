@@ -54,10 +54,10 @@ serve(async (req) => {
           "type": "reel",
           "day": "Día de la semana",
           "idea": "Título de la idea",
-          "hook": "Frase gancho de 3 segundos",
-          "script": "Mini guión paso a paso",
+          "hook": "Frase gancho que ROMPA PATRÓN en 3 segundos (contraste, error, verdad incómoda o frustración reconocible)",
+          "script": "Guion con estructura emocional: hook → tensión/problema reconocible → valor concreto y específico → revelación → CTA emocional natural",
           "shots": ["plano 1", "plano 2", "plano 3"],
-          "caption": "Caption optimizado para Instagram con CTA",
+          "caption": "Caption optimizado con CTA emocional coherente con el contenido",
           "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
         }`).join(',\n');
 
