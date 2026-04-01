@@ -64,11 +64,28 @@ serve(async (req) => {
     const langMap: Record<string, string> = { es: 'español', ca: 'català', en: 'English' };
     const langName = langMap[language] || 'español';
 
-    const systemPrompt = `Eres un experto copywriter para Instagram especializado en negocios locales. Genera contenido optimizado para engagement.
+    const isReel = postType === 'reel';
+    const reelGuidance = isReel ? `
+    PRINCIPIOS DE CALIDAD PARA REELS:
+    - Estructura interna: HOOK → CONFLICTO/TENSIÓN → VALOR REAL → REVELACIÓN → CTA EMOCIONAL
+    - El hook debe romper patrón: contraste, error común, verdad incómoda o frustración reconocible. NUNCA "Hoy te voy a contar..." ni "¿Sabías que...?"
+    - El guion debe conectar con lo que la audiencia SIENTE, no solo explicar
+    - El valor debe ser concreto y específico, no genérico ("sé constante", "crea contenido de valor" están PROHIBIDOS)
+    - El CTA debe ser una continuación emocional natural, no "sígueme para más"
+    - Evitar clichés de content creator y lenguaje corporativo vacío
+    ` : '';
+
+    const systemPrompt = `Eres un experto copywriter para Instagram especializado en negocios locales. Genera contenido optimizado para engagement y retención.
     TODO el contenido (captions, stories, hashtags) DEBE estar en ${langName}.
     ${contextBlock}
-    
+    ${reelGuidance}
     ${responseFormat}`;
+
+    const reelRequirements = isReel ? `
+    - El mainCopy debe seguir estructura emocional: hook potente → problema/tensión reconocible → valor concreto → revelación → CTA que conecte con el dolor/deseo activado
+    - El hook (primera línea) debe ROMPER PATRÓN: contraste, error revelado, frustración o dato inesperado
+    - El valor debe ser ESPECÍFICO: técnicas, datos, ejemplos prácticos. NO consejos vagos
+    - El CTA debe sentirse como continuación natural del contenido emocional, no genérico` : '';
 
     const userPrompt = `Genera contenido para Instagram con estos datos:
     - Tipo de publicación: ${postType}
@@ -86,7 +103,7 @@ serve(async (req) => {
     - Mencionar la ciudad cuando sea relevante
     - Integrar el CTA de forma natural
     - Los hashtags deben ser específicos del nicho, NO genéricos como #love o #instagood
-    - Incluir 5 hashtags relevantes al final del caption`;
+    - Incluir 5 hashtags relevantes al final del caption${reelRequirements}`;
 
     console.log('Generating post content...');
 

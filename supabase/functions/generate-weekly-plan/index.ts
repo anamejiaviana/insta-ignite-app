@@ -54,10 +54,10 @@ serve(async (req) => {
           "type": "reel",
           "day": "Día de la semana",
           "idea": "Título de la idea",
-          "hook": "Frase gancho de 3 segundos",
-          "script": "Mini guión paso a paso",
+          "hook": "Frase gancho que ROMPA PATRÓN en 3 segundos (contraste, error, verdad incómoda o frustración reconocible)",
+          "script": "Guion con estructura emocional: hook → tensión/problema reconocible → valor concreto y específico → revelación → CTA emocional natural",
           "shots": ["plano 1", "plano 2", "plano 3"],
-          "caption": "Caption optimizado para Instagram con CTA",
+          "caption": "Caption optimizado con CTA emocional coherente con el contenido",
           "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
         }`).join(',\n');
 
@@ -96,8 +96,18 @@ ${carouselExamples}
       ? ` El array "carousels" debe tener exactamente ${numCarousels} elementos. Cada carrusel debe incluir "imagePrompt".`
       : '';
 
-    const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales.
-    Generas planes de contenido semanales prácticos y grabables.
+    const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales con profundo conocimiento de retención y psicología de audiencia.
+    Generas planes de contenido semanales prácticos, emocionalmente potentes y grabables.
+    
+    PRINCIPIOS DE CALIDAD PARA REELS (aplicar a TODOS los reels del plan):
+    - Estructura interna: HOOK → CONFLICTO/TENSIÓN → VALOR REAL → REVELACIÓN → CTA EMOCIONAL
+    - Hooks que ROMPAN PATRÓN: contraste, error común, verdad incómoda, frustración reconocible o dato sorprendente
+    - PROHIBIDO: "Hoy te voy a contar...", "3 tips para...", "¿Sabías que...?", hooks genéricos o predecibles
+    - Los guiones deben conectar con lo que la audiencia SIENTE, no solo explicar
+    - El valor debe ser CONCRETO: técnicas específicas, datos, ejemplos prácticos. NUNCA "sé constante" o "crea contenido de valor"
+    - Los CTAs deben ser continuación emocional natural del reel, NO "sígueme para más"
+    - Variar tono y ángulo entre reels: educativo, emocional, revelador, behind the scenes, contraste
+    - Evitar clichés de content creator y lenguaje corporativo vacío
     
     TODO el contenido generado (ideas, hooks, guiones, captions, hashtags) DEBE estar en ${langName}.
     
@@ -144,7 +154,9 @@ ${postExamples}
     3. 3-4 ideas de stories`}
     
     Requisitos:
-    - Hooks fuertes que capten atención en 3 segundos
+    - Los hooks de los reels deben ROMPER PATRÓN: contraste, error revelado, frustración reconocible, dato inesperado. NO usar "Hoy te enseño...", "3 tips para..." ni "¿Sabías que...?"
+    - Los guiones de reels deben tener tensión emocional y valor CONCRETO (técnicas, datos, ejemplos), NO consejos vagos
+    - Los CTAs de reels deben conectar emocionalmente con el dolor o deseo activado, no ser genéricos
     - Contenido grabable en 15-30 minutos en el propio negocio
     - Captions con palabras clave del negocio
     - Mencionar la ciudad cuando sea natural
@@ -153,6 +165,7 @@ ${postExamples}
     - 5 hashtags específicos del nicho por contenido (sin #)
     - Ideas prácticas y realistas para un negocio pequeño
     - Equilibrar entre educativo, entretenimiento y producto
+    - Variar tono y ángulo entre contenidos para que no suenen repetitivos
     - Todo el contenido en ${langName}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
