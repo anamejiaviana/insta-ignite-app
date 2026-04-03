@@ -23,7 +23,7 @@ const translations = {
     moreReels: "Más reels",
     balanced: "Equilibrado",
     morePosts: "Más posts",
-    withCarousels: "Con carruseles",
+    withCarousels: "Posts + carruseles",
     specialDatesOptional: "¿Algo especial esta semana? (opcional)",
     specialDatesPlaceholder: "Ej: promoción, evento, lanzamiento, cata, nuevo menú, campaña...",
     generateWeeklyContent: "Generar mi contenido semanal",
