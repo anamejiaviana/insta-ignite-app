@@ -131,8 +131,16 @@ export default function ContentCalendar() {
     const start = new Date(plan.week_start);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
-    return `${start.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${end.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
+    const locale = "es-ES";
+    return `${t("mondayShort")} ${start.toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${t("sundayShort")} ${end.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`;
   };
+
+  // Progress calculation
+  const storyCount = planData?.stories?.length || 0;
+  const totalItems = allItems.length + storyCount;
+  const completedCount = allItems.filter(i => completedItems.has(i._key)).length
+    + (planData?.stories || []).filter((_: any, i: number) => completedItems.has(`story-${i}`)).length;
+  const progressPercent = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
