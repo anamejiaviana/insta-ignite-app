@@ -247,6 +247,29 @@ export default function ContentCalendar() {
             </div>
           )}
 
+          {/* Weekly progress */}
+          {totalItems > 0 && (
+            <div className="glass rounded-xl px-4 py-3 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground font-medium capitalize">{t("weekProgress")}</span>
+                <span className={completedCount === totalItems ? "text-green-500 font-medium" : "text-muted-foreground"}>
+                  {completedCount === totalItems
+                    ? t("allCompleted")
+                    : `${completedCount} ${t("completedOf")} ${totalItems}`}
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${progressPercent}%`,
+                    background: completedCount === totalItems ? "hsl(var(--chart-2))" : "hsl(var(--primary))",
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Content items */}
           <div className="space-y-4">
             {allItems.map((item) => {
