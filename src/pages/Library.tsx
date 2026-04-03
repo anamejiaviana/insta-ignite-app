@@ -125,7 +125,10 @@ export default function Library() {
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">{t("library")}</h1>
+        <div>
+          <h1 className="text-3xl font-bold">{t("library")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">Tu repositorio de contenido guardado</p>
+        </div>
         <Select value={filterClient} onValueChange={setFilterClient}>
           <SelectTrigger className="w-[180px] bg-secondary border-border">
             <SelectValue placeholder={t("allBusinesses")} />
