@@ -274,7 +274,7 @@ const translations = {
     errorGeneratingPlan: "Error generating plan",
     calendarNav: "Calendar",
     recordingDay: "Recording day",
-    libraryNav: "Library",
+    libraryNav: "Content Library",
     storiesIdeas: "Stories ideas",
 
     // Calendar
