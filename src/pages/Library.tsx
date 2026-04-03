@@ -56,17 +56,17 @@ export default function Library() {
   const loadData = async () => {
     if (activeTab === "posts") {
       let query = supabase.from("generated_posts").select("*").order("created_at", { ascending: false });
-      if (filterClient !== "all") query = query.eq("client_id", filterClient);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setPosts(data);
     } else if (activeTab === "plans") {
       let query = (supabase as any).from("weekly_plans").select("*").order("created_at", { ascending: false });
-      if (filterClient !== "all") query = query.eq("client_id", filterClient);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setWeeklyPlans(data);
     } else {
       let query = (supabase as any).from("shooting_plans").select("*").order("created_at", { ascending: false });
-      if (filterClient !== "all") query = query.eq("client_id", filterClient);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setShootingPlans(data);
     }
