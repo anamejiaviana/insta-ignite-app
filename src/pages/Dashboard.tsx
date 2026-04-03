@@ -463,7 +463,10 @@ export default function Dashboard() {
             >
               <action.icon className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-medium text-xs">{action.label}</span>
+            <div>
+              <span className="font-medium text-xs block">{action.label}</span>
+              <span className="text-[10px] text-muted-foreground leading-tight block mt-0.5">{action.desc}</span>
+            </div>
           </button>
         ))}
       </div>
