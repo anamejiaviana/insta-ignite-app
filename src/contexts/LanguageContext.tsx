@@ -153,6 +153,7 @@ const translations = {
     order: "Orden",
 
     // Library
+    librarySubtitle: "Accede y reutiliza todo el contenido que hayas guardado",
     posts: "Contenido generado",
     weeklyPlans: "Planes guardados",
     recordingSessions: "Guías de grabación",
