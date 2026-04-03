@@ -36,7 +36,7 @@ const translations = {
     errorGeneratingPlan: "Error al generar plan",
     calendarNav: "Calendario",
     recordingDay: "Día de grabación",
-    libraryNav: "Biblioteca",
+    libraryNav: "Biblioteca de contenido",
     storiesIdeas: "Ideas de Stories",
 
     // Calendar
