@@ -4,13 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { EditableCopyBlock } from "@/components/post/EditableCopyBlock";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
