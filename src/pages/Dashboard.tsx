@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { Sparkles, Calendar, Camera, FolderOpen, Loader2, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, Calendar, Camera, FolderOpen, Loader2, CalendarIcon, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
