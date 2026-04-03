@@ -163,11 +163,21 @@ export default function Library() {
         <>
           {posts.length === 0 && <EmptyState icon={<FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noContent")} desc={t("generatedContentAppearsHere")} />}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {posts.map((post) => (
+            {posts.map((post) => {
+              const carouselUrls: string[] = post.content_data?.carouselImageUrls || [];
+              const isCarousel = post.post_type === "carousel" && carouselUrls.length > 0;
+              const thumbnailUrl = isCarousel ? carouselUrls[0] : post.generated_image_url;
+              return (
               <Card key={post.id} className="bg-card border-border overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setDetail({ type: "post", data: post })}>
-                {post.generated_image_url && (
-                  <div className="aspect-square overflow-hidden">
-                    <img src={post.generated_image_url} alt={post.title} className="w-full h-full object-cover" />
+                {thumbnailUrl && (
+                  <div className="aspect-square overflow-hidden relative">
+                    <img src={thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
+                    {isCarousel && (
+                      <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-0.5 flex items-center gap-1">
+                        <Images className="h-3 w-3 text-primary" />
+                        <span className="text-[10px] font-medium text-foreground">{carouselUrls.length}</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 <CardContent className="p-4">
