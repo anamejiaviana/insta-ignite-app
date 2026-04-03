@@ -9,7 +9,7 @@ const translations = {
     createContent: "Crear contenido",
     calendar: "Calendario",
     shootingDay: "Día de grabación",
-    library: "Biblioteca",
+    library: "Biblioteca de contenido",
     settings: "Configuración",
 
     // Dashboard
