@@ -329,7 +329,7 @@ const translations = {
     errorGeneratingImage: "Error generating image",
     errorEditingImage: "Error editing image",
     enterTitle: "Enter a title",
-    savedToLibrary: "Post saved to library",
+    savedToLibrary: "Post saved to content library",
     errorSaving: "Error saving",
     weeklyPlanContent: "Weekly plan content",
     shots: "Shots",
