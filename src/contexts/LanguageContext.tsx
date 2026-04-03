@@ -395,6 +395,7 @@ const translations = {
     order: "Order",
 
     // Library
+    librarySubtitle: "Access and reuse all your saved content",
     posts: "Generated content",
     weeklyPlans: "Saved plans",
     recordingSessions: "Recording guides",
