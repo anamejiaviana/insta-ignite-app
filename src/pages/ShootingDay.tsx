@@ -266,9 +266,6 @@ export default function ShootingDay() {
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t("shootingDay")}</h1>
-        <p className="text-muted-foreground mt-1">
-          {t("sessionFor")} <span className="text-primary font-medium">{activeClient.name}</span>
-        </p>
       </div>
 
       {/* Mode selector */}

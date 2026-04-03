@@ -170,9 +170,6 @@ export default function ContentCalendar() {
           <h1 className="text-2xl sm:text-3xl font-bold">{t("calendar")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {t("calendarSubtitle")}
-            {activeClient && (
-              <> · <span className="text-primary font-medium">{activeClient.name}</span></>
-            )}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">

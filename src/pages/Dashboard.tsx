@@ -175,9 +175,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : clients.length === 1 ? (
-          <p className="text-muted-foreground mt-1 text-sm">
-            {activeClient?.name}
-          </p>
+          null
         ) : (
           <p className="text-muted-foreground mt-1 text-sm">
             {t("startAddingBusiness")}{" "}

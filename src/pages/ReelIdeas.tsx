@@ -73,12 +73,6 @@ export default function ReelIdeas() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Ideas de Reels</h1>
-          {activeClient && (
-            <p className="text-muted-foreground mt-1">
-              Para{" "}
-              <span className="text-primary font-medium">{activeClient.name}</span>
-            </p>
-          )}
         </div>
         <Button
           variant="gradient"

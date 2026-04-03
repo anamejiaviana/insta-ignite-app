@@ -33,12 +33,6 @@ export default function Strategy() {
     <div className="max-w-4xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t("strategy")}</h1>
-        {activeClient && (
-          <p className="text-muted-foreground mt-1">
-            {t("strategyPlanningFor")}{" "}
-            <span className="text-primary font-medium">{activeClient.name}</span>
-          </p>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
