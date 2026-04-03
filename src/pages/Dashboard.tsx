@@ -160,7 +160,6 @@ export default function Dashboard() {
             </button>
           </p>
         )}
-        )}
       </div>
 
       {/* Main CTA: Generate weekly plan */}
