@@ -143,9 +143,9 @@ export default function Dashboard() {
   };
 
   const quickActions = [
-    { label: t("calendarNav"), icon: Calendar, path: "/strategy/calendar" },
-    { label: t("recordingDay"), icon: Camera, path: "/shooting" },
-    { label: t("libraryNav"), icon: FolderOpen, path: "/library" },
+    { label: t("calendarNav"), desc: "Planifica y sigue tu semana", icon: Calendar, path: "/strategy/calendar" },
+    { label: t("recordingDay"), desc: "Organiza lo que vas a grabar", icon: Camera, path: "/shooting" },
+    { label: t("libraryNav"), desc: "Recupera piezas guardadas", icon: FolderOpen, path: "/library" },
   ];
 
   return (
