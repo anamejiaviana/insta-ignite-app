@@ -60,6 +60,17 @@ const translations = {
     generateThisContent: "Generar este contenido",
     loadingPlans: "Cargando planes...",
     weekOf: "Semana",
+    weekProgress: "progreso semanal",
+    completedOf: "de",
+    pending: "pendiente",
+    allCompleted: "¡Todo completado!",
+    mondayShort: "Lun",
+    tuesdayShort: "Mar",
+    wednesdayShort: "Mié",
+    thursdayShort: "Jue",
+    fridayShort: "Vie",
+    saturdayShort: "Sáb",
+    sundayShort: "Dom",
 
     // Create Content
     createContentSubtitle: "Crea una publicación individual de forma manual",
