@@ -131,8 +131,16 @@ export default function ContentCalendar() {
     const start = new Date(plan.week_start);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
-    return `${start.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${end.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
+    const locale = "es-ES";
+    return `${t("mondayShort")} ${start.toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${t("sundayShort")} ${end.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}`;
   };
+
+  // Progress calculation
+  const storyCount = planData?.stories?.length || 0;
+  const totalItems = allItems.length + storyCount;
+  const completedCount = allItems.filter(i => completedItems.has(i._key)).length
+    + (planData?.stories || []).filter((_: any, i: number) => completedItems.has(`story-${i}`)).length;
+  const progressPercent = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
@@ -236,6 +244,29 @@ export default function ContentCalendar() {
                   Semana {new Date(plan.week_start).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Weekly progress */}
+          {totalItems > 0 && (
+            <div className="glass rounded-xl px-4 py-3 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground font-medium capitalize">{t("weekProgress")}</span>
+                <span className={completedCount === totalItems ? "text-green-500 font-medium" : "text-muted-foreground"}>
+                  {completedCount === totalItems
+                    ? t("allCompleted")
+                    : `${completedCount} ${t("completedOf")} ${totalItems}`}
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${progressPercent}%`,
+                    background: completedCount === totalItems ? "hsl(var(--chart-2))" : "hsl(var(--primary))",
+                  }}
+                />
+              </div>
             </div>
           )}
 
