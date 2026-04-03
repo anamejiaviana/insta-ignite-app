@@ -56,11 +56,13 @@ export default function Dashboard() {
 
   const loadRecentPosts = async () => {
     try {
-      const { data } = await supabase
+      let query = supabase
         .from("generated_posts")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
+      const { data } = await query;
       if (data) setRecentPosts(data);
     } catch {
       // fail silently – recent posts is non-critical
