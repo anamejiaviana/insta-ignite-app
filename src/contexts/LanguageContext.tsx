@@ -13,6 +13,7 @@ const translations = {
     settings: "Configuración",
 
     // Dashboard
+    dashboardSubtitle: "Planifica y controla tu semana de contenido",
     business: "Negocio",
     startAddingBusiness: "Empieza añadiendo tu negocio en",
     whatToPublish: "¿Qué publico esta semana?",
