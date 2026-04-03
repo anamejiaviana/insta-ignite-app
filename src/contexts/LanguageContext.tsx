@@ -13,6 +13,7 @@ const translations = {
     settings: "Configuración",
 
     // Dashboard
+    dashboardSubtitle: "Planifica y controla tu semana de contenido",
     business: "Negocio",
     startAddingBusiness: "Empieza añadiendo tu negocio en",
     whatToPublish: "¿Qué publico esta semana?",
@@ -60,6 +61,7 @@ const translations = {
     weekOf: "Semana",
 
     // Create Content
+    createContentSubtitle: "Crea una publicación individual de forma manual",
     backToCalendar: "Volver al calendario",
     contentType: "Tipo de contenido",
     post: "Post",
@@ -251,6 +253,7 @@ const translations = {
     settings: "Settings",
 
     // Dashboard
+    dashboardSubtitle: "Plan and control your content week",
     business: "Business",
     startAddingBusiness: "Start by adding your business in",
     whatToPublish: "What should I post this week?",
@@ -298,6 +301,7 @@ const translations = {
     weekOf: "Week",
 
     // Create Content
+    createContentSubtitle: "Create a single piece of content manually",
     backToCalendar: "Back to calendar",
     contentType: "Content type",
     post: "Post",

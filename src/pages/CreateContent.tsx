@@ -321,7 +321,8 @@ export default function CreateContent() {
         </button>
       )}
 
-      <h1 className="text-3xl font-bold mb-8">{t("createContent")}</h1>
+      <h1 className="text-3xl font-bold">{t("createContent")}</h1>
+      <p className="text-sm text-muted-foreground mt-1 mb-8">{t("createContentSubtitle")}</p>
 
       {/* Show prefill details if coming from weekly plan */}
       {hasPrefillDetails && !generatedPost && (
