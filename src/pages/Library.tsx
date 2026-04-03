@@ -25,7 +25,7 @@ type DetailView =
   | null;
 
 export default function Library() {
-  const { clients } = useClients();
+  const { clients, activeClient } = useClients();
   const { t } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
@@ -33,13 +33,12 @@ export default function Library() {
   const [posts, setPosts] = useState<any[]>([]);
   const [weeklyPlans, setWeeklyPlans] = useState<any[]>([]);
   const [shootingPlans, setShootingPlans] = useState<any[]>([]);
-  const [filterClient, setFilterClient] = useState("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DetailView>(null);
 
   useEffect(() => {
     loadData();
-  }, [filterClient, activeTab]);
+  }, [activeClient?.id, activeTab]);
 
   // Handle deep-link from Dashboard recent content
   useEffect(() => {
