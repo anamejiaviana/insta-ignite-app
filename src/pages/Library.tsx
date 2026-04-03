@@ -123,22 +123,9 @@ export default function Library() {
   // --- List View ---
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{t("library")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
-        </div>
-        <Select value={filterClient} onValueChange={setFilterClient}>
-          <SelectTrigger className="w-[180px] bg-secondary border-border">
-            <SelectValue placeholder={t("allBusinesses")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("allBusinesses")}</SelectItem>
-            {clients.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">{t("library")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
       </div>
 
       <div className="flex gap-1 mb-6 p-1 bg-secondary/50 rounded-lg w-fit">
