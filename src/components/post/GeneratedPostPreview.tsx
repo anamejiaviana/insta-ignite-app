@@ -243,8 +243,25 @@ export function GeneratedPostPreview({
             </Button>
             <Button variant="outline" size="sm" onClick={downloadImage} disabled={!(isCarousel ? carouselImages[currentSlide] : post.imageUrl) || loading}>
               <Download className="h-4 w-4 mr-2" />
-              Descargar
+              {isCarousel ? "Slide" : "Descargar"}
             </Button>
+            {isCarousel && totalSlides > 1 && (
+              <Button variant="outline" size="sm" onClick={() => {
+                carouselImages.forEach((url, i) => {
+                  setTimeout(() => {
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `instagram-carousel-slide${i + 1}-${Date.now()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }, i * 300);
+                });
+              }} disabled={loading}>
+                <Download className="h-4 w-4 mr-2" />
+                Todas ({totalSlides})
+              </Button>
+            )}
           </div>
         </div>
 
