@@ -61,6 +61,7 @@ const translations = {
     weekOf: "Semana",
 
     // Create Content
+    createContentSubtitle: "Crea una publicación individual de forma manual",
     backToCalendar: "Volver al calendario",
     contentType: "Tipo de contenido",
     post: "Post",
