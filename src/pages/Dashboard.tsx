@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { Sparkles, Calendar, Camera, FolderOpen, Loader2, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, Calendar, Camera, FolderOpen, Loader2, CalendarIcon, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -468,32 +468,47 @@ export default function Dashboard() {
 
       {/* Recent Content */}
       {recentPosts.length > 0 && (
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-base">{t("recentContent")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {recentPosts.map((post) => (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">{t("recentContent")}</h2>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/library")} className="text-xs text-muted-foreground hover:text-foreground">
+              Ver todo →
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {recentPosts.map((post) => {
+              const typeLabel = post.post_type === "carousel" ? "Carrusel" : post.post_type === "reel" ? "Reel" : "Post";
+              const typeColor = post.post_type === "carousel"
+                ? "bg-amber-500/15 text-amber-400"
+                : post.post_type === "reel"
+                  ? "bg-blue-500/15 text-blue-400"
+                  : "bg-emerald-500/15 text-emerald-400";
+              return (
                 <button
                   key={post.id}
                   onClick={() => navigate("/library", { state: { openPost: post.id } })}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 w-full text-left hover:bg-secondary/80 transition-colors"
+                  className="group flex items-center gap-3 p-3 rounded-xl bg-secondary/40 w-full text-left hover:bg-secondary/70 transition-all border border-transparent hover:border-border"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-sm truncate">{post.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {post.post_type} · {new Date(post.created_at).toLocaleDateString("es-ES")}
-                    </p>
-                  </div>
-                  {post.generated_image_url && (
-                    <img src={post.generated_image_url} alt="" className="h-10 w-10 rounded object-cover ml-3 shrink-0" />
+                  {post.generated_image_url ? (
+                    <img src={post.generated_image_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="h-12 w-12 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+                      <FileText className="h-5 w-5 text-muted-foreground/50" />
+                    </div>
                   )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{post.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${typeColor}`}>{typeLabel}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(post.created_at).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors shrink-0" />
                 </button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );
