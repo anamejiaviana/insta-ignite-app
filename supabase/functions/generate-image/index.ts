@@ -46,43 +46,51 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', enhancedPrompt);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: enhancedPrompt
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
-    });
+    const models = ['google/gemini-2.5-flash-image', 'google/gemini-3.1-flash-image-preview'];
+    let imageUrl: string | undefined;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Límite de solicitudes excedido. Intenta de nuevo en un momento.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+    for (const model of models) {
+      console.log(`Trying model: ${model}`);
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'user',
+              content: enhancedPrompt
+            }
+          ],
+          modalities: ['image', 'text']
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`AI Gateway error with ${model}:`, response.status, errorText);
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: 'Límite de solicitudes excedido. Intenta de nuevo en un momento.' }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        continue;
       }
-      throw new Error(`AI Gateway error: ${response.status}`);
+
+      const data = await response.json();
+      console.log(`Image generation response received from ${model}`);
+
+      imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (imageUrl) break;
+      console.warn(`No image in response from ${model}, trying next...`);
     }
 
-    const data = await response.json();
-    console.log('Image generation response received');
-
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    
     if (!imageUrl) {
-      throw new Error('No image generated');
+      throw new Error('No image generated after trying all models');
     }
 
     return new Response(JSON.stringify({ imageUrl, dimensions }), {
