@@ -91,10 +91,23 @@ export default function ContentCalendar() {
       i === selectedPlanIndex ? { ...p, plan_data: updatedPlanData } : p
     ));
 
-    await (supabase as any)
+    const { error } = await (supabase as any)
       .from("weekly_plans")
-      .update({ plan_data: updatedPlanData })
+      .update({ plan_data: updatedPlanData as any })
       .eq("id", selectedPlan.id);
+
+    if (error) {
+      console.error("Failed to save completion state:", error);
+      // Revert optimistic update on failure
+      setPlans(prev => prev.map((p, i) =>
+        i === selectedPlanIndex ? { ...p, plan_data: selectedPlan.plan_data } : p
+      ));
+      toast({
+        title: "Error",
+        description: "No se pudo guardar el estado. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
+    }
   }, [selectedPlan, selectedPlanIndex]);
 
   const allItems = planData
