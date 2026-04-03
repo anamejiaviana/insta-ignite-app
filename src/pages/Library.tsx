@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle } from "lucide-react";
+import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -163,11 +163,21 @@ export default function Library() {
         <>
           {posts.length === 0 && <EmptyState icon={<FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noContent")} desc={t("generatedContentAppearsHere")} />}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {posts.map((post) => (
+            {posts.map((post) => {
+              const carouselUrls: string[] = post.content_data?.carouselImageUrls || [];
+              const isCarousel = post.post_type === "carousel" && carouselUrls.length > 0;
+              const thumbnailUrl = isCarousel ? carouselUrls[0] : post.generated_image_url;
+              return (
               <Card key={post.id} className="bg-card border-border overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setDetail({ type: "post", data: post })}>
-                {post.generated_image_url && (
-                  <div className="aspect-square overflow-hidden">
-                    <img src={post.generated_image_url} alt={post.title} className="w-full h-full object-cover" />
+                {thumbnailUrl && (
+                  <div className="aspect-square overflow-hidden relative">
+                    <img src={thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
+                    {isCarousel && (
+                      <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-0.5 flex items-center gap-1">
+                        <Images className="h-3 w-3 text-primary" />
+                        <span className="text-[10px] font-medium text-foreground">{carouselUrls.length}</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 <CardContent className="p-4">
@@ -198,7 +208,8 @@ export default function Library() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
@@ -302,7 +313,12 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
   const [editedMainCopy, setEditedMainCopy] = useState(post.main_copy || "");
   const [editedStoryCopy, setEditedStoryCopy] = useState(post.story_copy || "");
   const [saving, setSaving] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const { toast } = useToast();
+
+  const carouselImages: string[] = post.content_data?.carouselImageUrls || [];
+  const isCarousel = post.post_type === "carousel" && carouselImages.length > 0;
+  const totalSlides = carouselImages.length;
 
   const handleSave = async () => {
     setSaving(true);
@@ -322,11 +338,81 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
     }
   };
 
+  const downloadImage = (url: string, index?: number) => {
+    if (!url) return;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `instagram-${post.post_type}-${index !== undefined ? `slide${index + 1}-` : ""}${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadAllCarousel = () => {
+    carouselImages.forEach((url, i) => {
+      setTimeout(() => downloadImage(url, i), i * 300);
+    });
+  };
+
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
       <DetailHeader onBack={onBack} onDelete={onDelete} id={post.id} t={t} />
       <div className="space-y-4">
-        {post.generated_image_url && (
+        {/* Carousel viewer */}
+        {isCarousel && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Images className="h-4 w-4 text-primary" />
+                Imagen {currentSlide + 1} de {totalSlides}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => downloadImage(carouselImages[currentSlide], currentSlide)}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> Slide
+                </Button>
+                <Button variant="outline" size="sm" onClick={downloadAllCarousel}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> Todas ({totalSlides})
+                </Button>
+              </div>
+            </div>
+            <div className="relative rounded-xl overflow-hidden max-w-md mx-auto aspect-square bg-secondary">
+              <img src={carouselImages[currentSlide]} alt={`Slide ${currentSlide + 1}`} className="w-full h-full object-cover" />
+              {totalSlides > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
+                    disabled={currentSlide === 0}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 disabled:opacity-30 hover:bg-background transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentSlide((prev) => Math.min(totalSlides - 1, prev + 1))}
+                    disabled={currentSlide === totalSlides - 1}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 disabled:opacity-30 hover:bg-background transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+            </div>
+            {totalSlides > 1 && (
+              <div className="flex justify-center gap-1.5">
+                {carouselImages.map((_: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentSlide(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      i === currentSlide ? "bg-primary w-4" : "bg-muted-foreground/30"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {/* Single image (non-carousel) */}
+        {!isCarousel && post.generated_image_url && (
           <div className="rounded-xl overflow-hidden max-w-md mx-auto">
             <img src={post.generated_image_url} alt={post.title} className="w-full object-cover" />
           </div>
@@ -334,7 +420,7 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
         <div className="space-y-1">
           <h2 className="text-xl font-bold">{post.title}</h2>
           <p className="text-sm text-muted-foreground">
-            {post.post_type} · {new Date(post.created_at).toLocaleDateString("es-ES")}
+            {post.post_type === "carousel" ? "carrusel" : post.post_type} · {new Date(post.created_at).toLocaleDateString("es-ES")}
             {post.client_id && ` · ${clientName(post.client_id)}`}
           </p>
         </div>
