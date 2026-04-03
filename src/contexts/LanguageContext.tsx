@@ -91,7 +91,7 @@ const translations = {
     errorGeneratingImage: "Error al generar imagen",
     errorEditingImage: "Error al editar imagen",
     enterTitle: "Introduce un título",
-    savedToLibrary: "Post guardado en biblioteca",
+    savedToLibrary: "Post guardado en la biblioteca de contenido",
     errorSaving: "Error al guardar",
     weeklyPlanContent: "Contenido del plan semanal",
     shots: "Planos",
