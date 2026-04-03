@@ -36,7 +36,7 @@ interface WeeklyPlan {
 }
 
 export default function Dashboard() {
-  const { activeClient, clients, setActiveClientId } = useClients();
+  const { activeClient, clients } = useClients();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
