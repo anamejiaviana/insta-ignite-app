@@ -41,6 +41,7 @@ const translations = {
     storiesIdeas: "Ideas de Stories",
 
     // Calendar
+    calendarSubtitle: "Planifica y sigue tu contenido semana a semana",
     plans: "Planes",
     createdOn: "Creado el",
     previousWeek: "Semana anterior",
