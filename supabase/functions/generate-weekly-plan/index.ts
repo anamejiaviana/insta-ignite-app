@@ -44,9 +44,11 @@ serve(async (req) => {
       numPosts = total - numReels - numCarousels;
       if (numPosts < 0) { numPosts = 0; }
     } else {
-      numReels = Math.ceil(total / 2);
-      numPosts = total - numReels;
-      if (numPosts < 1) { numPosts = 1; numReels = total - 1; }
+      // balanced: distribute evenly across reels, posts, and carousels
+      numReels = Math.max(1, Math.floor(total / 3));
+      numCarousels = Math.max(1, Math.floor(total / 3));
+      numPosts = total - numReels - numCarousels;
+      if (numPosts < 1) { numPosts = 1; numCarousels = total - numReels - numPosts; }
     }
 
     const reelExamples = Array.from({ length: numReels }, (_, i) => `        {
