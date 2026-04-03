@@ -226,6 +226,11 @@ ${postExamples}
       parsed.carousels = [];
     }
 
+    // Normalize type field on each item to match its array
+    (parsed.reels || []).forEach((r: any) => { r.type = 'reel'; });
+    (parsed.posts || []).forEach((p: any) => { p.type = 'post'; });
+    (parsed.carousels || []).forEach((c: any) => { c.type = 'carousel'; });
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
