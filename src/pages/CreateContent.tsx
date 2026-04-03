@@ -138,9 +138,61 @@ export default function CreateContent() {
 
       generateStoryCopy();
 
-      if (prefill.postType === "post" && prefill.imagePrompt) {
+      if (prefill.imagePrompt) {
         setStep("image");
-        generateImage(prefill.imagePrompt);
+        if (prefill.postType === "carousel") {
+          // For carousels from calendar, generate slide prompts via AI then generate images
+          const generateCarouselFromCalendar = async () => {
+            try {
+              const clientContext = activeClient
+                ? {
+                    name: activeClient.name,
+                    type: activeClient.type,
+                    city: activeClient.city,
+                    address: activeClient.address,
+                    tone: activeClient.tone,
+                    objective: activeClient.objective,
+                    keywords: activeClient.keywords,
+                  }
+                : null;
+
+              const { data, error } = await supabase.functions.invoke("generate-post", {
+                body: {
+                  title: prefill.title,
+                  description: prefill.description || prefill.caption,
+                  postType: "carousel",
+                  clientContext,
+                  language: activeClient?.content_language || "es",
+                  carouselSlideCount: carouselSlideCount,
+                },
+              });
+
+              if (!error && data && !data.error && data.slidePrompts?.length > 0) {
+                setGeneratedPost((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        mainCopy: data.mainCopy || prev.mainCopy,
+                        storyCopy: data.storyCopy || prev.storyCopy,
+                        hashtags: data.hashtags || prev.hashtags,
+                        imagePrompt: data.imagePrompt || prev.imagePrompt,
+                        slidePrompts: data.slidePrompts,
+                      }
+                    : null
+                );
+                await generateCarouselImages(data.slidePrompts);
+              } else if (prefill.imagePrompt) {
+                // Fallback: generate single image if no slide prompts returned
+                await generateImage(prefill.imagePrompt);
+              }
+            } catch (e) {
+              console.error("Error generating carousel from calendar:", e);
+            }
+          };
+          generateCarouselFromCalendar();
+        } else {
+          generateImage(prefill.imagePrompt);
+        }
       }
     }
   }, []);
