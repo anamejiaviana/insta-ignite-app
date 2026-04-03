@@ -4,13 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { EditableCopyBlock } from "@/components/post/EditableCopyBlock";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +18,7 @@ type DetailView =
   | null;
 
 export default function Library() {
-  const { clients } = useClients();
+  const { clients, activeClient } = useClients();
   const { t } = useLanguage();
   const { toast } = useToast();
   const location = useLocation();
@@ -33,13 +26,12 @@ export default function Library() {
   const [posts, setPosts] = useState<any[]>([]);
   const [weeklyPlans, setWeeklyPlans] = useState<any[]>([]);
   const [shootingPlans, setShootingPlans] = useState<any[]>([]);
-  const [filterClient, setFilterClient] = useState("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DetailView>(null);
 
   useEffect(() => {
     loadData();
-  }, [filterClient, activeTab]);
+  }, [activeClient?.id, activeTab]);
 
   // Handle deep-link from Dashboard recent content
   useEffect(() => {
@@ -57,17 +49,17 @@ export default function Library() {
   const loadData = async () => {
     if (activeTab === "posts") {
       let query = supabase.from("generated_posts").select("*").order("created_at", { ascending: false });
-      if (filterClient !== "all") query = query.eq("client_id", filterClient);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setPosts(data);
     } else if (activeTab === "plans") {
       let query = (supabase as any).from("weekly_plans").select("*").order("created_at", { ascending: false });
-      if (filterClient !== "all") query = query.eq("client_id", filterClient);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setWeeklyPlans(data);
     } else {
       let query = (supabase as any).from("shooting_plans").select("*").order("created_at", { ascending: false });
-      if (filterClient !== "all") query = query.eq("client_id", filterClient);
+      if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setShootingPlans(data);
     }
@@ -124,22 +116,9 @@ export default function Library() {
   // --- List View ---
   return (
     <div className="max-w-5xl mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{t("library")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
-        </div>
-        <Select value={filterClient} onValueChange={setFilterClient}>
-          <SelectTrigger className="w-[180px] bg-secondary border-border">
-            <SelectValue placeholder={t("allBusinesses")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("allBusinesses")}</SelectItem>
-            {clients.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">{t("library")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
       </div>
 
       <div className="flex gap-1 mb-6 p-1 bg-secondary/50 rounded-lg w-fit">
