@@ -253,6 +253,7 @@ const translations = {
     settings: "Settings",
 
     // Dashboard
+    dashboardSubtitle: "Plan and control your content week",
     business: "Business",
     startAddingBusiness: "Start by adding your business in",
     whatToPublish: "What should I post this week?",
