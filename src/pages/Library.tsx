@@ -208,7 +208,8 @@ export default function Library() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
