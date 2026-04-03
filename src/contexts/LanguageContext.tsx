@@ -283,6 +283,7 @@ const translations = {
     storiesIdeas: "Stories ideas",
 
     // Calendar
+    calendarSubtitle: "Plan and track your content week by week",
     plans: "Plans",
     createdOn: "Created on",
     previousWeek: "Previous week",
