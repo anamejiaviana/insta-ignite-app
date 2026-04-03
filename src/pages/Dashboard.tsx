@@ -301,6 +301,7 @@ export default function Dashboard() {
                   onChange={(e) => setSpecialDates(e.target.value)}
                   className="bg-secondary border-border"
                 />
+                <p className="text-[10px] text-muted-foreground/60">Añádelo para que el plan se adapte mejor a tu semana</p>
               </div>
               <Button
                 variant="gradient"
