@@ -301,6 +301,7 @@ const translations = {
     weekOf: "Week",
 
     // Create Content
+    createContentSubtitle: "Create a single piece of content manually",
     backToCalendar: "Back to calendar",
     contentType: "Content type",
     post: "Post",

@@ -151,6 +151,7 @@ export default function Dashboard() {
       {/* Header with client selector */}
       <div>
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("dashboardSubtitle")}</p>
         {clients.length > 1 ? (
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="text-sm text-muted-foreground">{t("business")}:</span>
