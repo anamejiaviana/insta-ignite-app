@@ -152,37 +152,14 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("dashboardSubtitle")}</p>
-        {clients.length > 1 ? (
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className="text-sm text-muted-foreground">{t("business")}:</span>
-            {clients.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setActiveClientId(c.id)}
-                className={`text-sm px-3 py-1 rounded-full transition-all ${
-                  activeClient?.id === c.id
-                    ? "text-primary-foreground font-medium"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
-                }`}
-                style={
-                  activeClient?.id === c.id
-                    ? { background: "var(--gradient-primary)" }
-                    : undefined
-                }
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-        ) : clients.length === 1 ? (
-          null
-        ) : (
+        {clients.length === 0 && (
           <p className="text-muted-foreground mt-1 text-sm">
             {t("startAddingBusiness")}{" "}
             <button onClick={() => navigate("/settings")} className="text-primary underline">
               {t("settings")}
             </button>
           </p>
+        )}
         )}
       </div>
 
