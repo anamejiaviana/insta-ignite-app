@@ -41,6 +41,7 @@ const translations = {
     storiesIdeas: "Ideas de Stories",
 
     // Calendar
+    calendarSubtitle: "Planifica y sigue tu contenido semana a semana",
     plans: "Planes",
     createdOn: "Creado el",
     previousWeek: "Semana anterior",
@@ -152,6 +153,7 @@ const translations = {
     order: "Orden",
 
     // Library
+    librarySubtitle: "Accede y reutiliza todo el contenido que hayas guardado",
     posts: "Contenido generado",
     weeklyPlans: "Planes guardados",
     recordingSessions: "Guías de grabación",
@@ -281,6 +283,7 @@ const translations = {
     storiesIdeas: "Stories ideas",
 
     // Calendar
+    calendarSubtitle: "Plan and track your content week by week",
     plans: "Plans",
     createdOn: "Created on",
     previousWeek: "Previous week",
@@ -392,6 +395,7 @@ const translations = {
     order: "Order",
 
     // Library
+    librarySubtitle: "Access and reuse all your saved content",
     posts: "Generated content",
     weeklyPlans: "Saved plans",
     recordingSessions: "Recording guides",

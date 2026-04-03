@@ -127,7 +127,7 @@ export default function Library() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">{t("library")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">Tu repositorio de contenido guardado</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
         </div>
         <Select value={filterClient} onValueChange={setFilterClient}>
           <SelectTrigger className="w-[180px] bg-secondary border-border">
