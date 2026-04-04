@@ -111,6 +111,7 @@ export default function CreateContent() {
                 tone: activeClient.tone,
                 objective: activeClient.objective,
                 keywords: activeClient.keywords,
+                extra_context: activeClient.extra_context,
               }
             : null;
 
