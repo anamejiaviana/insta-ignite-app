@@ -266,6 +266,7 @@ export default function CreateContent() {
       toast({ variant: "destructive", title: t("errorGenerating"), description: error.message });
     } finally {
       setLoading(false);
+      setLoadingPhase(null);
     }
   };
 
