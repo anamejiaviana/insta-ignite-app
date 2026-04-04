@@ -115,7 +115,7 @@ export default function ContentCalendar() {
     if (error) {
       console.error("Failed to save completion state:", error);
       // Revert optimistic update on failure
-      setPlans(prev => prev.map((p, i) =>
+      setActivePlans(prev => prev.map((p, i) =>
         i === selectedPlanIndex ? { ...p, plan_data: selectedPlan.plan_data } : p
       ));
       toast({
