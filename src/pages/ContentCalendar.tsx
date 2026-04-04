@@ -209,7 +209,7 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && plans.length === 0 && (
+      {!loading && activePlans.length === 0 && archivedPlans.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">{t("noPlansYet")}</h3>
