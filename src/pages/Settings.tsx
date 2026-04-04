@@ -360,6 +360,19 @@ export default function Settings() {
                 <Input placeholder={t("keywordsPlaceholder")} value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} className="bg-secondary border-border h-9" />
               </div>
 
+              <div className="space-y-1">
+                <Label className="text-xs">{t("extraContext")}</Label>
+                <Textarea
+                  placeholder={t("extraContextPlaceholder")}
+                  value={form.extra_context}
+                  onChange={(e) => setForm({ ...form, extra_context: e.target.value })}
+                  className="bg-secondary border-border min-h-[80px] text-sm"
+                />
+                <p className="text-[11px] text-muted-foreground leading-tight mt-1">
+                  {t("extraContextHelper")}
+                </p>
+              </div>
+
               <Button variant="gradient" size="sm" onClick={saveClient} disabled={saving} className="w-full">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 {editingId ? t("update") : t("createBusiness")}
