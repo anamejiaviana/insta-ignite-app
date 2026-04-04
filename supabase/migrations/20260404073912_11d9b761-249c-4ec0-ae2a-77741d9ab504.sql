@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN extra_context text DEFAULT NULL;

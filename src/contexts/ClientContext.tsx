@@ -14,6 +14,7 @@ export interface Client {
   default_visual_style: string | null;
   content_language: string;
   inspiration_account: string | null;
+  extra_context: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
 import { useLanguage, UILanguage } from "@/contexts/LanguageContext";
@@ -72,6 +73,7 @@ interface ClientForm {
   default_visual_style: string;
   content_language: string;
   inspiration_account: string;
+  extra_context: string;
 }
 
 const emptyForm: ClientForm = {
@@ -85,6 +87,7 @@ const emptyForm: ClientForm = {
   default_visual_style: "",
   content_language: "es",
   inspiration_account: "",
+  extra_context: "",
 };
 
 export default function Settings() {
@@ -109,6 +112,7 @@ export default function Settings() {
       default_visual_style: client.default_visual_style || "",
       content_language: client.content_language || "es",
       inspiration_account: client.inspiration_account || "",
+      extra_context: (client as any).extra_context || "",
     });
     setShowForm(true);
   };
@@ -141,6 +145,7 @@ export default function Settings() {
         default_visual_style: form.default_visual_style || null,
         content_language: form.content_language || "es",
         inspiration_account: form.inspiration_account || null,
+        extra_context: form.extra_context || null,
       };
 
       if (editingId) {
@@ -353,6 +358,19 @@ export default function Settings() {
               <div className="space-y-1">
                 <Label className="text-xs">{t("keywords")}</Label>
                 <Input placeholder={t("keywordsPlaceholder")} value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} className="bg-secondary border-border h-9" />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">{t("extraContext")}</Label>
+                <Textarea
+                  placeholder={t("extraContextPlaceholder")}
+                  value={form.extra_context}
+                  onChange={(e) => setForm({ ...form, extra_context: e.target.value })}
+                  className="bg-secondary border-border min-h-[80px] text-sm"
+                />
+                <p className="text-[11px] text-muted-foreground leading-tight mt-1">
+                  {t("extraContextHelper")}
+                </p>
               </div>
 
               <Button variant="gradient" size="sm" onClick={saveClient} disabled={saving} className="w-full">
