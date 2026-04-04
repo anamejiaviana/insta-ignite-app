@@ -369,7 +369,7 @@ export default function CreateContent() {
       {/* Back to calendar link */}
       {fromCalendar && !generatedPost && (
         <button
-          onClick={() => navigate("/strategy/calendar")}
+          onClick={() => navigate("/strategy/calendar", { state: { returnToPlanId: calendarPlanId } })}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
