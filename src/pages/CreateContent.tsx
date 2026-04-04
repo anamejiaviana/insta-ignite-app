@@ -84,6 +84,7 @@ export default function CreateContent() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState<"content" | "image" | null>(null);
   const [step, setStep] = useState<"content" | "image">("content");
   const [carouselSlideCount, setCarouselSlideCount] = useState(3);
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
