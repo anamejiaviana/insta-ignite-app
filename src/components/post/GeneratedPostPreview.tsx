@@ -168,11 +168,11 @@ export function GeneratedPostPreview({
             )}
           >
             {loading ? (
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-3 px-4 text-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="text-sm text-muted-foreground">
                   {isCarousel
-                    ? `${t("generatingImageN")} ${carouselImages.length + 1}...`
+                    ? t("generatingCarousel")
                     : t("generatingImages")}
                 </span>
               </div>
