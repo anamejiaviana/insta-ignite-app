@@ -4,6 +4,25 @@ export type UILanguage = "es" | "en";
 
 const translations = {
   es: {
+    // Auth
+    loginTitle: "Iniciar Sesión",
+    signupTitle: "Crear Cuenta",
+    loginSubtitle: "Accede a tu generador de contenido",
+    signupSubtitle: "Empieza a crear contenido increíble",
+    nameLabel: "Nombre",
+    namePlaceholder: "Tu nombre",
+    emailLabel: "Email",
+    passwordLabel: "Contraseña",
+    loginButton: "Entrar",
+    signupButton: "Crear cuenta",
+    welcomeBack: "¡Bienvenido de nuevo!",
+    accountCreated: "¡Cuenta creada!",
+    accountCreatedDesc: "Ya puedes empezar a crear contenido.",
+    noAccount: "¿No tienes cuenta? ",
+    hasAccount: "¿Ya tienes cuenta? ",
+    registerLink: "Regístrate",
+    loginLink: "Inicia sesión",
+
     // Sidebar
     dashboard: "Inicio",
     createContent: "Crear contenido",
