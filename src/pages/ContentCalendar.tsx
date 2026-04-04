@@ -5,9 +5,10 @@ import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Calendar, CheckCircle2, Circle, Pencil, ChevronLeft, ChevronRight, Film, Zap } from "lucide-react";
+import { Loader2, Sparkles, Calendar, CheckCircle2, Circle, Pencil, ChevronLeft, ChevronRight, Film, Zap, Archive, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface WeeklyPlanItem {
   id: string;
@@ -43,9 +44,11 @@ export default function ContentCalendar() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnToPlanId = (location.state as any)?.returnToPlanId as string | undefined;
-  const [plans, setPlans] = useState<StoredPlan[]>([]);
+  const [activePlans, setActivePlans] = useState<StoredPlan[]>([]);
+  const [archivedPlans, setArchivedPlans] = useState<StoredPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     loadPlans();
@@ -57,7 +60,8 @@ export default function ContentCalendar() {
       .from("weekly_plans")
       .select("*")
       .order("week_start", { ascending: false })
-      .limit(50);
+      .order("created_at", { ascending: false })
+      .limit(100);
 
     if (activeClient) {
       query = query.eq("client_id", activeClient.id);
@@ -65,11 +69,14 @@ export default function ContentCalendar() {
 
     const { data } = await query;
     if (data) {
-      setPlans(data);
-      // If returning from content creation, restore the exact plan
+      const active = (data as StoredPlan[]).filter((p: any) => !p.is_archived);
+      const archived = (data as StoredPlan[]).filter((p: any) => p.is_archived);
+      setActivePlans(active);
+      setArchivedPlans(archived);
+
       const targetPlanId = returnToPlanId;
       if (targetPlanId) {
-        const idx = data.findIndex((p: StoredPlan) => p.id === targetPlanId);
+        const idx = active.findIndex((p: StoredPlan) => p.id === targetPlanId);
         setSelectedPlanIndex(idx >= 0 ? idx : 0);
       } else {
         setSelectedPlanIndex(0);
@@ -78,7 +85,7 @@ export default function ContentCalendar() {
     setLoading(false);
   };
 
-  const selectedPlan = plans[selectedPlanIndex] || null;
+  const selectedPlan = activePlans[selectedPlanIndex] || null;
   const planData = selectedPlan?.plan_data;
   const completedItems = new Set(planData?.completed_items || []);
 
@@ -96,7 +103,7 @@ export default function ContentCalendar() {
     const updatedPlanData = { ...selectedPlan.plan_data, completed_items: newCompletedItems };
 
     // Optimistic update
-    setPlans(prev => prev.map((p, i) =>
+    setActivePlans(prev => prev.map((p, i) =>
       i === selectedPlanIndex ? { ...p, plan_data: updatedPlanData } : p
     ));
 
@@ -108,7 +115,7 @@ export default function ContentCalendar() {
     if (error) {
       console.error("Failed to save completion state:", error);
       // Revert optimistic update on failure
-      setPlans(prev => prev.map((p, i) =>
+      setActivePlans(prev => prev.map((p, i) =>
         i === selectedPlanIndex ? { ...p, plan_data: selectedPlan.plan_data } : p
       ));
       toast({
@@ -147,7 +154,7 @@ export default function ContentCalendar() {
   };
 
   const canGoPrev = selectedPlanIndex > 0;
-  const canGoNext = selectedPlanIndex < plans.length - 1;
+  const canGoNext = selectedPlanIndex < activePlans.length - 1;
 
   const formatWeekLabel = (plan: StoredPlan) => {
     const start = new Date(plan.week_start);
@@ -202,7 +209,7 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && plans.length === 0 && (
+      {!loading && activePlans.length === 0 && archivedPlans.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">{t("noPlansYet")}</h3>
@@ -215,56 +222,42 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && plans.length > 0 && selectedPlan && (
+      {!loading && (activePlans.length > 0 || archivedPlans.length > 0) && (
         <div className="space-y-6">
-          {/* Week navigator */}
-          <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => canGoNext && setSelectedPlanIndex(selectedPlanIndex + 1)}
-              disabled={!canGoNext}
-              className="gap-1 px-1 sm:px-3"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("previousWeek")}</span>
-            </Button>
-            <div className="text-center min-w-0 flex-1">
-              <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => canGoPrev && setSelectedPlanIndex(selectedPlanIndex - 1)}
-              disabled={!canGoPrev}
-              className="gap-1 px-1 sm:px-3"
-            >
-              <span className="hidden sm:inline">{t("nextWeek")}</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Plan selector if many plans for same period */}
-          {plans.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {plans.map((plan, idx) => (
-                <button
-                  key={plan.id}
-                  onClick={() => setSelectedPlanIndex(idx)}
-                  className={`shrink-0 text-left px-3 py-2 rounded-lg text-xs transition-all ${
-                    selectedPlanIndex === idx
-                      ? "bg-primary/10 text-primary font-medium border border-primary/20"
-                      : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                  }`}
+          {/* Week navigator – only if there are active plans */}
+          {selectedPlan && (
+            <>
+              <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => canGoNext && setSelectedPlanIndex(selectedPlanIndex + 1)}
+                  disabled={!canGoNext}
+                  className="gap-1 px-1 sm:px-3"
                 >
-                  Semana {new Date(plan.week_start).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
-                </button>
-              ))}
-            </div>
-          )}
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("previousWeek")}</span>
+                </Button>
+                <div className="text-center min-w-0 flex-1">
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
+                    <Badge variant="outline" className="text-[10px] text-primary border-primary/30">{t("activePlan")}</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => canGoPrev && setSelectedPlanIndex(selectedPlanIndex - 1)}
+                  disabled={!canGoPrev}
+                  className="gap-1 px-1 sm:px-3"
+                >
+                  <span className="hidden sm:inline">{t("nextWeek")}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
 
           {/* Weekly progress */}
           {totalItems > 0 && (
@@ -412,6 +405,40 @@ export default function ContentCalendar() {
               </Card>
             )}
           </div>
+          </>
+          )}
+
+          {/* Archived plans collapsible */}
+          {archivedPlans.length > 0 && (
+            <Collapsible open={showArchived} onOpenChange={setShowArchived}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full gap-2 text-muted-foreground">
+                  <Archive className="h-4 w-4" />
+                  {showArchived ? t("hideArchivedPlans") : t("showArchivedPlans")} ({archivedPlans.length})
+                  {showArchived ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 mt-3">
+                {archivedPlans.map((plan) => (
+                  <Card key={plan.id} className="bg-card/50 border-border opacity-70">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm font-medium">{formatWeekLabel(plan)}</p>
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">{t("archivedBadge")}</Badge>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            {t("createdOn")} {new Date(plan.created_at).toLocaleDateString("es-ES")}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </div>
       )}
     </div>

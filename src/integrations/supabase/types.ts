@@ -226,6 +226,7 @@ export type Database = {
           content_language: string | null
           created_at: string
           id: string
+          is_archived: boolean
           plan_data: Json
           special_dates: string | null
           user_id: string
@@ -236,6 +237,7 @@ export type Database = {
           content_language?: string | null
           created_at?: string
           id?: string
+          is_archived?: boolean
           plan_data?: Json
           special_dates?: string | null
           user_id: string
@@ -246,6 +248,7 @@ export type Database = {
           content_language?: string | null
           created_at?: string
           id?: string
+          is_archived?: boolean
           plan_data?: Json
           special_dates?: string | null
           user_id?: string
