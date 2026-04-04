@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
 import { useLanguage, UILanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { ToastAction } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
