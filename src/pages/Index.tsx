@@ -15,6 +15,7 @@ import ContentCalendar from "./ContentCalendar";
 import ShootingDay from "./ShootingDay";
 import Library from "./Library";
 import Settings from "./Settings";
+import Plans from "./Plans";
 import NotFound from "./NotFound";
 
 const Index = () => {
