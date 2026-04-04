@@ -568,6 +568,12 @@ const translations = {
     generatingImages: "Generating images...",
     generatingImageN: "Generating image",
     regenerateAll: "Regenerate all",
+
+    // Loading states
+    loadingBusiness: "Loading business...",
+    generatingContent: "Generating content...",
+    generatingImage: "Generating image...",
+    generatingCarousel: "Generating carousel...",
   },
 } as const;
 
