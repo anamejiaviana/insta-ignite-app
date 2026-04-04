@@ -284,6 +284,25 @@ const translations = {
     regenerateAll: "Regenerar todas",
   },
   en: {
+    // Auth
+    loginTitle: "Sign In",
+    signupTitle: "Create Account",
+    loginSubtitle: "Access your content generator",
+    signupSubtitle: "Start creating amazing content",
+    nameLabel: "Name",
+    namePlaceholder: "Your name",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    loginButton: "Sign in",
+    signupButton: "Create account",
+    welcomeBack: "Welcome back!",
+    accountCreated: "Account created!",
+    accountCreatedDesc: "You can now start creating content.",
+    noAccount: "Don't have an account? ",
+    hasAccount: "Already have an account? ",
+    registerLink: "Sign up",
+    loginLink: "Sign in",
+
     // Sidebar
     dashboard: "Home",
     createContent: "Create content",
