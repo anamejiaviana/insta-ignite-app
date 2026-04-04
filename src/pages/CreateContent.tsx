@@ -71,6 +71,7 @@ export default function CreateContent() {
   const locState = location.state as any;
   const prefill = locState?.prefill as PrefillData | undefined;
   const fromCalendar = locState?.fromCalendar === true;
+  const calendarPlanId = locState?.planId as string | undefined;
 
   const [postType, setPostType] = useState(prefill?.postType || "post");
   const [visualStyle, setVisualStyle] = useState("");
