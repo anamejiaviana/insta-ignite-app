@@ -567,6 +567,7 @@ export default function CreateContent() {
             }}
             onCopyChange={(mainCopy, storyCopy) => { editedCopiesRef.current = { mainCopy, storyCopy }; }}
             fromCalendar={fromCalendar}
+            calendarPlanId={calendarPlanId}
             prefillData={prefill ? { title: prefill.title, hook: prefill.hook, shots: prefill.shots, script: prefill.description } : undefined}
           />
         </div>

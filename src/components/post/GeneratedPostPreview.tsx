@@ -132,7 +132,7 @@ export function GeneratedPostPreview({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/strategy/calendar")}
+            onClick={() => navigate("/strategy/calendar", { state: { returnToPlanId: calendarPlanId } })}
           >
             <Calendar className="h-4 w-4 mr-2" />
             {t("backToCalendarPrimary")}
