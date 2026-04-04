@@ -144,6 +144,7 @@ export default function Settings() {
         default_visual_style: form.default_visual_style || null,
         content_language: form.content_language || "es",
         inspiration_account: form.inspiration_account || null,
+        extra_context: form.extra_context || null,
       };
 
       if (editingId) {
