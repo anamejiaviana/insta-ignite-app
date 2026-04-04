@@ -21,6 +21,9 @@ serve(async (req) => {
       const addressLine = clientContext.address
         ? `Dirección real del negocio: ${clientContext.address}`
         : 'IMPORTANTE: Este negocio NO tiene dirección registrada. NO inventes ninguna dirección, calle, número, código postal ni ubicación exacta. Si necesitas referirte a la ubicación, usa frases genéricas como "Ven a vernos", "Te esperamos", "Visítanos".';
+      const extraContextLine = clientContext.extra_context
+        ? `Contexto adicional de la cuenta: ${clientContext.extra_context}`
+        : '';
       contextBlock = `
       Negocio: ${clientContext.name || ''}
       Tipo: ${clientContext.type || ''}
@@ -29,6 +32,7 @@ serve(async (req) => {
       Tono de marca: ${clientContext.tone || 'Profesional y cercana'}
       Objetivo: ${clientContext.objective || ''}
       Palabras clave: ${(clientContext.keywords || []).join(', ')}
+      ${extraContextLine}
       `;
     } else if (brandConfig) {
       contextBlock = `
