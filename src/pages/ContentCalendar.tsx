@@ -44,9 +44,11 @@ export default function ContentCalendar() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnToPlanId = (location.state as any)?.returnToPlanId as string | undefined;
-  const [plans, setPlans] = useState<StoredPlan[]>([]);
+  const [activePlans, setActivePlans] = useState<StoredPlan[]>([]);
+  const [archivedPlans, setArchivedPlans] = useState<StoredPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     loadPlans();
@@ -58,7 +60,8 @@ export default function ContentCalendar() {
       .from("weekly_plans")
       .select("*")
       .order("week_start", { ascending: false })
-      .limit(50);
+      .order("created_at", { ascending: false })
+      .limit(100);
 
     if (activeClient) {
       query = query.eq("client_id", activeClient.id);
@@ -66,11 +69,14 @@ export default function ContentCalendar() {
 
     const { data } = await query;
     if (data) {
-      setPlans(data);
-      // If returning from content creation, restore the exact plan
+      const active = (data as StoredPlan[]).filter((p: any) => !p.is_archived);
+      const archived = (data as StoredPlan[]).filter((p: any) => p.is_archived);
+      setActivePlans(active);
+      setArchivedPlans(archived);
+
       const targetPlanId = returnToPlanId;
       if (targetPlanId) {
-        const idx = data.findIndex((p: StoredPlan) => p.id === targetPlanId);
+        const idx = active.findIndex((p: StoredPlan) => p.id === targetPlanId);
         setSelectedPlanIndex(idx >= 0 ? idx : 0);
       } else {
         setSelectedPlanIndex(0);
@@ -79,7 +85,7 @@ export default function ContentCalendar() {
     setLoading(false);
   };
 
-  const selectedPlan = plans[selectedPlanIndex] || null;
+  const selectedPlan = activePlans[selectedPlanIndex] || null;
   const planData = selectedPlan?.plan_data;
   const completedItems = new Set(planData?.completed_items || []);
 
