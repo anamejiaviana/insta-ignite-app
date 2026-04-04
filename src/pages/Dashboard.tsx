@@ -106,13 +106,25 @@ export default function Dashboard() {
 
         const user = (await supabase.auth.getUser()).data.user;
         if (user) {
+          const weekStartStr = format(selectedWeek, "yyyy-MM-dd");
+
+          // Archive existing plans for the same week and business
+          await (supabase as any)
+            .from("weekly_plans")
+            .update({ is_archived: true })
+            .eq("user_id", user.id)
+            .eq("client_id", activeClient.id)
+            .eq("week_start", weekStartStr)
+            .eq("is_archived", false);
+
           await (supabase as any).from("weekly_plans").insert({
             user_id: user.id,
             client_id: activeClient.id,
-            week_start: format(selectedWeek, "yyyy-MM-dd"),
+            week_start: weekStartStr,
             special_dates: specialDates || null,
             content_language: activeClient.content_language || "es",
             plan_data: data,
+            is_archived: false,
           });
         }
 
