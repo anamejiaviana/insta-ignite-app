@@ -60,7 +60,7 @@ serve(async (req) => {
     {
       "mainCopy": "El copy principal del post (máx 2200 caracteres, optimizado para engagement)",
       "storyCopy": "Versión corta para stories (máx 200 caracteres, directo e impactante)",
-      "hashtags": ["hashtag1", "hashtag2", ...] (entre 8 y 15 hashtags relevantes y específicos, sin el símbolo #),
+      "hashtags": ["hashtag1", "hashtag2", ...] (exactamente 5 hashtags relevantes y específicos del nicho, sin el símbolo #),
       "imagePrompt": "Descripción detallada para generar la imagen perfecta para este post"
     }`;
     }
