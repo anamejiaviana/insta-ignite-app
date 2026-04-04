@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
 import { useLanguage, UILanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { ToastAction } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -129,9 +130,9 @@ export default function Settings() {
         title: `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
         description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
         action: (
-          <Button variant="outline" size="sm" onClick={() => navigate("/plans")}>
+          <ToastAction altText={t("plansUpgrade")} onClick={() => navigate("/plans")}>
             {t("plansUpgrade")}
-          </Button>
+          </ToastAction>
         ),
       });
       return;
