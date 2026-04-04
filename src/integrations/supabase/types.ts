@@ -60,6 +60,7 @@ export type Database = {
           content_language: string | null
           created_at: string
           default_visual_style: string | null
+          extra_context: string | null
           id: string
           inspiration_account: string | null
           keywords: string[] | null
@@ -76,6 +77,7 @@ export type Database = {
           content_language?: string | null
           created_at?: string
           default_visual_style?: string | null
+          extra_context?: string | null
           id?: string
           inspiration_account?: string | null
           keywords?: string[] | null
@@ -92,6 +94,7 @@ export type Database = {
           content_language?: string | null
           created_at?: string
           default_visual_style?: string | null
+          extra_context?: string | null
           id?: string
           inspiration_account?: string | null
           keywords?: string[] | null
