@@ -282,6 +282,12 @@ const translations = {
     generatingImages: "Generando imágenes...",
     generatingImageN: "Generando imagen",
     regenerateAll: "Regenerar todas",
+
+    // Loading states
+    loadingBusiness: "Cargando negocio...",
+    generatingContent: "Generando contenido...",
+    generatingImage: "Generando imagen...",
+    generatingCarousel: "Generando carrusel...",
   },
   en: {
     // Auth
@@ -562,6 +568,12 @@ const translations = {
     generatingImages: "Generating images...",
     generatingImageN: "Generating image",
     regenerateAll: "Regenerate all",
+
+    // Loading states
+    loadingBusiness: "Loading business...",
+    generatingContent: "Generating content...",
+    generatingImage: "Generating image...",
+    generatingCarousel: "Generating carousel...",
   },
 } as const;
 

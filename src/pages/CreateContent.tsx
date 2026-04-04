@@ -84,6 +84,7 @@ export default function CreateContent() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedPost, setGeneratedPost] = useState<GeneratedPost | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState<"content" | "image" | null>(null);
   const [step, setStep] = useState<"content" | "image">("content");
   const [carouselSlideCount, setCarouselSlideCount] = useState(3);
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
@@ -215,6 +216,7 @@ export default function CreateContent() {
       return;
     }
     setLoading(true);
+    setLoadingPhase("content");
     setStep("content");
     try {
       const clientContext = activeClient
@@ -248,6 +250,7 @@ export default function CreateContent() {
 
       setGeneratedPost(data);
       setStep("image");
+      setLoadingPhase("image");
 
       if (postType === "carousel" && data.slidePrompts?.length > 0) {
         await generateCarouselImages(data.slidePrompts);
@@ -263,6 +266,7 @@ export default function CreateContent() {
       toast({ variant: "destructive", title: t("errorGenerating"), description: error.message });
     } finally {
       setLoading(false);
+      setLoadingPhase(null);
     }
   };
 
@@ -544,7 +548,7 @@ export default function CreateContent() {
 
           <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim()} className="w-full">
             {loading ? (
-              <><Loader2 className="h-5 w-5 animate-spin" /> {t("generating")}</>
+              <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? (postType === "carousel" ? t("generatingCarousel") : t("generatingImage")) : t("generatingContent")}</>
             ) : (
               <><Sparkles className="h-5 w-5" /> {t("generateContentBtn")}</>
             )}
