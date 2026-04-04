@@ -72,6 +72,7 @@ interface ClientForm {
   default_visual_style: string;
   content_language: string;
   inspiration_account: string;
+  extra_context: string;
 }
 
 const emptyForm: ClientForm = {
@@ -85,6 +86,7 @@ const emptyForm: ClientForm = {
   default_visual_style: "",
   content_language: "es",
   inspiration_account: "",
+  extra_context: "",
 };
 
 export default function Settings() {
