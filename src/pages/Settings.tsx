@@ -111,6 +111,7 @@ export default function Settings() {
       default_visual_style: client.default_visual_style || "",
       content_language: client.content_language || "es",
       inspiration_account: client.inspiration_account || "",
+      extra_context: (client as any).extra_context || "",
     });
     setShowForm(true);
   };
