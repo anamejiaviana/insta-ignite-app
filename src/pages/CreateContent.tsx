@@ -250,6 +250,7 @@ export default function CreateContent() {
 
       setGeneratedPost(data);
       setStep("image");
+      setLoadingPhase("image");
 
       if (postType === "carousel" && data.slidePrompts?.length > 0) {
         await generateCarouselImages(data.slidePrompts);
