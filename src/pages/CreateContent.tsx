@@ -216,6 +216,7 @@ export default function CreateContent() {
       return;
     }
     setLoading(true);
+    setLoadingPhase("content");
     setStep("content");
     try {
       const clientContext = activeClient
