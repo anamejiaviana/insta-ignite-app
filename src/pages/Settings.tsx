@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, Save, X, Loader2, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Loader2, Globe, Lock } from "lucide-react";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import {
   AlertDialog,
   AlertDialogAction,
