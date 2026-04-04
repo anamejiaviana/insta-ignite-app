@@ -120,6 +120,15 @@ export default function Settings() {
   };
 
   const startNew = () => {
+    if (!canAddBusiness(clients.length)) {
+      const limit = plan?.business_limit ?? 1;
+      toast({
+        variant: "destructive",
+        title: `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
+        description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
+      });
+      return;
+    }
     setEditingId(null);
     setForm(emptyForm);
     setShowForm(true);
