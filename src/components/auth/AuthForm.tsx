@@ -4,7 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Loader2, Globe } from "lucide-react";
+import { useLanguage, UILanguage } from "@/contexts/LanguageContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
+  { value: "es", label: "Español" },
+  { value: "en", label: "English" },
+];
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,6 +25,7 @@ export function AuthForm() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t, uiLanguage, setUILanguage } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +38,7 @@ export function AuthForm() {
           password,
         });
         if (error) throw error;
-        toast({ title: "¡Bienvenido de nuevo!" });
+        toast({ title: t("welcomeBack") });
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -35,7 +48,7 @@ export function AuthForm() {
           },
         });
         if (error) throw error;
-        toast({ title: "¡Cuenta creada!", description: "Ya puedes empezar a crear contenido." });
+        toast({ title: t("accountCreated"), description: t("accountCreatedDesc") });
       }
     } catch (error: any) {
       toast({
@@ -48,17 +61,39 @@ export function AuthForm() {
     }
   };
 
+  const currentLangLabel = UI_LANGUAGES.find((l) => l.value === uiLanguage)?.label;
+
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto relative">
+      <div className="absolute -top-12 right-0">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <Globe className="h-4 w-4" />
+              <span className="text-sm">{currentLangLabel}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {UI_LANGUAGES.map((lang) => (
+              <DropdownMenuItem
+                key={lang.value}
+                onClick={() => setUILanguage(lang.value)}
+                className={uiLanguage === lang.value ? "font-semibold text-primary" : ""}
+              >
+                {lang.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div className="glass rounded-2xl p-8 shadow-elevated animate-scale-in">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold gradient-text mb-2">
-            {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+            {isLogin ? t("loginTitle") : t("signupTitle")}
           </h2>
           <p className="text-muted-foreground text-sm">
-            {isLogin
-              ? "Accede a tu generador de contenido"
-              : "Empieza a crear contenido increíble"}
+            {isLogin ? t("loginSubtitle") : t("signupSubtitle")}
           </p>
         </div>
 
@@ -66,14 +101,14 @@ export function AuthForm() {
           {!isLogin && (
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
-                Nombre
+                {t("nameLabel")}
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Tu nombre"
+                  placeholder={t("namePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10 bg-secondary border-border focus:border-primary"
@@ -85,7 +120,7 @@ export function AuthForm() {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
-              Email
+              {t("emailLabel")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -103,7 +138,7 @@ export function AuthForm() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">
-              Contraseña
+              {t("passwordLabel")}
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -131,7 +166,7 @@ export function AuthForm() {
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                {isLogin ? "Entrar" : "Crear cuenta"}
+                {isLogin ? t("loginButton") : t("signupButton")}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -144,9 +179,9 @@ export function AuthForm() {
             onClick={() => setIsLogin(!isLogin)}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {isLogin ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
+            {isLogin ? t("noAccount") : t("hasAccount")}
             <span className="text-primary font-medium">
-              {isLogin ? "Regístrate" : "Inicia sesión"}
+              {isLogin ? t("registerLink") : t("loginLink")}
             </span>
           </button>
         </div>

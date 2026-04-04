@@ -4,6 +4,25 @@ export type UILanguage = "es" | "en";
 
 const translations = {
   es: {
+    // Auth
+    loginTitle: "Iniciar Sesión",
+    signupTitle: "Crear Cuenta",
+    loginSubtitle: "Accede a tu generador de contenido",
+    signupSubtitle: "Empieza a crear contenido increíble",
+    nameLabel: "Nombre",
+    namePlaceholder: "Tu nombre",
+    emailLabel: "Email",
+    passwordLabel: "Contraseña",
+    loginButton: "Entrar",
+    signupButton: "Crear cuenta",
+    welcomeBack: "¡Bienvenido de nuevo!",
+    accountCreated: "¡Cuenta creada!",
+    accountCreatedDesc: "Ya puedes empezar a crear contenido.",
+    noAccount: "¿No tienes cuenta? ",
+    hasAccount: "¿Ya tienes cuenta? ",
+    registerLink: "Regístrate",
+    loginLink: "Inicia sesión",
+
     // Sidebar
     dashboard: "Inicio",
     createContent: "Crear contenido",
@@ -265,6 +284,25 @@ const translations = {
     regenerateAll: "Regenerar todas",
   },
   en: {
+    // Auth
+    loginTitle: "Sign In",
+    signupTitle: "Create Account",
+    loginSubtitle: "Access your content generator",
+    signupSubtitle: "Start creating amazing content",
+    nameLabel: "Name",
+    namePlaceholder: "Your name",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    loginButton: "Sign in",
+    signupButton: "Create account",
+    welcomeBack: "Welcome back!",
+    accountCreated: "Account created!",
+    accountCreatedDesc: "You can now start creating content.",
+    noAccount: "Don't have an account? ",
+    hasAccount: "Already have an account? ",
+    registerLink: "Sign up",
+    loginLink: "Sign in",
+
     // Sidebar
     dashboard: "Home",
     createContent: "Create content",
