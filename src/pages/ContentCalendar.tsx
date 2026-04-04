@@ -405,6 +405,40 @@ export default function ContentCalendar() {
               </Card>
             )}
           </div>
+          </>
+          )}
+
+          {/* Archived plans collapsible */}
+          {archivedPlans.length > 0 && (
+            <Collapsible open={showArchived} onOpenChange={setShowArchived}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full gap-2 text-muted-foreground">
+                  <Archive className="h-4 w-4" />
+                  {showArchived ? t("hideArchivedPlans") : t("showArchivedPlans")} ({archivedPlans.length})
+                  {showArchived ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 mt-3">
+                {archivedPlans.map((plan) => (
+                  <Card key={plan.id} className="bg-card/50 border-border opacity-70">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm font-medium">{formatWeekLabel(plan)}</p>
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">{t("archivedBadge")}</Badge>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            {t("createdOn")} {new Date(plan.created_at).toLocaleDateString("es-ES")}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </div>
       )}
     </div>
