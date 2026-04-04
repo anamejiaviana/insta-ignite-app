@@ -46,7 +46,7 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', enhancedPrompt);
 
-    const models = ['google/gemini-2.5-flash-image', 'google/gemini-3.1-flash-image-preview'];
+    const models = ['google/gemini-2.5-flash-image', 'google/gemini-3.1-flash-image-preview', 'google/gemini-3-pro-image-preview'];
     let imageUrl: string | undefined;
 
     for (const model of models) {
@@ -82,7 +82,12 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      console.log(`Image generation response received from ${model}`);
+      console.log(`Response from ${model}:`, JSON.stringify(data?.choices?.[0]?.message ? {
+        hasContent: !!data.choices[0].message.content,
+        hasImages: !!data.choices[0].message.images,
+        imagesLength: data.choices[0].message.images?.length,
+        imageKeys: data.choices[0].message.images?.[0] ? Object.keys(data.choices[0].message.images[0]) : 'none',
+      } : 'no choices'));
 
       imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       if (imageUrl) break;
