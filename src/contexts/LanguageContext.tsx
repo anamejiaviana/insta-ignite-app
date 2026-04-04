@@ -287,7 +287,7 @@ const translations = {
     loadingBusiness: "Cargando negocio...",
     generatingContent: "Generando contenido...",
     generatingImage: "Generando imagen...",
-    generatingCarousel: "Generando carrusel...",
+    generatingCarousel: "Generando carrusel... espera a que se creen todas las imágenes",
   },
   en: {
     // Auth
