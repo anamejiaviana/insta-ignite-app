@@ -95,6 +95,7 @@ export default function Settings() {
   const { clients, refreshClients } = useClients();
   const { t, uiLanguage, setUILanguage } = useLanguage();
   const { toast } = useToast();
+  const { plan, canAddBusiness } = useUserPlan();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ClientForm>(emptyForm);
