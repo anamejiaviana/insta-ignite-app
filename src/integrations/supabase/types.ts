@@ -220,6 +220,33 @@ export type Database = {
           },
         ]
       }
+      user_plans: {
+        Row: {
+          business_limit: number
+          created_at: string
+          id: string
+          plan_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_limit?: number
+          created_at?: string
+          id?: string
+          plan_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_limit?: number
+          created_at?: string
+          id?: string
+          plan_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

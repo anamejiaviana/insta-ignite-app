@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, Save, X, Loader2, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Loader2, Globe, Lock } from "lucide-react";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,6 +95,7 @@ export default function Settings() {
   const { clients, refreshClients } = useClients();
   const { t, uiLanguage, setUILanguage } = useLanguage();
   const { toast } = useToast();
+  const { plan, canAddBusiness } = useUserPlan();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ClientForm>(emptyForm);
@@ -118,6 +120,15 @@ export default function Settings() {
   };
 
   const startNew = () => {
+    if (!canAddBusiness(clients.length)) {
+      const limit = plan?.business_limit ?? 1;
+      toast({
+        variant: "destructive",
+        title: `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
+        description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
+      });
+      return;
+    }
     setEditingId(null);
     setForm(emptyForm);
     setShowForm(true);
