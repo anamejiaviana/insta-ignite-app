@@ -5,9 +5,10 @@ import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Calendar, CheckCircle2, Circle, Pencil, ChevronLeft, ChevronRight, Film, Zap } from "lucide-react";
+import { Loader2, Sparkles, Calendar, CheckCircle2, Circle, Pencil, ChevronLeft, ChevronRight, Film, Zap, Archive, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface WeeklyPlanItem {
   id: string;
