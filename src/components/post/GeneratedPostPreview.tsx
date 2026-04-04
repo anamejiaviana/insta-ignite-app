@@ -41,6 +41,7 @@ interface GeneratedPostPreviewProps {
   onRegenerateImage: () => void;
   onCopyChange?: (mainCopy: string, storyCopy: string) => void;
   fromCalendar?: boolean;
+  calendarPlanId?: string;
   prefillData?: {
     title?: string;
     hook?: string;
