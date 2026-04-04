@@ -573,7 +573,7 @@ const translations = {
     loadingBusiness: "Loading business...",
     generatingContent: "Generating content...",
     generatingImage: "Generating image...",
-    generatingCarousel: "Generating carousel...",
+    generatingCarousel: "Generating carousel... please wait until all images are ready",
   },
 } as const;
 
