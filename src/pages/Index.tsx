@@ -15,6 +15,7 @@ import ContentCalendar from "./ContentCalendar";
 import ShootingDay from "./ShootingDay";
 import Library from "./Library";
 import Settings from "./Settings";
+import Plans from "./Plans";
 import NotFound from "./NotFound";
 
 const Index = () => {
@@ -69,6 +70,7 @@ const Index = () => {
           <Route path="shooting" element={<ShootingDay />} />
           <Route path="library" element={<Library />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="plans" element={<Plans />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

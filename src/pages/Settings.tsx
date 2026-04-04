@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
@@ -100,6 +101,7 @@ export default function Settings() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ClientForm>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   const startEdit = (client: Client) => {
     setEditingId(client.id);
@@ -126,6 +128,11 @@ export default function Settings() {
         variant: "destructive",
         title: `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
         description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
+        action: (
+          <Button variant="outline" size="sm" onClick={() => navigate("/plans")}>
+            {t("plansUpgrade")}
+          </Button>
+        ),
       });
       return;
     }
