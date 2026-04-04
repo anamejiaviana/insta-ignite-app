@@ -103,7 +103,7 @@ export default function ContentCalendar() {
     const updatedPlanData = { ...selectedPlan.plan_data, completed_items: newCompletedItems };
 
     // Optimistic update
-    setPlans(prev => prev.map((p, i) =>
+    setActivePlans(prev => prev.map((p, i) =>
       i === selectedPlanIndex ? { ...p, plan_data: updatedPlanData } : p
     ));
 
