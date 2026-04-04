@@ -101,6 +101,7 @@ export default function Settings() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ClientForm>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   const startEdit = (client: Client) => {
     setEditingId(client.id);
