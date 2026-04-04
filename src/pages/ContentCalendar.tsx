@@ -154,7 +154,7 @@ export default function ContentCalendar() {
   };
 
   const canGoPrev = selectedPlanIndex > 0;
-  const canGoNext = selectedPlanIndex < plans.length - 1;
+  const canGoNext = selectedPlanIndex < activePlans.length - 1;
 
   const formatWeekLabel = (plan: StoredPlan) => {
     const start = new Date(plan.week_start);
