@@ -222,56 +222,42 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && plans.length > 0 && selectedPlan && (
+      {!loading && (activePlans.length > 0 || archivedPlans.length > 0) && (
         <div className="space-y-6">
-          {/* Week navigator */}
-          <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => canGoNext && setSelectedPlanIndex(selectedPlanIndex + 1)}
-              disabled={!canGoNext}
-              className="gap-1 px-1 sm:px-3"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("previousWeek")}</span>
-            </Button>
-            <div className="text-center min-w-0 flex-1">
-              <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => canGoPrev && setSelectedPlanIndex(selectedPlanIndex - 1)}
-              disabled={!canGoPrev}
-              className="gap-1 px-1 sm:px-3"
-            >
-              <span className="hidden sm:inline">{t("nextWeek")}</span>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Plan selector if many plans for same period */}
-          {plans.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {plans.map((plan, idx) => (
-                <button
-                  key={plan.id}
-                  onClick={() => setSelectedPlanIndex(idx)}
-                  className={`shrink-0 text-left px-3 py-2 rounded-lg text-xs transition-all ${
-                    selectedPlanIndex === idx
-                      ? "bg-primary/10 text-primary font-medium border border-primary/20"
-                      : "bg-secondary/50 text-muted-foreground hover:text-foreground"
-                  }`}
+          {/* Week navigator – only if there are active plans */}
+          {selectedPlan && (
+            <>
+              <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => canGoNext && setSelectedPlanIndex(selectedPlanIndex + 1)}
+                  disabled={!canGoNext}
+                  className="gap-1 px-1 sm:px-3"
                 >
-                  Semana {new Date(plan.week_start).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
-                </button>
-              ))}
-            </div>
-          )}
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("previousWeek")}</span>
+                </Button>
+                <div className="text-center min-w-0 flex-1">
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
+                    <Badge variant="outline" className="text-[10px] text-primary border-primary/30">{t("activePlan")}</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => canGoPrev && setSelectedPlanIndex(selectedPlanIndex - 1)}
+                  disabled={!canGoPrev}
+                  className="gap-1 px-1 sm:px-3"
+                >
+                  <span className="hidden sm:inline">{t("nextWeek")}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
 
           {/* Weekly progress */}
           {totalItems > 0 && (
