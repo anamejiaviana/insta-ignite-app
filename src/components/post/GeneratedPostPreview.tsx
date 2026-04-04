@@ -59,6 +59,7 @@ export function GeneratedPostPreview({
   onRegenerateImage,
   onCopyChange,
   fromCalendar,
+  calendarPlanId,
   prefillData,
 }: GeneratedPostPreviewProps) {
   const { toast } = useToast();
