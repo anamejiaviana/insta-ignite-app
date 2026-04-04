@@ -128,6 +128,11 @@ export default function Settings() {
         variant: "destructive",
         title: `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
         description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
+        action: (
+          <Button variant="outline" size="sm" onClick={() => navigate("/plans")}>
+            {t("plansUpgrade")}
+          </Button>
+        ),
       });
       return;
     }
