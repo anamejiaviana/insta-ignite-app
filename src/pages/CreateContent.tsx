@@ -548,7 +548,7 @@ export default function CreateContent() {
 
           <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim()} className="w-full">
             {loading ? (
-              <><Loader2 className="h-5 w-5 animate-spin" /> {t("generating")}</>
+              <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? (postType === "carousel" ? t("generatingCarousel") : t("generatingImage")) : t("generatingContent")}</>
             ) : (
               <><Sparkles className="h-5 w-5" /> {t("generateContentBtn")}</>
             )}
