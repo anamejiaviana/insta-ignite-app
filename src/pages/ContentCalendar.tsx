@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -41,6 +41,8 @@ export default function ContentCalendar() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnToPlanId = (location.state as any)?.returnToPlanId as string | undefined;
   const [plans, setPlans] = useState<StoredPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
@@ -64,7 +66,14 @@ export default function ContentCalendar() {
     const { data } = await query;
     if (data) {
       setPlans(data);
-      setSelectedPlanIndex(0);
+      // If returning from content creation, restore the exact plan
+      const targetPlanId = returnToPlanId;
+      if (targetPlanId) {
+        const idx = data.findIndex((p: StoredPlan) => p.id === targetPlanId);
+        setSelectedPlanIndex(idx >= 0 ? idx : 0);
+      } else {
+        setSelectedPlanIndex(0);
+      }
     }
     setLoading(false);
   };

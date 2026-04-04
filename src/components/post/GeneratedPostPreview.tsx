@@ -41,6 +41,7 @@ interface GeneratedPostPreviewProps {
   onRegenerateImage: () => void;
   onCopyChange?: (mainCopy: string, storyCopy: string) => void;
   fromCalendar?: boolean;
+  calendarPlanId?: string;
   prefillData?: {
     title?: string;
     hook?: string;
@@ -58,6 +59,7 @@ export function GeneratedPostPreview({
   onRegenerateImage,
   onCopyChange,
   fromCalendar,
+  calendarPlanId,
   prefillData,
 }: GeneratedPostPreviewProps) {
   const { toast } = useToast();
@@ -130,7 +132,7 @@ export function GeneratedPostPreview({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/strategy/calendar")}
+            onClick={() => navigate("/strategy/calendar", { state: { returnToPlanId: calendarPlanId } })}
           >
             <Calendar className="h-4 w-4 mr-2" />
             {t("backToCalendarPrimary")}
