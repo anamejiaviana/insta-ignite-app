@@ -133,6 +133,9 @@ export default function Plans() {
         })}
       </div>
 
+      <p className="text-center text-sm text-muted-foreground mb-2">
+        {t("plansBusinessExplainer")}
+      </p>
       <p className="text-center text-xs text-muted-foreground">
         {t("plansFooter")}
       </p>
