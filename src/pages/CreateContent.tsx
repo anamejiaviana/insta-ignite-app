@@ -90,6 +90,12 @@ export default function CreateContent() {
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const getImageLoadingMessage = () => {
+    if (postType === "carousel") return t("generatingCarousel");
+    if (imageSource === "edit") return t("editingImageWithAI");
+    return t("generatingImage");
+  };
+
   useEffect(() => {
     if (prefill?.caption) {
       // Set initial post with caption data, then generate storyCopy via AI
@@ -556,7 +562,7 @@ export default function CreateContent() {
 
           <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim()} className="w-full">
             {loading ? (
-              <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? (postType === "carousel" ? t("generatingCarousel") : t("generatingImage")) : t("generatingContent")}</>
+              <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? getImageLoadingMessage() : t("generatingContent")}</>
             ) : (
               <><Sparkles className="h-5 w-5" /> {t("generateContentBtn")}</>
             )}
@@ -568,13 +574,21 @@ export default function CreateContent() {
             post={generatedPost}
             postType={postType}
             loading={loading && step === "image"}
+            loadingMessage={getImageLoadingMessage()}
             onSave={savePost}
             onReset={resetGenerator}
-            onRegenerateImage={() => {
-              if (postType === "carousel" && generatedPost.slidePrompts?.length) {
-                generateCarouselImages(generatedPost.slidePrompts);
-              } else if (generatedPost.imagePrompt) {
-                generateImage(generatedPost.imagePrompt);
+            onRegenerateImage={async () => {
+              setLoading(true);
+              setLoadingPhase("image");
+              try {
+                if (postType === "carousel" && generatedPost.slidePrompts?.length) {
+                  await generateCarouselImages(generatedPost.slidePrompts);
+                } else if (generatedPost.imagePrompt) {
+                  await generateImage(generatedPost.imagePrompt);
+                }
+              } finally {
+                setLoading(false);
+                setLoadingPhase(null);
               }
             }}
             onCopyChange={(mainCopy, storyCopy) => { editedCopiesRef.current = { mainCopy, storyCopy }; }}
