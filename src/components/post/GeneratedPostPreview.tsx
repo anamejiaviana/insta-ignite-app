@@ -36,6 +36,7 @@ interface GeneratedPostPreviewProps {
   post: GeneratedPost;
   postType: string;
   loading: boolean;
+  loadingMessage?: string;
   onSave: () => Promise<void> | void;
   onReset: () => void;
   onRegenerateImage: () => void;
@@ -54,6 +55,7 @@ export function GeneratedPostPreview({
   post,
   postType,
   loading,
+  loadingMessage,
   onSave,
   onReset,
   onRegenerateImage,
@@ -171,9 +173,7 @@ export function GeneratedPostPreview({
               <div className="flex flex-col items-center gap-3 px-4 text-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="text-sm text-muted-foreground">
-                  {isCarousel
-                    ? t("generatingCarousel")
-                    : t("generatingImages")}
+                  {loadingMessage ?? (isCarousel ? t("generatingCarousel") : t("generatingImage"))}
                 </span>
               </div>
             ) : isCarousel ? (

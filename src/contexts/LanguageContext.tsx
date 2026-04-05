@@ -288,6 +288,7 @@ const translations = {
     generatingContent: "Generando contenido...",
     generatingImage: "Generando imagen...",
     generatingCarousel: "Generando carrusel... espera a que se creen todas las imágenes",
+    editingImageWithAI: "Editando imagen con IA...",
 
     // Plans
     plansTitle: "Planes y precios",
@@ -600,6 +601,7 @@ const translations = {
     generatingContent: "Generating content...",
     generatingImage: "Generating image...",
     generatingCarousel: "Generating carousel... please wait until all images are ready",
+    editingImageWithAI: "Editing image with AI...",
 
     // Plans
     plansTitle: "Plans & Pricing",
