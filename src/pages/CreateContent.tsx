@@ -415,7 +415,7 @@ export default function CreateContent() {
           {/* Post Type */}
           <div className="space-y-2">
             <Label>{t("contentType")}</Label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {POST_TYPES.map((t) => (
                 <button
                   key={t.value}
@@ -437,7 +437,7 @@ export default function CreateContent() {
           {postType === "carousel" && (
             <div className="space-y-2">
               <Label>{t("carouselSlideCount")}</Label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
                 {[2, 3, 4, 5, 6, 7, 8, 10].map((n) => (
                   <button
                     key={n}
@@ -486,8 +486,8 @@ export default function CreateContent() {
                     }`}
                     style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
                   >
-                    <src.icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t(src.label as any)}</span>
+                    <src.icon className="h-4 w-4 shrink-0" />
+                    <span className="text-xs sm:text-sm truncate">{t(src.label as any)}</span>
                   </button>
                 ))}
               </div>
@@ -525,7 +525,7 @@ export default function CreateContent() {
               <Label>{t("contextOptional")}</Label>
               <Textarea placeholder={t("describeContext")} value={description} onChange={(e) => setDescription(e.target.value)} className="bg-secondary border-border min-h-[80px]" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>{t("objective")}</Label>
                 <Select value={objective} onValueChange={setObjective}>
