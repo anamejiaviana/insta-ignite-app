@@ -260,7 +260,7 @@ export default function Settings() {
                     {client.content_language && ` · ${CONTENT_LANGUAGES.find(l => l.value === client.content_language)?.label || client.content_language}`}
                   </p>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => startEdit(client)}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
@@ -302,7 +302,7 @@ export default function Settings() {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">{t("businessName")}</Label>
                   <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-secondary border-border h-9" />
@@ -354,7 +354,7 @@ export default function Settings() {
                 <Input placeholder={t("tonePlaceholder")} value={form.tone} onChange={(e) => setForm({ ...form, tone: e.target.value })} className="bg-secondary border-border h-9" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">{t("objectiveSetting")}</Label>
                   <Input placeholder={t("objectivePlaceholder")} value={form.objective} onChange={(e) => setForm({ ...form, objective: e.target.value })} className="bg-secondary border-border h-9" />

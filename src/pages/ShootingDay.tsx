@@ -269,7 +269,7 @@ export default function ShootingDay() {
       </div>
 
       {/* Mode selector */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 flex-wrap">
         <button
           onClick={() => setMode("calendar")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${

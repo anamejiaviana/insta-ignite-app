@@ -168,7 +168,7 @@ export default function Library() {
                         {post.client_id && ` · ${clientName(post.client_id)}`}
                       </p>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0" onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => copyText(`${post.main_copy}\n\n${(post.hashtags || []).map((h: string) => `#${h}`).join(" ")}`, post.id)}>
                         {copiedId === post.id ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
                       </Button>
@@ -216,7 +216,7 @@ export default function Library() {
                       </p>
                       {plan.special_dates && <p className="text-xs text-primary mt-1">📅 {plan.special_dates}</p>}
                     </div>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); deleteWeeklyPlan(plan.id); }}>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); deleteWeeklyPlan(plan.id); }}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </CardContent>
@@ -247,7 +247,7 @@ export default function Library() {
                         {plan.client_id && ` · ${clientName(plan.client_id)}`}
                       </p>
                     </div>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); deleteShootingPlan(plan.id); }}>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); deleteShootingPlan(plan.id); }}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </CardContent>
@@ -345,7 +345,7 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
                 <Images className="h-4 w-4 text-primary" />
                 Imagen {currentSlide + 1} de {totalSlides}
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => downloadImage(carouselImages[currentSlide], currentSlide)}>
                   <Download className="h-3.5 w-3.5 mr-1" /> Slide
                 </Button>
