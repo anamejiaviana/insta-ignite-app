@@ -152,16 +152,16 @@ export function GeneratedPostPreview({
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6 overflow-hidden">
         {/* Image Preview */}
-        <div className="space-y-3">
-          <h4 className="font-medium flex items-center gap-2">
-            <Smartphone className="h-4 w-4 text-primary" />
-            {isCarousel ? `Imagen ${currentSlide + 1} ${t("carouselSlideOf")} ${totalSlides}` : "Imagen"}
+        <div className="space-y-3 min-w-0">
+          <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
+            <Smartphone className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">{isCarousel ? `Imagen ${currentSlide + 1} ${t("carouselSlideOf")} ${totalSlides}` : "Imagen"}</span>
           </h4>
           <div
             className={cn(
-              "relative rounded-xl overflow-hidden bg-secondary flex items-center justify-center",
+              "relative rounded-xl overflow-hidden bg-secondary flex items-center justify-center w-full",
               postType === "reel" || postType === "story"
                 ? "aspect-[9/16] max-h-[500px]"
                 : "aspect-square"
@@ -238,14 +238,14 @@ export function GeneratedPostPreview({
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={onRegenerateImage} disabled={loading}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Regenerar
+              <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Regenerar</span>
             </Button>
             <Button variant="outline" size="sm" onClick={downloadImage} disabled={!(isCarousel ? carouselImages[currentSlide] : post.imageUrl) || loading}>
-              <Download className="h-4 w-4 mr-2" />
-              {isCarousel ? "Slide" : "Descargar"}
+              <Download className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">{isCarousel ? "Slide" : "Descargar"}</span>
             </Button>
             {isCarousel && totalSlides > 1 && (
               <Button variant="outline" size="sm" onClick={() => {
@@ -260,8 +260,8 @@ export function GeneratedPostPreview({
                   }, i * 300);
                 });
               }} disabled={loading}>
-                <Download className="h-4 w-4 mr-2" />
-                Todas ({totalSlides})
+                <Download className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="text-xs sm:text-sm">Todas ({totalSlides})</span>
               </Button>
             )}
           </div>

@@ -143,6 +143,8 @@ export default function CreateContent() {
 
       if (prefill.imagePrompt) {
         setStep("image");
+        setLoading(true);
+        setLoadingPhase("image");
         if (prefill.postType === "carousel") {
           // For carousels from calendar, generate slide prompts via AI then generate images
           const generateCarouselFromCalendar = async () => {
@@ -191,11 +193,17 @@ export default function CreateContent() {
               }
             } catch (e) {
               console.error("Error generating carousel from calendar:", e);
+            } finally {
+              setLoading(false);
+              setLoadingPhase(null);
             }
           };
           generateCarouselFromCalendar();
         } else {
-          generateImage(prefill.imagePrompt);
+          generateImage(prefill.imagePrompt).finally(() => {
+            setLoading(false);
+            setLoadingPhase(null);
+          });
         }
       }
     }
