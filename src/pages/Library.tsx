@@ -340,12 +340,12 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
         {/* Carousel viewer */}
         {isCarousel && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <p className="text-sm font-medium flex items-center gap-2">
                 <Images className="h-4 w-4 text-primary" />
                 Imagen {currentSlide + 1} de {totalSlides}
               </p>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap shrink-0">
                 <Button variant="outline" size="sm" onClick={() => downloadImage(carouselImages[currentSlide], currentSlide)}>
                   <Download className="h-3.5 w-3.5 mr-1" /> Slide
                 </Button>
@@ -354,7 +354,7 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
                 </Button>
               </div>
             </div>
-            <div className="relative rounded-xl overflow-hidden max-w-md mx-auto aspect-square bg-secondary">
+            <div className="relative rounded-xl overflow-hidden w-full max-w-md mx-auto aspect-square bg-secondary">
               <img src={carouselImages[currentSlide]} alt={`Slide ${currentSlide + 1}`} className="w-full h-full object-cover" />
               {totalSlides > 1 && (
                 <>
