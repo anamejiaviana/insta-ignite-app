@@ -28,9 +28,11 @@ export default function Library() {
   const [shootingPlans, setShootingPlans] = useState<any[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DetailView>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
+    setLoading(true);
+    loadData().finally(() => setLoading(false));
   }, [activeClient?.id, activeTab]);
 
   // Handle deep-link from Dashboard recent content
