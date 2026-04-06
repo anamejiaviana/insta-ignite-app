@@ -5,6 +5,7 @@ import {
   Camera,
   FolderOpen,
   Settings,
+  CreditCard,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -29,6 +30,7 @@ const items: { titleKey: TranslationKey; url: string; icon: any }[] = [
   { titleKey: "shootingDay", url: "/shooting", icon: Camera },
   { titleKey: "library", url: "/library", icon: FolderOpen },
   { titleKey: "settings", url: "/settings", icon: Settings },
+  { titleKey: "plansNav", url: "/plans", icon: CreditCard },
 ];
 
 export function AppSidebar() {
