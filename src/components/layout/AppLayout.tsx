@@ -51,7 +51,7 @@ export function AppLayout() {
                     value={activeClient?.id || ""}
                     onValueChange={handleClientChange}
                   >
-                    <SelectTrigger className="w-[220px] bg-secondary border-border h-9">
+                    <SelectTrigger className="w-[140px] sm:w-[220px] bg-secondary border-border h-9">
                       <SelectValue placeholder="Seleccionar cliente" />
                     </SelectTrigger>
                     <SelectContent>

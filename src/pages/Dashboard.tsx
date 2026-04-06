@@ -229,7 +229,7 @@ export default function Dashboard() {
                     <button
                       key={opt.value}
                       onClick={() => setContentPreference(opt.value)}
-                      className={`flex-1 min-w-[80px] py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      className={`flex-1 min-w-0 py-2.5 px-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                         contentPreference === opt.value
                           ? "text-primary-foreground"
                           : "bg-secondary text-muted-foreground hover:text-foreground"

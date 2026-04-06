@@ -121,12 +121,12 @@ export default function Library() {
         <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
       </div>
 
-      <div className="flex gap-1 mb-6 p-1 bg-secondary/50 rounded-lg w-fit">
+      <div className="flex gap-1 mb-6 p-1 bg-secondary/50 rounded-lg w-full sm:w-fit overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-1 sm:flex-none ${
               activeTab === tab.id
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
