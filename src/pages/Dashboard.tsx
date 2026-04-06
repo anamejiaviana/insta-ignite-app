@@ -219,7 +219,7 @@ export default function Dashboard() {
                 <Label className="text-sm font-medium">
                   {t("contentTypePreference")}
                 </Label>
-                <div className="flex gap-2 flex-wrap">
+                <div className="grid grid-cols-2 sm:flex gap-2">
                   {[
                     { value: "more_reels", labelKey: "moreReels" as const },
                     { value: "balanced", labelKey: "balanced" as const },
@@ -229,7 +229,7 @@ export default function Dashboard() {
                     <button
                       key={opt.value}
                       onClick={() => setContentPreference(opt.value)}
-                      className={`flex-1 min-w-0 py-2.5 px-1.5 sm:px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-center break-words ${
+                      className={`sm:flex-1 min-w-0 py-3 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all text-center ${
                         contentPreference === opt.value
                           ? "text-primary-foreground"
                           : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -240,6 +240,9 @@ export default function Dashboard() {
                     </button>
                   ))}
                 </div>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">
+                  {t("contentPreferenceHint")}
+                </p>
               </div>
 
               {/* Week selector */}
