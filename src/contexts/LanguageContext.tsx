@@ -292,6 +292,7 @@ const translations = {
     editingImageWithAI: "Editando imagen con IA...",
 
     // Plans
+    plansNav: "Planes y precios",
     plansTitle: "Planes y precios",
     plansSubtitle: "Elige el plan que mejor se adapte a tu negocio",
     plansMostPopular: "Recomendado",
@@ -606,6 +607,7 @@ const translations = {
     editingImageWithAI: "Editing image with AI...",
 
     // Plans
+    plansNav: "Plans & Pricing",
     plansTitle: "Plans & Pricing",
     plansSubtitle: "Choose the plan that best fits your business",
     plansMostPopular: "Recommended",
