@@ -488,7 +488,7 @@ export default function CreateContent() {
           {postType === "post" && (
             <div className="space-y-2">
               <Label>{t("imageSource")}</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
                 {IMAGE_SOURCES.map((src) => (
                   <button
                     key={src.value}
@@ -501,7 +501,7 @@ export default function CreateContent() {
                     style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
                   >
                     <src.icon className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm truncate">{t(src.label as any)}</span>
+                    <span className="text-xs sm:text-sm">{t(src.label as any)}</span>
                   </button>
                 ))}
               </div>

@@ -121,12 +121,12 @@ export default function Library() {
         <p className="text-sm text-muted-foreground mt-1">{t("librarySubtitle")}</p>
       </div>
 
-      <div className="flex gap-1 mb-6 p-1 bg-secondary/50 rounded-lg w-fit">
+      <div className="flex gap-1 mb-6 p-1 bg-secondary/50 rounded-lg overflow-x-auto no-scrollbar">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+            className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -149,7 +149,7 @@ export default function Library() {
               return (
               <Card key={post.id} className="bg-card border-border overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setDetail({ type: "post", data: post })}>
                 {thumbnailUrl && (
-                  <div className="aspect-square overflow-hidden relative">
+                  <div className="aspect-square overflow-hidden relative max-w-full">
                     <img src={thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
                     {isCarousel && (
                       <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-0.5 flex items-center gap-1">
