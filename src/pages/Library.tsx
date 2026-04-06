@@ -50,16 +50,63 @@ export default function Library() {
 
   const loadData = async () => {
     if (activeTab === "posts") {
-      let query = supabase.from("generated_posts").select("*").order("created_at", { ascending: false });
-      if (activeClient) query = query.eq("client_id", activeClient.id);
-      const { data } = await query;
-      if (data) setPosts(data);
+      setPosts([]);
+
+      const loadLightweightPosts = async () => {
+        let query = supabase
+          .from("generated_posts")
+          .select("id, post_type, title, description, cta, main_copy, story_copy, hashtags, created_at, client_id")
+          .order("created_at", { ascending: false });
+
+        if (activeClient) query = query.eq("client_id", activeClient.id);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        setPosts(data ?? []);
+      };
+
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 4000);
+
+      try {
+        let query = supabase
+          .from("generated_posts")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .abortSignal(controller.signal);
+
+        if (activeClient) query = query.eq("client_id", activeClient.id);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        setPosts(data ?? []);
+      } catch (error) {
+        console.warn("Falling back to lightweight library query", error);
+
+        try {
+          await loadLightweightPosts();
+        } catch (fallbackError: any) {
+          console.error("Error loading library posts:", fallbackError);
+          toast({
+            variant: "destructive",
+            title: "Error al cargar la biblioteca",
+            description: "Inténtalo de nuevo en unos segundos.",
+          });
+          setPosts([]);
+        }
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
     } else if (activeTab === "plans") {
+      setWeeklyPlans([]);
       let query = (supabase as any).from("weekly_plans").select("*").order("created_at", { ascending: false });
       if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setWeeklyPlans(data);
     } else {
+      setShootingPlans([]);
       let query = (supabase as any).from("shooting_plans").select("*").order("created_at", { ascending: false });
       if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
@@ -265,11 +312,21 @@ export default function Library() {
 
 // --- Shared ---
 
-function LoadingState() {
+function hasDetailedPostData(post: any) {
+  return Boolean(
+    post && (
+      "generated_image_url" in post ||
+      "content_data" in post ||
+      "original_image_url" in post
+    )
+  );
+}
+
+function LoadingState({ message = "Cargando biblioteca..." }: { message?: string }) {
   return (
     <div className="glass rounded-2xl p-12 text-center">
       <Loader2 className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
-      <p className="text-muted-foreground text-sm">Cargando biblioteca...</p>
+      <p className="text-muted-foreground text-sm">{message}</p>
     </div>
   );
 }
@@ -300,14 +357,63 @@ function DetailHeader({ onBack, onDelete, id, t }: { onBack: () => void; onDelet
 // --- Post Detail ---
 
 function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName }: any) {
+  const [fullPost, setFullPost] = useState(post);
   const [editedMainCopy, setEditedMainCopy] = useState(post.main_copy || "");
   const [editedStoryCopy, setEditedStoryCopy] = useState(post.story_copy || "");
   const [saving, setSaving] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [loadingPost, setLoadingPost] = useState(!hasDetailedPostData(post));
   const { toast } = useToast();
 
-  const carouselImages: string[] = post.content_data?.carouselImageUrls || [];
-  const isCarousel = post.post_type === "carousel" && carouselImages.length > 0;
+  useEffect(() => {
+    let isActive = true;
+
+    const loadPostDetail = async () => {
+      setFullPost(post);
+      setEditedMainCopy(post.main_copy || "");
+      setEditedStoryCopy(post.story_copy || "");
+      setCurrentSlide(0);
+
+      if (hasDetailedPostData(post)) {
+        setLoadingPost(false);
+        return;
+      }
+
+      setLoadingPost(true);
+
+      const { data, error } = await supabase
+        .from("generated_posts")
+        .select("*")
+        .eq("id", post.id)
+        .maybeSingle();
+
+      if (!isActive) return;
+
+      if (error) {
+        toast({ variant: "destructive", title: "Error al abrir el contenido", description: error.message });
+        setLoadingPost(false);
+        return;
+      }
+
+      if (data) {
+        setFullPost(data);
+        setEditedMainCopy(data.main_copy || "");
+        setEditedStoryCopy(data.story_copy || "");
+      }
+
+      setLoadingPost(false);
+    };
+
+    void loadPostDetail();
+
+    return () => {
+      isActive = false;
+    };
+  }, [post, toast]);
+
+  const currentPost = fullPost;
+  const carouselImages: string[] = currentPost.content_data?.carouselImageUrls || [];
+  const isCarousel = currentPost.post_type === "carousel" && carouselImages.length > 0;
   const totalSlides = carouselImages.length;
 
   const handleSave = async () => {
@@ -316,10 +422,11 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
       const { error } = await supabase
         .from("generated_posts")
         .update({ main_copy: editedMainCopy, story_copy: editedStoryCopy })
-        .eq("id", post.id);
+        .eq("id", currentPost.id);
       if (error) throw error;
       post.main_copy = editedMainCopy;
       post.story_copy = editedStoryCopy;
+      setFullPost((prev: any) => prev ? { ...prev, main_copy: editedMainCopy, story_copy: editedStoryCopy } : prev);
       toast({ title: "Cambios guardados" });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error al guardar", description: error.message });
@@ -332,7 +439,7 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
     if (!url) return;
     const link = document.createElement("a");
     link.href = url;
-    link.download = `instagram-${post.post_type}-${index !== undefined ? `slide${index + 1}-` : ""}${Date.now()}.png`;
+    link.download = `instagram-${currentPost.post_type}-${index !== undefined ? `slide${index + 1}-` : ""}${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -344,11 +451,19 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
     });
   };
 
+  if (loadingPost) {
+    return (
+      <div className="max-w-3xl mx-auto animate-fade-in">
+        <DetailHeader onBack={onBack} onDelete={onDelete} id={post.id} t={t} />
+        <LoadingState message="Cargando contenido guardado..." />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
-      <DetailHeader onBack={onBack} onDelete={onDelete} id={post.id} t={t} />
+      <DetailHeader onBack={onBack} onDelete={onDelete} id={currentPost.id} t={t} />
       <div className="space-y-4">
-        {/* Carousel viewer */}
         {isCarousel && (
           <div className="space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -401,52 +516,51 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
             )}
           </div>
         )}
-        {/* Single image (non-carousel) */}
-        {!isCarousel && post.generated_image_url && (
+        {!isCarousel && currentPost.generated_image_url && (
           <div className="rounded-xl overflow-hidden max-w-md mx-auto">
-            <img src={post.generated_image_url} alt={post.title} className="w-full object-cover" />
+            <img src={currentPost.generated_image_url} alt={currentPost.title} className="w-full object-cover" />
           </div>
         )}
         <div className="space-y-1">
-          <h2 className="text-xl font-bold">{post.title}</h2>
+          <h2 className="text-xl font-bold">{currentPost.title}</h2>
           <p className="text-sm text-muted-foreground">
-            {post.post_type === "carousel" ? "carrusel" : post.post_type} · {new Date(post.created_at).toLocaleDateString("es-ES")}
-            {post.client_id && ` · ${clientName(post.client_id)}`}
+            {currentPost.post_type === "carousel" ? "carrusel" : currentPost.post_type} · {new Date(currentPost.created_at).toLocaleDateString("es-ES")}
+            {currentPost.client_id && ` · ${clientName(currentPost.client_id)}`}
           </p>
         </div>
-        {post.main_copy && (
+        {currentPost.main_copy && (
           <EditableCopyBlock
             label="Copy principal"
             icon={<MessageSquare className="h-4 w-4 text-primary" />}
             value={editedMainCopy}
-            originalValue={post.main_copy}
+            originalValue={currentPost.main_copy}
             onChange={setEditedMainCopy}
             onSave={handleSave}
             saving={saving}
           />
         )}
-        {post.story_copy && (
+        {currentPost.story_copy && (
           <EditableCopyBlock
             label="Copy para Stories"
             icon={<Smartphone className="h-4 w-4 text-primary" />}
             value={editedStoryCopy}
-            originalValue={post.story_copy}
+            originalValue={currentPost.story_copy}
             onChange={setEditedStoryCopy}
             onSave={handleSave}
             saving={saving}
           />
         )}
-        {post.cta && (
+        {currentPost.cta && (
           <Card className="bg-card border-border">
             <CardContent className="p-4">
               <p className="text-xs font-medium text-muted-foreground uppercase mb-2">CTA</p>
-              <p className="text-sm">{post.cta}</p>
+              <p className="text-sm">{currentPost.cta}</p>
             </CardContent>
           </Card>
         )}
-        {post.hashtags && post.hashtags.length > 0 && (
+        {currentPost.hashtags && currentPost.hashtags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {post.hashtags.map((h: string, i: number) => (
+            {currentPost.hashtags.map((h: string, i: number) => (
               <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">#{h}</span>
             ))}
           </div>
