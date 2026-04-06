@@ -265,6 +265,15 @@ export default function Library() {
 
 // --- Shared ---
 
+function LoadingState() {
+  return (
+    <div className="glass rounded-2xl p-12 text-center">
+      <Loader2 className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
+      <p className="text-muted-foreground text-sm">Cargando biblioteca...</p>
+    </div>
+  );
+}
+
 function EmptyState({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="glass rounded-2xl p-12 text-center">
