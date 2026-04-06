@@ -222,9 +222,9 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 sm:flex gap-2">
                   {[
                     { value: "more_reels", labelKey: "moreReels" as const },
-                    { value: "balanced", labelKey: "balanced" as const },
                     { value: "more_posts", labelKey: "morePosts" as const },
                     { value: "with_carousels", labelKey: "withCarousels" as const },
+                    { value: "balanced", labelKey: "balanced" as const },
                   ].map((opt) => (
                     <button
                       key={opt.value}
