@@ -149,7 +149,7 @@ export default function Library() {
               return (
               <Card key={post.id} className="bg-card border-border overflow-hidden group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setDetail({ type: "post", data: post })}>
                 {thumbnailUrl && (
-                  <div className="aspect-square overflow-hidden relative">
+                  <div className="aspect-square overflow-hidden relative max-w-full">
                     <img src={thumbnailUrl} alt={post.title} className="w-full h-full object-cover" />
                     {isCarousel && (
                       <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-0.5 flex items-center gap-1">
