@@ -5,7 +5,7 @@ import { EditableCopyBlock } from "@/components/post/EditableCopyBlock";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images } from "lucide-react";
+import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -28,9 +28,11 @@ export default function Library() {
   const [shootingPlans, setShootingPlans] = useState<any[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<DetailView>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
+    setLoading(true);
+    loadData().finally(() => setLoading(false));
   }, [activeClient?.id, activeTab]);
 
   // Handle deep-link from Dashboard recent content
@@ -140,7 +142,7 @@ export default function Library() {
       {/* Posts tab */}
       {activeTab === "posts" && (
         <>
-          {posts.length === 0 && <EmptyState icon={<FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noContent")} desc={t("generatedContentAppearsHere")} />}
+          {loading ? <LoadingState /> : posts.length === 0 && <EmptyState icon={<FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noContent")} desc={t("generatedContentAppearsHere")} />}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {posts.map((post) => {
               const carouselUrls: string[] = post.content_data?.carouselImageUrls || [];
@@ -196,7 +198,7 @@ export default function Library() {
       {/* Weekly Plans tab */}
       {activeTab === "plans" && (
         <>
-          {weeklyPlans.length === 0 && <EmptyState icon={<Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noWeeklyPlans")} desc={t("plansAppearHere")} />}
+          {loading ? <LoadingState /> : weeklyPlans.length === 0 && <EmptyState icon={<Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noWeeklyPlans")} desc={t("plansAppearHere")} />}
           <div className="space-y-3">
             {weeklyPlans.map((plan) => {
               const pd = plan.plan_data;
@@ -230,7 +232,7 @@ export default function Library() {
       {/* Shooting Plans tab */}
       {activeTab === "shooting" && (
         <>
-          {shootingPlans.length === 0 && <EmptyState icon={<Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noRecordingSessions")} desc={t("sessionsAppearHere")} />}
+          {loading ? <LoadingState /> : shootingPlans.length === 0 && <EmptyState icon={<Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />} title={t("noRecordingSessions")} desc={t("sessionsAppearHere")} />}
           <div className="space-y-3">
             {shootingPlans.map((plan) => {
               const pd = plan.plan_data;
@@ -262,6 +264,15 @@ export default function Library() {
 }
 
 // --- Shared ---
+
+function LoadingState() {
+  return (
+    <div className="glass rounded-2xl p-12 text-center">
+      <Loader2 className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
+      <p className="text-muted-foreground text-sm">Cargando biblioteca...</p>
+    </div>
+  );
+}
 
 function EmptyState({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
