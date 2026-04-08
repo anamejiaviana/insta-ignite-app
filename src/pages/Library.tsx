@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { EditableCopyBlock } from "@/components/post/EditableCopyBlock";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images, Loader2 } from "lucide-react";
+import { FolderOpen, Copy, Check, Trash2, Calendar, Camera, ArrowLeft, MessageSquare, Smartphone, CheckCircle2, Circle, ChevronLeft, ChevronRight, Download, Images, Loader2, Sparkles, Video, Eye, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
