@@ -74,13 +74,13 @@ export default function Library() {
       }
     } else if (activeTab === "plans") {
       setWeeklyPlans([]);
-      let query = (supabase as any).from("weekly_plans").select("*").order("created_at", { ascending: false }).limit(50);
+      let query = (supabase as any).from("weekly_plans").select("id, week_start, created_at, is_archived, client_id, special_dates, plan_data").order("created_at", { ascending: false }).limit(50);
       if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setWeeklyPlans(data);
     } else {
       setShootingPlans([]);
-      let query = (supabase as any).from("shooting_plans").select("*").order("created_at", { ascending: false }).limit(50);
+      let query = (supabase as any).from("shooting_plans").select("id, created_at, client_id, num_days, plan_data").order("created_at", { ascending: false }).limit(50);
       if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setShootingPlans(data);
