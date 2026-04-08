@@ -62,7 +62,7 @@ export default function Dashboard() {
     try {
       const { data } = await supabase
         .from("generated_posts")
-        .select("*")
+        .select("id, title, post_type, created_at, client_id, generated_image_url")
         .eq("client_id", activeClient.id)
         .order("created_at", { ascending: false })
         .limit(5);
