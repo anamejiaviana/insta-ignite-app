@@ -23,18 +23,20 @@ interface WeeklyPlanItem {
   imagePrompt?: string;
 }
 
-interface StoredPlan {
+interface PlanMeta {
   id: string;
   week_start: string;
-  plan_data: {
-    reels: WeeklyPlanItem[];
-    post?: WeeklyPlanItem;
-    posts?: WeeklyPlanItem[];
-    carousels?: WeeklyPlanItem[];
-    stories: { idea: string; tipo: string; text?: string }[];
-    completed_items?: string[];
-  };
   created_at: string;
+  is_archived: boolean;
+}
+
+interface StoredPlanData {
+  reels: WeeklyPlanItem[];
+  post?: WeeklyPlanItem;
+  posts?: WeeklyPlanItem[];
+  carousels?: WeeklyPlanItem[];
+  stories: { idea: string; tipo: string; text?: string }[];
+  completed_items?: string[];
 }
 
 export default function ContentCalendar() {
@@ -44,24 +46,27 @@ export default function ContentCalendar() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnToPlanId = (location.state as any)?.returnToPlanId as string | undefined;
-  const [activePlans, setActivePlans] = useState<StoredPlan[]>([]);
-  const [archivedPlans, setArchivedPlans] = useState<StoredPlan[]>([]);
+  const [activeMetas, setActiveMetas] = useState<PlanMeta[]>([]);
+  const [archivedMetas, setArchivedMetas] = useState<PlanMeta[]>([]);
+  const [selectedPlanData, setSelectedPlanData] = useState<StoredPlanData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [showArchived, setShowArchived] = useState(false);
 
+  // Phase 1: Load lightweight list (no plan_data)
   useEffect(() => {
-    loadPlans();
+    loadPlanMetas();
   }, [activeClient]);
 
-  const loadPlans = async () => {
+  const loadPlanMetas = async () => {
     setLoading(true);
     let query = (supabase as any)
       .from("weekly_plans")
-      .select("*")
+      .select("id, week_start, created_at, is_archived")
       .order("week_start", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(20);
 
     if (activeClient) {
       query = query.eq("client_id", activeClient.id);
@@ -69,14 +74,14 @@ export default function ContentCalendar() {
 
     const { data } = await query;
     if (data) {
-      const active = (data as StoredPlan[]).filter((p: any) => !p.is_archived);
-      const archived = (data as StoredPlan[]).filter((p: any) => p.is_archived);
-      setActivePlans(active);
-      setArchivedPlans(archived);
+      const active = (data as PlanMeta[]).filter((p) => !p.is_archived);
+      const archived = (data as PlanMeta[]).filter((p) => p.is_archived);
+      setActiveMetas(active);
+      setArchivedMetas(archived);
 
       const targetPlanId = returnToPlanId;
       if (targetPlanId) {
-        const idx = active.findIndex((p: StoredPlan) => p.id === targetPlanId);
+        const idx = active.findIndex((p) => p.id === targetPlanId);
         setSelectedPlanIndex(idx >= 0 ? idx : 0);
       } else {
         setSelectedPlanIndex(0);
@@ -85,14 +90,38 @@ export default function ContentCalendar() {
     setLoading(false);
   };
 
-  const selectedPlan = activePlans[selectedPlanIndex] || null;
-  const planData = selectedPlan?.plan_data;
+  // Phase 2: Load full plan_data only for selected plan
+  const selectedMeta = activeMetas[selectedPlanIndex] || null;
+
+  useEffect(() => {
+    if (!selectedMeta) {
+      setSelectedPlanData(null);
+      return;
+    }
+    loadSelectedPlanData(selectedMeta.id);
+  }, [selectedMeta?.id]);
+
+  const loadSelectedPlanData = async (planId: string) => {
+    setLoadingDetail(true);
+    const { data } = await (supabase as any)
+      .from("weekly_plans")
+      .select("plan_data")
+      .eq("id", planId)
+      .single();
+
+    if (data) {
+      setSelectedPlanData(data.plan_data);
+    }
+    setLoadingDetail(false);
+  };
+
+  const planData = selectedPlanData;
   const completedItems = new Set(planData?.completed_items || []);
 
   const toggleCompleted = useCallback(async (itemKey: string) => {
-    if (!selectedPlan) return;
+    if (!selectedMeta || !selectedPlanData) return;
 
-    const current = new Set(selectedPlan.plan_data.completed_items || []);
+    const current = new Set(selectedPlanData.completed_items || []);
     if (current.has(itemKey)) {
       current.delete(itemKey);
     } else {
@@ -100,31 +129,27 @@ export default function ContentCalendar() {
     }
 
     const newCompletedItems = Array.from(current);
-    const updatedPlanData = { ...selectedPlan.plan_data, completed_items: newCompletedItems };
+    const updatedPlanData = { ...selectedPlanData, completed_items: newCompletedItems };
+    const previousPlanData = selectedPlanData;
 
     // Optimistic update
-    setActivePlans(prev => prev.map((p, i) =>
-      i === selectedPlanIndex ? { ...p, plan_data: updatedPlanData } : p
-    ));
+    setSelectedPlanData(updatedPlanData);
 
     const { error } = await (supabase as any)
       .from("weekly_plans")
       .update({ plan_data: updatedPlanData as any })
-      .eq("id", selectedPlan.id);
+      .eq("id", selectedMeta.id);
 
     if (error) {
       console.error("Failed to save completion state:", error);
-      // Revert optimistic update on failure
-      setActivePlans(prev => prev.map((p, i) =>
-        i === selectedPlanIndex ? { ...p, plan_data: selectedPlan.plan_data } : p
-      ));
+      setSelectedPlanData(previousPlanData);
       toast({
         title: "Error",
         description: "No se pudo guardar el estado. Inténtalo de nuevo.",
         variant: "destructive",
       });
     }
-  }, [selectedPlan, selectedPlanIndex]);
+  }, [selectedMeta, selectedPlanData]);
 
   const allItems = planData
     ? [
@@ -138,7 +163,7 @@ export default function ContentCalendar() {
     navigate("/create", {
       state: {
         fromCalendar: true,
-        planId: selectedPlan?.id,
+        planId: selectedMeta?.id,
         prefill: {
           title: item.idea,
           postType: item.type,
@@ -154,9 +179,9 @@ export default function ContentCalendar() {
   };
 
   const canGoPrev = selectedPlanIndex > 0;
-  const canGoNext = selectedPlanIndex < activePlans.length - 1;
+  const canGoNext = selectedPlanIndex < activeMetas.length - 1;
 
-  const formatWeekLabel = (plan: StoredPlan) => {
+  const formatWeekLabel = (plan: PlanMeta) => {
     const start = new Date(plan.week_start);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
@@ -209,7 +234,7 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && activePlans.length === 0 && archivedPlans.length === 0 && (
+      {!loading && activeMetas.length === 0 && archivedMetas.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">{t("noPlansYet")}</h3>
@@ -222,10 +247,9 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && (activePlans.length > 0 || archivedPlans.length > 0) && (
+      {!loading && (activeMetas.length > 0 || archivedMetas.length > 0) && (
         <div className="space-y-6">
-          {/* Week navigator – only if there are active plans */}
-          {selectedPlan && (
+          {selectedMeta && (
             <>
               <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
                 <Button
@@ -240,11 +264,11 @@ export default function ContentCalendar() {
                 </Button>
                 <div className="text-center min-w-0 flex-1">
                   <div className="flex items-center justify-center gap-2">
-                    <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
+                    <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedMeta)}</p>
                     <Badge variant="outline" className="text-[10px] text-primary border-primary/30">{t("activePlan")}</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+                    {t("createdOn")} {new Date(selectedMeta.created_at).toLocaleDateString("es-ES")}
                   </p>
                 </div>
                 <Button
@@ -259,167 +283,173 @@ export default function ContentCalendar() {
                 </Button>
               </div>
 
-          {/* Weekly progress */}
-          {totalItems > 0 && (
-            <div className="glass rounded-xl px-4 py-3 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium capitalize">{t("weekProgress")}</span>
-                <span className={completedCount === totalItems ? "text-green-500 font-medium" : "text-muted-foreground"}>
-                  {completedCount === totalItems
-                    ? t("allCompleted")
-                    : `${completedCount} ${t("completedOf")} ${totalItems}`}
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{
-                    width: `${progressPercent}%`,
-                    background: completedCount === totalItems ? "hsl(var(--chart-2))" : "hsl(var(--primary))",
-                  }}
-                />
-              </div>
-            </div>
-          )}
+              {loadingDetail && (
+                <div className="glass rounded-xl p-8 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">{t("loadingPlans")}</p>
+                </div>
+              )}
 
-          {/* Content items */}
-          <div className="space-y-4">
-            {allItems.map((item) => {
-              const isCompleted = completedItems.has(item._key);
-              return (
-                <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
-                  <CardContent className="p-3 sm:p-5">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      {/* Completion toggle */}
-                      <button
-                        onClick={() => toggleCompleted(item._key)}
-                        className="mt-0.5 shrink-0 transition-colors"
-                        title={isCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
-                      >
-                        {isCompleted ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground/40 hover:text-muted-foreground" />
-                        )}
-                      </button>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
-                            {item.type}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{item.day}</span>
-                          {isCompleted && (
-                            <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
-                              <CheckCircle2 className="h-3 w-3" />
-                              {t("completed")}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className={`font-semibold text-sm mb-1 ${isCompleted ? "line-through text-muted-foreground" : ""}`}>{item.idea}</p>
-                        <p className="text-xs text-primary font-medium mb-2 break-words">🎬 "{item.hook}"</p>
-                        <p className="text-xs text-muted-foreground break-words">{item.script}</p>
-                        {item.shots && item.shots.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {item.shots.map((s: string, i: number) => (
-                              <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
-                            ))}
-                          </div>
-                        )}
-                        <div className="mt-3 sm:hidden">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => generateContent(item)}
-                            className="w-full"
-                          >
-                            {isCompleted ? (
-                              <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
-                            ) : (
-                              <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
-                            )}
-                          </Button>
-                        </div>
+              {!loadingDetail && (
+                <>
+                  {totalItems > 0 && (
+                    <div className="glass rounded-xl px-4 py-3 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground font-medium capitalize">{t("weekProgress")}</span>
+                        <span className={completedCount === totalItems ? "text-green-500 font-medium" : "text-muted-foreground"}>
+                          {completedCount === totalItems
+                            ? t("allCompleted")
+                            : `${completedCount} ${t("completedOf")} ${totalItems}`}
+                        </span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => generateContent(item)}
-                        className="shrink-0 hidden sm:inline-flex"
-                      >
-                        {isCompleted ? (
-                          <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
-                        ) : (
-                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
-                        )}
-                      </Button>
+                      <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500 ease-out"
+                          style={{
+                            width: `${progressPercent}%`,
+                            background: completedCount === totalItems ? "hsl(var(--chart-2))" : "hsl(var(--primary))",
+                          }}
+                        />
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  )}
 
-            {/* Stories */}
-            {planData?.stories && planData.stories.length > 0 && (
-              <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2">
-                    {planData.stories.map((story, idx) => {
-                      const storyKey = `story-${idx}`;
-                      const isStoryCompleted = completedItems.has(storyKey);
+                  <div className="space-y-4">
+                    {allItems.map((item) => {
+                      const isCompleted = completedItems.has(item._key);
                       return (
-                        <div key={idx} className={`space-y-1 transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
-                          <div className="flex items-center gap-3 text-sm">
-                            <button
-                              onClick={() => toggleCompleted(storyKey)}
-                              className="shrink-0 transition-colors"
-                              title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
-                            >
-                              {isStoryCompleted ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
-                              )}
-                            </button>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
-                            <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
-                            {isStoryCompleted && (
-                              <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
-                                <CheckCircle2 className="h-3 w-3" />
-                              </Badge>
-                            )}
-                          </div>
-                          {story.text && (
-                            <p className="text-xs text-muted-foreground/70 ml-7 pl-1 border-l-2 border-purple-500/20">
-                              {story.text}
-                            </p>
-                          )}
-                        </div>
+                        <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
+                          <CardContent className="p-3 sm:p-5">
+                            <div className="flex items-start gap-3 sm:gap-4">
+                              <button
+                                onClick={() => toggleCompleted(item._key)}
+                                className="mt-0.5 shrink-0 transition-colors"
+                                title={isCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                              >
+                                {isCompleted ? (
+                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                ) : (
+                                  <Circle className="h-5 w-5 text-muted-foreground/40 hover:text-muted-foreground" />
+                                )}
+                              </button>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
+                                    {item.type}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">{item.day}</span>
+                                  {isCompleted && (
+                                    <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      {t("completed")}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className={`font-semibold text-sm mb-1 ${isCompleted ? "line-through text-muted-foreground" : ""}`}>{item.idea}</p>
+                                <p className="text-xs text-primary font-medium mb-2 break-words">🎬 "{item.hook}"</p>
+                                <p className="text-xs text-muted-foreground break-words">{item.script}</p>
+                                {item.shots && item.shots.length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {item.shots.map((s: string, i: number) => (
+                                      <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="mt-3 sm:hidden">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => generateContent(item)}
+                                    className="w-full"
+                                  >
+                                    {isCompleted ? (
+                                      <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
+                                    ) : (
+                                      <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => generateContent(item)}
+                                className="shrink-0 hidden sm:inline-flex"
+                              >
+                                {isCompleted ? (
+                                  <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
+                                ) : (
+                                  <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
+                                )}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
                       );
                     })}
+
+                    {planData?.stories && planData.stories.length > 0 && (
+                      <Card className="bg-card border-border">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="space-y-2">
+                            {planData.stories.map((story, idx) => {
+                              const storyKey = `story-${idx}`;
+                              const isStoryCompleted = completedItems.has(storyKey);
+                              return (
+                                <div key={idx} className={`space-y-1 transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
+                                  <div className="flex items-center gap-3 text-sm">
+                                    <button
+                                      onClick={() => toggleCompleted(storyKey)}
+                                      className="shrink-0 transition-colors"
+                                      title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                                    >
+                                      {isStoryCompleted ? (
+                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                      ) : (
+                                        <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
+                                      )}
+                                    </button>
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
+                                    <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
+                                    {isStoryCompleted && (
+                                      <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
+                                        <CheckCircle2 className="h-3 w-3" />
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {story.text && (
+                                    <p className="text-xs text-muted-foreground/70 ml-7 pl-1 border-l-2 border-purple-500/20">
+                                      {story.text}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          </>
+                </>
+              )}
+            </>
           )}
 
-          {/* Archived plans collapsible */}
-          {archivedPlans.length > 0 && (
+          {archivedMetas.length > 0 && (
             <Collapsible open={showArchived} onOpenChange={setShowArchived}>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full gap-2 text-muted-foreground">
                   <Archive className="h-4 w-4" />
-                  {showArchived ? t("hideArchivedPlans") : t("showArchivedPlans")} ({archivedPlans.length})
+                  {showArchived ? t("hideArchivedPlans") : t("showArchivedPlans")} ({archivedMetas.length})
                   {showArchived ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-3 mt-3">
-                {archivedPlans.map((plan) => (
+                {archivedMetas.map((plan) => (
                   <Card key={plan.id} className="bg-card/50 border-border opacity-70">
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center justify-between">
