@@ -30,15 +30,13 @@ interface PlanMeta {
   is_archived: boolean;
 }
 
-interface StoredPlan extends PlanMeta {
-  plan_data: {
-    reels: WeeklyPlanItem[];
-    post?: WeeklyPlanItem;
-    posts?: WeeklyPlanItem[];
-    carousels?: WeeklyPlanItem[];
-    stories: { idea: string; tipo: string; text?: string }[];
-    completed_items?: string[];
-  };
+interface StoredPlanData {
+  reels: WeeklyPlanItem[];
+  post?: WeeklyPlanItem;
+  posts?: WeeklyPlanItem[];
+  carousels?: WeeklyPlanItem[];
+  stories: { idea: string; tipo: string; text?: string }[];
+  completed_items?: string[];
 }
 
 export default function ContentCalendar() {
@@ -50,7 +48,7 @@ export default function ContentCalendar() {
   const returnToPlanId = (location.state as any)?.returnToPlanId as string | undefined;
   const [activeMetas, setActiveMetas] = useState<PlanMeta[]>([]);
   const [archivedMetas, setArchivedMetas] = useState<PlanMeta[]>([]);
-  const [selectedPlanData, setSelectedPlanData] = useState<StoredPlan["plan_data"] | null>(null);
+  const [selectedPlanData, setSelectedPlanData] = useState<StoredPlanData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
@@ -251,10 +249,8 @@ export default function ContentCalendar() {
 
       {!loading && (activeMetas.length > 0 || archivedMetas.length > 0) && (
         <div className="space-y-6">
-          {/* Week navigator – only if there are active plans */}
           {selectedMeta && (
-          </>}
-          </>
+            <>
               <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
                 <Button
                   variant="ghost"
@@ -287,164 +283,162 @@ export default function ContentCalendar() {
                 </Button>
               </div>
 
-          {loadingDetail && (
-            <div className="glass rounded-xl p-8 text-center">
-              <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">{t("loadingPlans")}</p>
-            </div>
-          )}
+              {loadingDetail && (
+                <div className="glass rounded-xl p-8 text-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">{t("loadingPlans")}</p>
+                </div>
+              )}
 
-          {!loadingDetail && <>
-          {/* Weekly progress */}
-          {totalItems > 0 && (
-            <div className="glass rounded-xl px-4 py-3 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium capitalize">{t("weekProgress")}</span>
-                <span className={completedCount === totalItems ? "text-green-500 font-medium" : "text-muted-foreground"}>
-                  {completedCount === totalItems
-                    ? t("allCompleted")
-                    : `${completedCount} ${t("completedOf")} ${totalItems}`}
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{
-                    width: `${progressPercent}%`,
-                    background: completedCount === totalItems ? "hsl(var(--chart-2))" : "hsl(var(--primary))",
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Content items */}
-          <div className="space-y-4">
-            {allItems.map((item) => {
-              const isCompleted = completedItems.has(item._key);
-              return (
-                <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
-                  <CardContent className="p-3 sm:p-5">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      {/* Completion toggle */}
-                      <button
-                        onClick={() => toggleCompleted(item._key)}
-                        className="mt-0.5 shrink-0 transition-colors"
-                        title={isCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
-                      >
-                        {isCompleted ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground/40 hover:text-muted-foreground" />
-                        )}
-                      </button>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
-                            {item.type}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{item.day}</span>
-                          {isCompleted && (
-                            <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
-                              <CheckCircle2 className="h-3 w-3" />
-                              {t("completed")}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className={`font-semibold text-sm mb-1 ${isCompleted ? "line-through text-muted-foreground" : ""}`}>{item.idea}</p>
-                        <p className="text-xs text-primary font-medium mb-2 break-words">🎬 "{item.hook}"</p>
-                        <p className="text-xs text-muted-foreground break-words">{item.script}</p>
-                        {item.shots && item.shots.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {item.shots.map((s: string, i: number) => (
-                              <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
-                            ))}
-                          </div>
-                        )}
-                        <div className="mt-3 sm:hidden">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => generateContent(item)}
-                            className="w-full"
-                          >
-                            {isCompleted ? (
-                              <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
-                            ) : (
-                              <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
-                            )}
-                          </Button>
-                        </div>
+              {!loadingDetail && (
+                <>
+                  {totalItems > 0 && (
+                    <div className="glass rounded-xl px-4 py-3 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground font-medium capitalize">{t("weekProgress")}</span>
+                        <span className={completedCount === totalItems ? "text-green-500 font-medium" : "text-muted-foreground"}>
+                          {completedCount === totalItems
+                            ? t("allCompleted")
+                            : `${completedCount} ${t("completedOf")} ${totalItems}`}
+                        </span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => generateContent(item)}
-                        className="shrink-0 hidden sm:inline-flex"
-                      >
-                        {isCompleted ? (
-                          <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
-                        ) : (
-                          <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
-                        )}
-                      </Button>
+                      <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500 ease-out"
+                          style={{
+                            width: `${progressPercent}%`,
+                            background: completedCount === totalItems ? "hsl(var(--chart-2))" : "hsl(var(--primary))",
+                          }}
+                        />
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  )}
 
-            {/* Stories */}
-            {planData?.stories && planData.stories.length > 0 && (
-              <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-2">
-                    {planData.stories.map((story, idx) => {
-                      const storyKey = `story-${idx}`;
-                      const isStoryCompleted = completedItems.has(storyKey);
+                  <div className="space-y-4">
+                    {allItems.map((item) => {
+                      const isCompleted = completedItems.has(item._key);
                       return (
-                        <div key={idx} className={`space-y-1 transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
-                          <div className="flex items-center gap-3 text-sm">
-                            <button
-                              onClick={() => toggleCompleted(storyKey)}
-                              className="shrink-0 transition-colors"
-                              title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
-                            >
-                              {isStoryCompleted ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
-                              )}
-                            </button>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
-                            <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
-                            {isStoryCompleted && (
-                              <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
-                                <CheckCircle2 className="h-3 w-3" />
-                              </Badge>
-                            )}
-                          </div>
-                          {story.text && (
-                            <p className="text-xs text-muted-foreground/70 ml-7 pl-1 border-l-2 border-purple-500/20">
-                              {story.text}
-                            </p>
-                          )}
-                        </div>
+                        <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
+                          <CardContent className="p-3 sm:p-5">
+                            <div className="flex items-start gap-3 sm:gap-4">
+                              <button
+                                onClick={() => toggleCompleted(item._key)}
+                                className="mt-0.5 shrink-0 transition-colors"
+                                title={isCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                              >
+                                {isCompleted ? (
+                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                ) : (
+                                  <Circle className="h-5 w-5 text-muted-foreground/40 hover:text-muted-foreground" />
+                                )}
+                              </button>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
+                                    {item.type}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">{item.day}</span>
+                                  {isCompleted && (
+                                    <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      {t("completed")}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className={`font-semibold text-sm mb-1 ${isCompleted ? "line-through text-muted-foreground" : ""}`}>{item.idea}</p>
+                                <p className="text-xs text-primary font-medium mb-2 break-words">🎬 "{item.hook}"</p>
+                                <p className="text-xs text-muted-foreground break-words">{item.script}</p>
+                                {item.shots && item.shots.length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {item.shots.map((s: string, i: number) => (
+                                      <span key={i} className="text-[10px] bg-secondary px-2 py-0.5 rounded-full text-muted-foreground">{s}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="mt-3 sm:hidden">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => generateContent(item)}
+                                    className="w-full"
+                                  >
+                                    {isCompleted ? (
+                                      <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
+                                    ) : (
+                                      <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => generateContent(item)}
+                                className="shrink-0 hidden sm:inline-flex"
+                              >
+                                {isCompleted ? (
+                                  <><Pencil className="h-3.5 w-3.5 mr-1" /> {t("editContent")}</>
+                                ) : (
+                                  <><Sparkles className="h-3.5 w-3.5 mr-1" /> {t("generateThisContent")}</>
+                                )}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
                       );
                     })}
+
+                    {planData?.stories && planData.stories.length > 0 && (
+                      <Card className="bg-card border-border">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium">{t("storiesIdeas")}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="space-y-2">
+                            {planData.stories.map((story, idx) => {
+                              const storyKey = `story-${idx}`;
+                              const isStoryCompleted = completedItems.has(storyKey);
+                              return (
+                                <div key={idx} className={`space-y-1 transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
+                                  <div className="flex items-center gap-3 text-sm">
+                                    <button
+                                      onClick={() => toggleCompleted(storyKey)}
+                                      className="shrink-0 transition-colors"
+                                      title={isStoryCompleted ? t("unmarkCompleted") : t("markAsCompleted")}
+                                    >
+                                      {isStoryCompleted ? (
+                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                      ) : (
+                                        <Circle className="h-4 w-4 text-muted-foreground/40 hover:text-muted-foreground" />
+                                      )}
+                                    </button>
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
+                                    <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
+                                    {isStoryCompleted && (
+                                      <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
+                                        <CheckCircle2 className="h-3 w-3" />
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {story.text && (
+                                    <p className="text-xs text-muted-foreground/70 ml-7 pl-1 border-l-2 border-purple-500/20">
+                                      {story.text}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          </>
+                </>
+              )}
+            </>
           )}
 
-          {/* Archived plans collapsible */}
           {archivedMetas.length > 0 && (
             <Collapsible open={showArchived} onOpenChange={setShowArchived}>
               <CollapsibleTrigger asChild>
