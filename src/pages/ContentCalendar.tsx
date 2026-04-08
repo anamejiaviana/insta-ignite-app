@@ -286,6 +286,14 @@ export default function ContentCalendar() {
                 </Button>
               </div>
 
+          {loadingDetail && (
+            <div className="glass rounded-xl p-8 text-center">
+              <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">{t("loadingPlans")}</p>
+            </div>
+          )}
+
+          {!loadingDetail && <>
           {/* Weekly progress */}
           {totalItems > 0 && (
             <div className="glass rounded-xl px-4 py-3 space-y-2">
