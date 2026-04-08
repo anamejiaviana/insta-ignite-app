@@ -121,9 +121,9 @@ export default function ContentCalendar() {
   const completedItems = new Set(planData?.completed_items || []);
 
   const toggleCompleted = useCallback(async (itemKey: string) => {
-    if (!selectedPlan) return;
+    if (!selectedMeta || !selectedPlanData) return;
 
-    const current = new Set(selectedPlan.plan_data.completed_items || []);
+    const current = new Set(selectedPlanData.completed_items || []);
     if (current.has(itemKey)) {
       current.delete(itemKey);
     } else {
@@ -131,31 +131,27 @@ export default function ContentCalendar() {
     }
 
     const newCompletedItems = Array.from(current);
-    const updatedPlanData = { ...selectedPlan.plan_data, completed_items: newCompletedItems };
+    const updatedPlanData = { ...selectedPlanData, completed_items: newCompletedItems };
+    const previousPlanData = selectedPlanData;
 
     // Optimistic update
-    setActivePlans(prev => prev.map((p, i) =>
-      i === selectedPlanIndex ? { ...p, plan_data: updatedPlanData } : p
-    ));
+    setSelectedPlanData(updatedPlanData);
 
     const { error } = await (supabase as any)
       .from("weekly_plans")
       .update({ plan_data: updatedPlanData as any })
-      .eq("id", selectedPlan.id);
+      .eq("id", selectedMeta.id);
 
     if (error) {
       console.error("Failed to save completion state:", error);
-      // Revert optimistic update on failure
-      setActivePlans(prev => prev.map((p, i) =>
-        i === selectedPlanIndex ? { ...p, plan_data: selectedPlan.plan_data } : p
-      ));
+      setSelectedPlanData(previousPlanData);
       toast({
         title: "Error",
         description: "No se pudo guardar el estado. Inténtalo de nuevo.",
         variant: "destructive",
       });
     }
-  }, [selectedPlan, selectedPlanIndex]);
+  }, [selectedMeta, selectedPlanData]);
 
   const allItems = planData
     ? [
