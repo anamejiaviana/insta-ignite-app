@@ -253,7 +253,8 @@ export default function ContentCalendar() {
         <div className="space-y-6">
           {/* Week navigator – only if there are active plans */}
           {selectedMeta && (
-            <>
+          </>}
+          </>
               <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
                 <Button
                   variant="ghost"
