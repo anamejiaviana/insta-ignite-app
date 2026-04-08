@@ -23,9 +23,14 @@ interface WeeklyPlanItem {
   imagePrompt?: string;
 }
 
-interface StoredPlan {
+interface PlanMeta {
   id: string;
   week_start: string;
+  created_at: string;
+  is_archived: boolean;
+}
+
+interface StoredPlan extends PlanMeta {
   plan_data: {
     reels: WeeklyPlanItem[];
     post?: WeeklyPlanItem;
@@ -34,7 +39,6 @@ interface StoredPlan {
     stories: { idea: string; tipo: string; text?: string }[];
     completed_items?: string[];
   };
-  created_at: string;
 }
 
 export default function ContentCalendar() {
