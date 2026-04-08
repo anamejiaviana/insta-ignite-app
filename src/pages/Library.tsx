@@ -586,12 +586,37 @@ function PostDetail({ post, onBack, onDelete, copyText, copiedId, t, clientName 
 
 function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
   const [planData, setPlanData] = useState(plan.plan_data);
+  const [generatedTitles, setGeneratedTitles] = useState<Set<string>>(new Set());
+  const [expandedStories, setExpandedStories] = useState<Set<number>>(new Set());
+  const navigate = useNavigate();
   const completedItems = new Set(planData?.completed_items || []);
+
+  // Check which items have already been generated
+  useEffect(() => {
+    if (!plan.client_id) return;
+    const allItems = [
+      ...(planData?.reels || []),
+      ...(planData?.posts || (planData?.post ? [planData.post] : [])),
+      ...(planData?.carousels || []),
+    ];
+    const titles = allItems.map((item: any) => item.idea).filter(Boolean);
+    if (titles.length === 0) return;
+
+    supabase
+      .from("generated_posts")
+      .select("title")
+      .eq("client_id", plan.client_id)
+      .in("title", titles)
+      .then(({ data }) => {
+        if (data) setGeneratedTitles(new Set(data.map((d: any) => d.title)));
+      });
+  }, [plan.client_id, planData]);
 
   const typeColors: Record<string, string> = {
     reel: "bg-blue-500/20 text-blue-400",
     post: "bg-green-500/20 text-green-400",
     carrusel: "bg-amber-500/20 text-amber-400",
+    carousel: "bg-amber-500/20 text-amber-400",
     story: "bg-purple-500/20 text-purple-400",
   };
 
@@ -613,9 +638,71 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
       .eq("id", plan.id);
   }, [planData, plan]);
 
+  const navigateToCreate = (item: any) => {
+    navigate("/create", {
+      state: {
+        fromCalendar: true,
+        planId: plan.id,
+        prefill: {
+          title: item.idea,
+          postType: item.type,
+          description: item.script,
+          hook: item.hook,
+          shots: item.shots,
+          caption: item.caption,
+          hashtags: item.hashtags,
+          imagePrompt: item.imagePrompt,
+        },
+      },
+    });
+  };
+
+  const navigateToShooting = (item: any) => {
+    navigate("/shooting", {
+      state: {
+        fromContent: true,
+        sourceContent: {
+          title: item.idea,
+          hook: item.hook,
+          shots: item.shots,
+          script: item.script,
+        },
+        sourcePlanId: plan.weekly_plan_id || plan.id,
+      },
+    });
+  };
+
+  const navigateToGenerated = (title: string) => {
+    // Find the generated post and open it in library detail
+    supabase
+      .from("generated_posts")
+      .select("id, post_type, title, description, cta, main_copy, story_copy, hashtags, created_at, client_id, generated_image_url, visual_style, objective")
+      .eq("client_id", plan.client_id)
+      .eq("title", title)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          navigate("/library", { state: { openPost: data[0].id } });
+          // Force reload to trigger deep-link
+          window.location.reload();
+        }
+      });
+  };
+
+  const toggleStory = (idx: number) => {
+    setExpandedStories(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
   const allItems = [
     ...(planData?.reels || []).map((item: any, i: number) => ({ ...item, _key: `reel-${i}` })),
     ...(planData?.posts || (planData?.post ? [planData.post] : [])).map((item: any, i: number) => ({ ...item, _key: `post-${i}` })),
+    ...(planData?.carousels || []).map((item: any, i: number) => ({ ...item, type: item.type || "carrusel", _key: `carousel-${i}` })),
   ];
 
   return (
@@ -634,6 +721,8 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
       <div className="space-y-4">
         {allItems.map((item: any) => {
           const isCompleted = completedItems.has(item._key);
+          const isGenerated = generatedTitles.has(item.idea);
+          const isReel = item.type === "reel";
           return (
             <Card key={item._key} className={`bg-card border-border transition-opacity ${isCompleted ? "opacity-70" : ""}`}>
               <CardContent className="p-5">
@@ -650,7 +739,7 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full uppercase ${typeColors[item.type] || "bg-secondary text-muted-foreground"}`}>
                         {item.type}
                       </span>
@@ -659,6 +748,12 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
                         <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1">
                           <CheckCircle2 className="h-3 w-3" />
                           {t("completed")}
+                        </Badge>
+                      )}
+                      {isGenerated && (
+                        <Badge variant="outline" className="text-[10px] text-primary border-primary/30 gap-1">
+                          <Sparkles className="h-3 w-3" />
+                          {t("generated") || "Generado"}
                         </Badge>
                       )}
                     </div>
@@ -680,6 +775,42 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
                         ))}
                       </div>
                     )}
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border">
+                      {isGenerated ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => navigateToGenerated(item.idea)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          {t("viewGenerated") || "Ver contenido"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => navigateToCreate(item)}
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                          {t("generateContent") || "Generar contenido"}
+                        </Button>
+                      )}
+                      {isReel && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs"
+                          onClick={() => navigateToShooting(item)}
+                        >
+                          <Video className="h-3.5 w-3.5" />
+                          {t("prepareShootingDay") || "Preparar grabación"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -697,6 +828,7 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
                 {planData.stories.map((story: any, idx: number) => {
                   const storyKey = `story-${idx}`;
                   const isStoryCompleted = completedItems.has(storyKey);
+                  const isExpanded = expandedStories.has(idx);
                   return (
                     <div key={idx} className={`space-y-1 transition-opacity ${isStoryCompleted ? "opacity-70" : ""}`}>
                       <div className="flex items-center gap-3 text-sm">
@@ -712,15 +844,23 @@ function WeeklyPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
                           )}
                         </button>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 shrink-0">{story.tipo}</span>
-                        <span className={`text-muted-foreground ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
+                        <span className={`text-muted-foreground flex-1 ${isStoryCompleted ? "line-through" : ""}`}>{story.idea}</span>
+                        {story.text && (
+                          <button
+                            onClick={() => toggleStory(idx)}
+                            className="shrink-0 p-1 hover:bg-secondary rounded transition-colors"
+                          >
+                            <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          </button>
+                        )}
                         {isStoryCompleted && (
                           <Badge variant="outline" className="text-[10px] text-green-500 border-green-500/30 gap-1 ml-auto">
                             <CheckCircle2 className="h-3 w-3" />
                           </Badge>
                         )}
                       </div>
-                      {story.text && (
-                        <p className="text-xs text-muted-foreground/70 ml-7 pl-1 border-l-2 border-purple-500/20">
+                      {story.text && isExpanded && (
+                        <p className="text-xs text-muted-foreground/70 ml-7 pl-3 border-l-2 border-purple-500/20 py-1">
                           {story.text}
                         </p>
                       )}
