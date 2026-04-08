@@ -111,19 +111,49 @@ export default function ShootingDay() {
   const [copiedCaption, setCopiedCaption] = useState(false);
 
   useEffect(() => {
-    loadLatestWeeklyPlan();
+    loadInitialData();
   }, [activeClient]);
 
-  const loadLatestWeeklyPlan = async () => {
+  const loadInitialData = async () => {
     setLoadingPlan(true);
     if (!activeClient) { setLoadingPlan(false); return; }
-    const { data } = await (supabase as any)
-      .from("weekly_plans")
-      .select("*")
-      .eq("client_id", activeClient.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    setLatestPlan(data?.[0] || null);
+
+    // Load weekly plan and latest saved shooting plan in parallel
+    const [weeklyRes, shootingRes] = await Promise.all([
+      (supabase as any)
+        .from("weekly_plans")
+        .select("*")
+        .eq("client_id", activeClient.id)
+        .order("created_at", { ascending: false })
+        .limit(1),
+      (supabase as any)
+        .from("shooting_plans")
+        .select("id, created_at, client_id, num_days, plan_data, weekly_plan_id")
+        .eq("client_id", activeClient.id)
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ]);
+
+    setLatestPlan(weeklyRes.data?.[0] || null);
+
+    // Restore last saved shooting plan results if not arriving from content
+    const savedShooting = shootingRes.data?.[0];
+    if (savedShooting && !fromContent) {
+      const pd = savedShooting.plan_data as any;
+      if (pd?.mode === "custom") {
+        setMode("custom");
+        setCustomIdea(pd.customIdea || "");
+        setCustomPlan(pd);
+      } else if (pd?.mode === "optimize") {
+        setMode("optimize");
+        setOptimizedPlan(pd);
+      } else {
+        setMode("calendar");
+        setShootingPlan(pd);
+        if (savedShooting.num_days) setNumDays(savedShooting.num_days);
+      }
+    }
+
     setLoadingPlan(false);
   };
 
