@@ -286,13 +286,7 @@ export default function Library() {
 // --- Shared ---
 
 function hasDetailedPostData(post: any) {
-  return Boolean(
-    post && (
-      "generated_image_url" in post ||
-      "content_data" in post ||
-      "original_image_url" in post
-    )
-  );
+  return Boolean(post && "content_data" in post && "original_image_url" in post);
 }
 
 function LoadingState({ message = "Cargando biblioteca..." }: { message?: string }) {
