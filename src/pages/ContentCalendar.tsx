@@ -165,7 +165,7 @@ export default function ContentCalendar() {
     navigate("/create", {
       state: {
         fromCalendar: true,
-        planId: selectedPlan?.id,
+        planId: selectedMeta?.id,
         prefill: {
           title: item.idea,
           postType: item.type,
@@ -181,9 +181,9 @@ export default function ContentCalendar() {
   };
 
   const canGoPrev = selectedPlanIndex > 0;
-  const canGoNext = selectedPlanIndex < activePlans.length - 1;
+  const canGoNext = selectedPlanIndex < activeMetas.length - 1;
 
-  const formatWeekLabel = (plan: StoredPlan) => {
+  const formatWeekLabel = (plan: PlanMeta) => {
     const start = new Date(plan.week_start);
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
@@ -236,7 +236,7 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && activePlans.length === 0 && archivedPlans.length === 0 && (
+      {!loading && activeMetas.length === 0 && archivedMetas.length === 0 && (
         <div className="glass rounded-2xl p-12 text-center">
           <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">{t("noPlansYet")}</h3>
@@ -249,10 +249,10 @@ export default function ContentCalendar() {
         </div>
       )}
 
-      {!loading && (activePlans.length > 0 || archivedPlans.length > 0) && (
+      {!loading && (activeMetas.length > 0 || archivedMetas.length > 0) && (
         <div className="space-y-6">
           {/* Week navigator – only if there are active plans */}
-          {selectedPlan && (
+          {selectedMeta && (
             <>
               <div className="flex items-center justify-between glass rounded-xl px-2 sm:px-4 py-3 gap-1">
                 <Button
@@ -267,11 +267,11 @@ export default function ContentCalendar() {
                 </Button>
                 <div className="text-center min-w-0 flex-1">
                   <div className="flex items-center justify-center gap-2">
-                    <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedPlan)}</p>
+                    <p className="font-semibold text-xs sm:text-sm truncate">{formatWeekLabel(selectedMeta)}</p>
                     <Badge variant="outline" className="text-[10px] text-primary border-primary/30">{t("activePlan")}</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    {t("createdOn")} {new Date(selectedPlan.created_at).toLocaleDateString("es-ES")}
+                    {t("createdOn")} {new Date(selectedMeta.created_at).toLocaleDateString("es-ES")}
                   </p>
                 </div>
                 <Button
@@ -436,17 +436,17 @@ export default function ContentCalendar() {
           )}
 
           {/* Archived plans collapsible */}
-          {archivedPlans.length > 0 && (
+          {archivedMetas.length > 0 && (
             <Collapsible open={showArchived} onOpenChange={setShowArchived}>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full gap-2 text-muted-foreground">
                   <Archive className="h-4 w-4" />
-                  {showArchived ? t("hideArchivedPlans") : t("showArchivedPlans")} ({archivedPlans.length})
+                  {showArchived ? t("hideArchivedPlans") : t("showArchivedPlans")} ({archivedMetas.length})
                   {showArchived ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-3 mt-3">
-                {archivedPlans.map((plan) => (
+                {archivedMetas.map((plan) => (
                   <Card key={plan.id} className="bg-card/50 border-border opacity-70">
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center justify-between">
