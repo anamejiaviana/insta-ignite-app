@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -82,11 +83,16 @@ export default function ShootingDay() {
   const { activeClient } = useClients();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const [mode, setMode] = useState<Mode>("calendar");
+  const location = useLocation();
+  const locState = location.state as any;
+  const prefillIdea = locState?.prefillIdea as string | undefined;
+  const fromContent = locState?.fromContent === true;
+
+  const [mode, setMode] = useState<Mode>(fromContent && prefillIdea ? "custom" : "calendar");
   const [latestPlan, setLatestPlan] = useState<any>(null);
   const [numDays, setNumDays] = useState(1);
   const [shootingPlan, setShootingPlan] = useState<ShootingPlanData | null>(null);
-  const [customIdea, setCustomIdea] = useState("");
+  const [customIdea, setCustomIdea] = useState(fromContent && prefillIdea ? prefillIdea : "");
   const [customPlan, setCustomPlan] = useState<CustomIdeaPlan | null>(null);
   const [optimizedPlan, setOptimizedPlan] = useState<OptimizedPlanData | null>(null);
   const [loading, setLoading] = useState(false);
