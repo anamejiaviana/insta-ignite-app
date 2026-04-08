@@ -51,63 +51,36 @@ export default function Library() {
   const loadData = async () => {
     if (activeTab === "posts") {
       setPosts([]);
-
-      const loadLightweightPosts = async () => {
-        let query = supabase
-          .from("generated_posts")
-          .select("id, post_type, title, description, cta, main_copy, story_copy, hashtags, created_at, client_id")
-          .order("created_at", { ascending: false });
-
-        if (activeClient) query = query.eq("client_id", activeClient.id);
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        setPosts(data ?? []);
-      };
-
-      const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 4000);
-
       try {
         let query = supabase
           .from("generated_posts")
-          .select("*")
+          .select("id, post_type, title, description, cta, main_copy, story_copy, hashtags, created_at, client_id, generated_image_url, visual_style, objective")
           .order("created_at", { ascending: false })
-          .abortSignal(controller.signal);
+          .limit(50);
 
         if (activeClient) query = query.eq("client_id", activeClient.id);
 
         const { data, error } = await query;
         if (error) throw error;
-
         setPosts(data ?? []);
-      } catch (error) {
-        console.warn("Falling back to lightweight library query", error);
-
-        try {
-          await loadLightweightPosts();
-        } catch (fallbackError: any) {
-          console.error("Error loading library posts:", fallbackError);
-          toast({
-            variant: "destructive",
-            title: "Error al cargar la biblioteca",
-            description: "Inténtalo de nuevo en unos segundos.",
-          });
-          setPosts([]);
-        }
-      } finally {
-        window.clearTimeout(timeoutId);
+      } catch (error: any) {
+        console.error("Error loading library posts:", error);
+        toast({
+          variant: "destructive",
+          title: "Error al cargar la biblioteca",
+          description: "Inténtalo de nuevo en unos segundos.",
+        });
+        setPosts([]);
       }
     } else if (activeTab === "plans") {
       setWeeklyPlans([]);
-      let query = (supabase as any).from("weekly_plans").select("*").order("created_at", { ascending: false });
+      let query = (supabase as any).from("weekly_plans").select("*").order("created_at", { ascending: false }).limit(50);
       if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setWeeklyPlans(data);
     } else {
       setShootingPlans([]);
-      let query = (supabase as any).from("shooting_plans").select("*").order("created_at", { ascending: false });
+      let query = (supabase as any).from("shooting_plans").select("*").order("created_at", { ascending: false }).limit(50);
       if (activeClient) query = query.eq("client_id", activeClient.id);
       const { data } = await query;
       if (data) setShootingPlans(data);
