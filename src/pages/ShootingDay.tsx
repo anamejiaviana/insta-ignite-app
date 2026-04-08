@@ -149,13 +149,17 @@ export default function ShootingDay() {
     const user = (await supabase.auth.getUser()).data.user;
     if (!user) throw new Error("No authenticated user found");
 
-    const { error } = await (supabase as any).from("shooting_plans").insert({
-      user_id: user.id,
-      client_id: activeClient!.id,
-      weekly_plan_id: weeklyPlanId ?? null,
-      num_days: numDays,
-      plan_data: planData,
-    });
+    const { error } = await (supabase as any)
+      .from("shooting_plans")
+      .insert({
+        user_id: user.id,
+        client_id: activeClient!.id,
+        weekly_plan_id: weeklyPlanId ?? null,
+        num_days: numDays,
+        plan_data: planData,
+      })
+      .select("id, created_at, client_id, num_days, weekly_plan_id, plan_data")
+      .single();
 
     if (error) throw error;
   };
@@ -279,16 +283,12 @@ export default function ShootingDay() {
       if (data.error) throw new Error(data.error);
       setOptimizedPlan(data);
 
-      const user = (await supabase.auth.getUser()).data.user;
-      if (user) {
-        await (supabase as any).from("shooting_plans").insert({
-          user_id: user.id,
-          client_id: activeClient!.id,
-          weekly_plan_id: latestPlan.id,
-          num_days: 1,
-          plan_data: { ...data, mode: "optimize" },
-        });
-      }
+      await saveShootingPlan({
+        planData: { ...data, mode: "optimize" },
+        numDays: 1,
+        weeklyPlanId: latestPlan.id,
+      });
+
       toast({ title: t("optimizedPlanGenerated") });
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGeneratingShootingPlan"), description: error.message });

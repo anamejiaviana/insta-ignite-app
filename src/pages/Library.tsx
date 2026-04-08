@@ -17,6 +17,32 @@ type DetailView =
   | { type: "shooting"; data: any }
   | null;
 
+function getShootingPlanTitle(planData: any) {
+  const firstReel = Array.isArray(planData?.reels) ? planData.reels[0] : null;
+  const firstContent = Array.isArray(planData?.contenidos) ? planData.contenidos[0] : null;
+  const customIdea = typeof planData?.customIdea === "string"
+    ? planData.customIdea.split("\n")[0]?.trim()
+    : "";
+
+  return (
+    planData?.sourceContent?.title ||
+    firstReel?.idea ||
+    firstReel?.title ||
+    firstContent?.idea ||
+    customIdea ||
+    (planData?.mode === "optimize" ? "Sesión optimizada" : "Guía de grabación")
+  );
+}
+
+function formatPlanDateTime(value: string) {
+  return new Date(value).toLocaleString("es-ES", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function Library() {
   const { clients, activeClient } = useClients();
   const { t } = useLanguage();
@@ -80,10 +106,27 @@ export default function Library() {
       if (data) setWeeklyPlans(data);
     } else {
       setShootingPlans([]);
-      let query = (supabase as any).from("shooting_plans").select("id, created_at, client_id, num_days, plan_data").order("created_at", { ascending: false }).limit(50);
-      if (activeClient) query = query.eq("client_id", activeClient.id);
-      const { data } = await query;
-      if (data) setShootingPlans(data);
+      try {
+        let query = (supabase as any)
+          .from("shooting_plans")
+          .select("id, created_at, client_id, num_days, plan_data")
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (activeClient) query = query.eq("client_id", activeClient.id);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        setShootingPlans(data ?? []);
+      } catch (error: any) {
+        console.error("Error loading shooting plans:", error);
+        toast({
+          variant: "destructive",
+          title: "Error al cargar las guías de grabación",
+          description: "Inténtalo de nuevo en unos segundos.",
+        });
+        setShootingPlans([]);
+      }
     }
   };
 
@@ -257,6 +300,7 @@ export default function Library() {
             {shootingPlans.map((plan) => {
               const pd = plan.plan_data;
               const reelCount = pd?.reels?.length || 0;
+              const sourceTitle = getShootingPlanTitle(pd);
               return (
                 <Card key={plan.id} className="bg-card border-border group cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setDetail({ type: "shooting", data: plan })}>
                   <CardContent className="p-4 flex items-center justify-between">
@@ -264,8 +308,9 @@ export default function Library() {
                       <p className="font-medium text-sm">
                         {t("sessionOfDays")} {plan.num_days} {plan.num_days === 1 ? t("day") : t("days")}
                       </p>
+                      <p className="text-sm mt-1 truncate">{sourceTitle}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {reelCount} reels · {new Date(plan.created_at).toLocaleDateString("es-ES")}
+                        {reelCount} reels · {formatPlanDateTime(plan.created_at)}
                         {plan.client_id && ` · ${clientName(plan.client_id)}`}
                       </p>
                     </div>
@@ -700,6 +745,7 @@ function ShootingPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
   const reusableShots = pd?.planos_reutilizables || [];
   const recordingOrder = pd?.orden_grabacion || [];
   const estimatedDuration = pd?.duracion_estimada || "";
+  const sourceTitle = getShootingPlanTitle(pd);
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
@@ -708,8 +754,9 @@ function ShootingPlanDetail({ plan, onBack, onDelete, t, clientName }: any) {
         <h2 className="text-xl font-bold">
           {t("sessionOfDays")} {plan.num_days} {plan.num_days === 1 ? t("day") : t("days")}
         </h2>
+        <p className="text-sm font-medium">{sourceTitle}</p>
         <p className="text-sm text-muted-foreground">
-          {new Date(plan.created_at).toLocaleDateString("es-ES")}
+          {formatPlanDateTime(plan.created_at)}
           {plan.client_id && ` · ${clientName(plan.client_id)}`}
         </p>
       </div>
