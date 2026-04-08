@@ -48,24 +48,27 @@ export default function ContentCalendar() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnToPlanId = (location.state as any)?.returnToPlanId as string | undefined;
-  const [activePlans, setActivePlans] = useState<StoredPlan[]>([]);
-  const [archivedPlans, setArchivedPlans] = useState<StoredPlan[]>([]);
+  const [activeMetas, setActiveMetas] = useState<PlanMeta[]>([]);
+  const [archivedMetas, setArchivedMetas] = useState<PlanMeta[]>([]);
+  const [selectedPlanData, setSelectedPlanData] = useState<StoredPlan["plan_data"] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
   const [showArchived, setShowArchived] = useState(false);
 
+  // Phase 1: Load lightweight list (no plan_data)
   useEffect(() => {
-    loadPlans();
+    loadPlanMetas();
   }, [activeClient]);
 
-  const loadPlans = async () => {
+  const loadPlanMetas = async () => {
     setLoading(true);
     let query = (supabase as any)
       .from("weekly_plans")
-      .select("*")
+      .select("id, week_start, created_at, is_archived")
       .order("week_start", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(20);
 
     if (activeClient) {
       query = query.eq("client_id", activeClient.id);
@@ -73,14 +76,14 @@ export default function ContentCalendar() {
 
     const { data } = await query;
     if (data) {
-      const active = (data as StoredPlan[]).filter((p: any) => !p.is_archived);
-      const archived = (data as StoredPlan[]).filter((p: any) => p.is_archived);
-      setActivePlans(active);
-      setArchivedPlans(archived);
+      const active = (data as PlanMeta[]).filter((p) => !p.is_archived);
+      const archived = (data as PlanMeta[]).filter((p) => p.is_archived);
+      setActiveMetas(active);
+      setArchivedMetas(archived);
 
       const targetPlanId = returnToPlanId;
       if (targetPlanId) {
-        const idx = active.findIndex((p: StoredPlan) => p.id === targetPlanId);
+        const idx = active.findIndex((p) => p.id === targetPlanId);
         setSelectedPlanIndex(idx >= 0 ? idx : 0);
       } else {
         setSelectedPlanIndex(0);
@@ -89,8 +92,32 @@ export default function ContentCalendar() {
     setLoading(false);
   };
 
-  const selectedPlan = activePlans[selectedPlanIndex] || null;
-  const planData = selectedPlan?.plan_data;
+  // Phase 2: Load full plan_data only for selected plan
+  const selectedMeta = activeMetas[selectedPlanIndex] || null;
+
+  useEffect(() => {
+    if (!selectedMeta) {
+      setSelectedPlanData(null);
+      return;
+    }
+    loadSelectedPlanData(selectedMeta.id);
+  }, [selectedMeta?.id]);
+
+  const loadSelectedPlanData = async (planId: string) => {
+    setLoadingDetail(true);
+    const { data } = await (supabase as any)
+      .from("weekly_plans")
+      .select("plan_data")
+      .eq("id", planId)
+      .single();
+
+    if (data) {
+      setSelectedPlanData(data.plan_data);
+    }
+    setLoadingDetail(false);
+  };
+
+  const planData = selectedPlanData;
   const completedItems = new Set(planData?.completed_items || []);
 
   const toggleCompleted = useCallback(async (itemKey: string) => {
