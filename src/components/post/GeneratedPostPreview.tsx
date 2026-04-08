@@ -117,10 +117,21 @@ export function GeneratedPostPreview({
       prefillData?.script ? `Guión: ${prefillData.script}` : "",
       prefillData?.shots?.length ? `Planos: ${prefillData.shots.join(", ")}` : "",
     ].filter(Boolean);
+
     navigate("/shooting", {
       state: {
         prefillIdea: ideaParts.join("\n") || editedMainCopy.slice(0, 300),
         fromContent: true,
+        sourcePlanId: calendarPlanId,
+        sourceContent: {
+          title: prefillData?.title,
+          hook: prefillData?.hook,
+          shots: prefillData?.shots,
+          script: prefillData?.script,
+          mainCopy: editedMainCopy,
+          storyCopy: editedStoryCopy,
+          postType,
+        },
       },
     });
   };
