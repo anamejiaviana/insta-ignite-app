@@ -111,9 +111,15 @@ export function GeneratedPostPreview({
   };
 
   const handlePrepareShootingDay = () => {
+    const ideaParts = [
+      prefillData?.title || "",
+      prefillData?.hook ? `Hook: ${prefillData.hook}` : "",
+      prefillData?.script ? `Guión: ${prefillData.script}` : "",
+      prefillData?.shots?.length ? `Planos: ${prefillData.shots.join(", ")}` : "",
+    ].filter(Boolean);
     navigate("/shooting", {
       state: {
-        prefillIdea: prefillData?.title || "",
+        prefillIdea: ideaParts.join("\n") || editedMainCopy.slice(0, 300),
         fromContent: true,
       },
     });
