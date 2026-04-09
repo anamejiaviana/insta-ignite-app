@@ -26,7 +26,7 @@ const PLANS = [
     key: "studio" as const,
     icon: Crown,
     limit: 5,
-    price: "99",
+    price: "115",
     planName: "studio",
   },
 ];
