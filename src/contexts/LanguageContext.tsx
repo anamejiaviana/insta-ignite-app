@@ -631,6 +631,7 @@ const translations = {
     plansContactUpgrade: "I want to upgrade my plan",
     plansComingSoon: "Coming soon",
     plansComingSoonDesc: "Plan management will be available very soon.",
+    plansCustomPlan: "Need more than 5 businesses? Contact me and I'll prepare a custom plan for you.",
     plansFooter: "Plan, generate, and organize all your content from one place.",
     plansUpgrade: "View plans",
   },
