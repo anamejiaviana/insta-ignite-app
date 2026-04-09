@@ -133,12 +133,19 @@ export default function Plans() {
         })}
       </div>
 
-      <div className="text-center space-y-3">
+      <Card className="border-border bg-card/50 p-8 text-center">
+        <h3 className="text-xl font-semibold mb-2">{t("plansCustomTitle")}</h3>
+        <p className="text-muted-foreground text-sm mb-5">
+          {t("plansCustomDesc")}
+        </p>
+        <Button variant="outline" onClick={handleUpgrade}>
+          {t("plansCustomCTA")}
+        </Button>
+      </Card>
+
+      <div className="text-center space-y-2 mt-6">
         <p className="text-sm text-muted-foreground">
           {t("plansBusinessExplainer")}
-        </p>
-        <p className="text-sm text-muted-foreground font-medium">
-          {t("plansCustomPlan")}
         </p>
         <p className="text-xs text-muted-foreground">
           {t("plansFooter")}
