@@ -315,6 +315,7 @@ const translations = {
     plansContactUpgrade: "Quiero ampliar mi plan",
     plansComingSoon: "Próximamente",
     plansComingSoonDesc: "La gestión de planes estará disponible muy pronto.",
+    plansCustomPlan: "¿Necesitas más de 5 negocios? Escríbeme y te preparo un plan a medida.",
     plansFooter: "Planifica, genera y organiza todo tu contenido desde un solo lugar.",
     plansUpgrade: "Ver planes",
   },
