@@ -18,14 +18,14 @@ const PLANS = [
     key: "pro" as const,
     icon: Sparkles,
     limit: 3,
-    price: "59",
+    price: "69",
     planName: "pro",
     popular: true,
   },
   {
     key: "studio" as const,
     icon: Crown,
-    limit: 10,
+    limit: 5,
     price: "99",
     planName: "studio",
   },
@@ -133,12 +133,17 @@ export default function Plans() {
         })}
       </div>
 
-      <p className="text-center text-sm text-muted-foreground mb-2">
-        {t("plansBusinessExplainer")}
-      </p>
-      <p className="text-center text-xs text-muted-foreground">
-        {t("plansFooter")}
-      </p>
+      <div className="text-center space-y-3">
+        <p className="text-sm text-muted-foreground">
+          {t("plansBusinessExplainer")}
+        </p>
+        <p className="text-sm text-muted-foreground font-medium">
+          {t("plansCustomPlan")}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {t("plansFooter")}
+        </p>
+      </div>
     </div>
   );
 }
