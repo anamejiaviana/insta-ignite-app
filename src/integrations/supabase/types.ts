@@ -385,7 +385,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      usage_overview: {
+        Row: {
+          business_count: number | null
+          count: number | null
+          image_limit: number | null
+          month: string | null
+          plan_name: string | null
+          resource_type: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_image_limit: { Args: { _user_id: string }; Returns: number }
