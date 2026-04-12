@@ -4,6 +4,7 @@ import {
   Calendar,
   Camera,
   FolderOpen,
+  ImageIcon,
   Settings,
   CreditCard,
 } from "lucide-react";
