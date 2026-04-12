@@ -21,20 +21,20 @@ import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 
 const POST_TYPES = [
-  { value: "post", label: "Post" },
-  { value: "reel", label: "Reel" },
-  { value: "carousel", label: "Carrusel" },
-  { value: "story", label: "Story" },
+  { value: "post", labelKey: "typePost" as const },
+  { value: "reel", labelKey: "typeReel" as const },
+  { value: "carousel", labelKey: "typeCarousel" as const },
+  { value: "story", labelKey: "typeStory" as const },
 ];
 
 const VISUAL_STYLES = [
-  "fotografía gourmet",
-  "lifestyle",
-  "minimalista",
-  "editorial",
-  "instagram moderno",
-  "dark mood",
-  "fondo claro",
+  { value: "fotografía gourmet", key: "visualStyle_gourmet" as const },
+  { value: "lifestyle", key: "visualStyle_lifestyle" as const },
+  { value: "minimalista", key: "visualStyle_minimalist" as const },
+  { value: "editorial", key: "visualStyle_editorial" as const },
+  { value: "instagram moderno", key: "visualStyle_modernIG" as const },
+  { value: "dark mood", key: "visualStyle_darkMood" as const },
+  { value: "fondo claro", key: "visualStyle_lightBg" as const },
 ];
 
 const IMAGE_SOURCES = [
