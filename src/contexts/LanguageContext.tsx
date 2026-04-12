@@ -246,6 +246,13 @@ const translations = {
     prepareShootingDay: "Preparar día de grabación",
     backToCalendarPrimary: "← Volver al calendario",
     generateAnotherPost: "Generar otro post",
+    businessWebsite: "Web del negocio (opcional)",
+    websitePlaceholder: "Ej: www.minegocio.com",
+    websiteHelper: "Si tu negocio tiene web, añádela para que la app entienda mejor tu marca.",
+    settingsFormHelper: "Cuanta más información añadas, mejor será el contenido que la app genere para ti.",
+    onboardingBannerTitle: "¡Bienvenido! Configura tu negocio para empezar",
+    onboardingBannerDesc: "Antes de generar contenido, necesitamos conocer tu negocio. Solo tardarás un par de minutos.",
+    onboardingBannerCTA: "Configurar mi negocio",
 
     // Settings - delete confirmation
     deleteBusinessTitle: "¿Eliminar negocio?",
@@ -274,7 +281,7 @@ const translations = {
     strategyProduct: "Producto",
     strategyDemosReveals: "Demos, reveals",
     strategyTestimonialsCases: "Testimonios, casos",
-    strategyOffersCTAs: "Ofertas, CTAs directos",
+    strategyOffersCTAs: "Ofertas, promociones directas",
 
     // Carousel
     carouselSlideCount: "¿Cuántas imágenes quieres en el carrusel?",
