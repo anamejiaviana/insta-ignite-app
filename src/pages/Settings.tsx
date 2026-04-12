@@ -70,6 +70,7 @@ interface ClientForm {
   type: string;
   city: string;
   address: string;
+  website: string;
   tone: string;
   objective: string;
   keywords: string;
@@ -84,6 +85,7 @@ const emptyForm: ClientForm = {
   type: "",
   city: "",
   address: "",
+  website: "",
   tone: "",
   objective: "",
   keywords: "",
@@ -111,6 +113,7 @@ export default function Settings() {
       type: client.type || "",
       city: client.city || "",
       address: client.address || "",
+      website: (client as any).website || "",
       tone: client.tone || "",
       objective: client.objective || "",
       keywords: (client.keywords || []).join(", "),
@@ -158,6 +161,7 @@ export default function Settings() {
         type: form.type || null,
         city: form.city || null,
         address: form.address || null,
+        website: form.website || null,
         tone: form.tone || null,
         objective: form.objective || null,
         keywords: form.keywords.split(",").map((k) => k.trim()).filter(Boolean),
