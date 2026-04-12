@@ -93,6 +93,7 @@ export default function CreateContent() {
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadedPersistentUrl = useRef<string | null>(null);
+  const uploadImagePromiseRef = useRef<Promise<string | null> | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const getImageLoadingMessage = () => {
@@ -220,11 +221,55 @@ export default function CreateContent() {
     }
   }, []);
 
+  const isPersistentImageUrl = (value: string | null | undefined) =>
+    Boolean(value && !value.startsWith("data:") && !value.startsWith("blob:"));
+
+  const uploadFileToStorage = async (file: File) => {
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user?.id) throw new Error("User not authenticated");
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const fileName = `${user.id}/uploaded/${crypto.randomUUID()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(fileName, file, { contentType: file.type || undefined, upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage
+      .from("post-images")
+      .getPublicUrl(fileName);
+
+    return publicUrlData?.publicUrl || null;
+  };
+
+  const resolveUploadedImageUrl = async () => {
+    if (isPersistentImageUrl(uploadedPersistentUrl.current)) {
+      return uploadedPersistentUrl.current;
+    }
+
+    if (uploadImagePromiseRef.current) {
+      try {
+        const resolvedUrl = await uploadImagePromiseRef.current;
+        if (isPersistentImageUrl(resolvedUrl)) {
+          uploadedPersistentUrl.current = resolvedUrl;
+          return resolvedUrl;
+        }
+      } catch (error) {
+        console.error("Error waiting for uploaded image persistence:", error);
+      }
+    }
+
+    return uploadedImage;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     uploadedPersistentUrl.current = null;
+    uploadImagePromiseRef.current = null;
 
     // Show preview immediately via data URI
     const reader = new FileReader();
@@ -232,24 +277,22 @@ export default function CreateContent() {
     reader.readAsDataURL(file);
 
     // Upload to Storage for a persistent URL
+    const uploadPromise = uploadFileToStorage(file);
+    uploadImagePromiseRef.current = uploadPromise;
+
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const fileName = `uploaded/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("post-images")
-        .upload(fileName, file, { contentType: file.type, upsert: false });
-      if (uploadError) throw uploadError;
+      const publicUrl = await uploadPromise;
 
-      const { data: publicUrlData } = supabase.storage
-        .from("post-images")
-        .getPublicUrl(fileName);
-
-      if (publicUrlData?.publicUrl) {
-        uploadedPersistentUrl.current = publicUrlData.publicUrl;
-        setUploadedImage(publicUrlData.publicUrl);
+      if (isPersistentImageUrl(publicUrl)) {
+        uploadedPersistentUrl.current = publicUrl;
+        setUploadedImage(publicUrl);
       }
     } catch (err) {
       console.error("Error uploading image to storage:", err);
+    } finally {
+      if (uploadImagePromiseRef.current === uploadPromise) {
+        uploadImagePromiseRef.current = null;
+      }
     }
   };
 
@@ -295,19 +338,20 @@ export default function CreateContent() {
       setStep("image");
       setLoadingPhase("image");
 
+      const resolvedUploadedImage =
+        imageSource === "upload" || imageSource === "edit"
+          ? await resolveUploadedImageUrl()
+          : uploadedImage;
+
       if (postType === "carousel" && data.slidePrompts?.length > 0) {
         await generateCarouselImages(data.slidePrompts);
       } else if (imageSource === "generate") {
         await generateImage(data.imagePrompt);
-      } else if (imageSource === "edit" && uploadedImage) {
-        await editImage(uploadedImage, data.imagePrompt);
-      } else if (imageSource === "upload" && uploadedImage) {
-        // Use the persistent URL from Storage if available, otherwise fall back to state
-        const persistentUrl = uploadedPersistentUrl.current || uploadedImage;
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: persistentUrl } : null);
-        if (!persistentUrl.startsWith("data:")) {
-          autoSaveAsset(persistentUrl, "uploaded");
-        }
+      } else if (imageSource === "edit" && resolvedUploadedImage) {
+        await editImage(resolvedUploadedImage, data.imagePrompt);
+      } else if (imageSource === "upload" && resolvedUploadedImage) {
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: resolvedUploadedImage } : null);
+        await autoSaveAsset(resolvedUploadedImage, "uploaded");
       } else if (imageSource === "library" && uploadedImage) {
         // Already selected from library — just use it
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
@@ -325,8 +369,8 @@ export default function CreateContent() {
 
   const autoSaveAsset = async (url: string, source: "generated" | "uploaded" | "edited", prompt?: string) => {
     const uid = await getUserId();
-    if (uid && activeClient?.id) {
-      saveMediaAsset({ userId: uid, clientId: activeClient.id, imageUrl: url, source, originalPrompt: prompt });
+    if (uid && activeClient?.id && isPersistentImageUrl(url)) {
+      await saveMediaAsset({ userId: uid, clientId: activeClient.id, imageUrl: url, source, originalPrompt: prompt });
     }
   };
 
@@ -390,6 +434,11 @@ export default function CreateContent() {
   const savePost = async () => {
     if (!generatedPost) return;
     try {
+      const originalImageUrl =
+        imageSource === "upload" || imageSource === "edit"
+          ? await resolveUploadedImageUrl()
+          : uploadedImage;
+
       const insertData: any = {
         user_id: (await supabase.auth.getUser()).data.user?.id,
         post_type: postType,
@@ -397,7 +446,7 @@ export default function CreateContent() {
         description,
         cta,
         generated_image_url: generatedPost.imageUrl,
-        original_image_url: uploadedImage,
+        original_image_url: originalImageUrl,
         main_copy: editedCopiesRef.current?.mainCopy ?? generatedPost.mainCopy,
         story_copy: editedCopiesRef.current?.storyCopy ?? generatedPost.storyCopy,
         hashtags: generatedPost.hashtags,
@@ -426,6 +475,7 @@ export default function CreateContent() {
     setCta("");
     setUploadedImage(null);
     uploadedPersistentUrl.current = null;
+    uploadImagePromiseRef.current = null;
     setEditPrompt("");
     setStep("content");
   };
@@ -667,7 +717,11 @@ export default function CreateContent() {
         <MediaPickerDialog
           open={mediaPickerOpen}
           onClose={() => setMediaPickerOpen(false)}
-          onSelect={(url) => setUploadedImage(url)}
+          onSelect={(url) => {
+            uploadImagePromiseRef.current = null;
+            uploadedPersistentUrl.current = url;
+            setUploadedImage(url);
+          }}
           clientId={activeClient.id}
         />
       )}
