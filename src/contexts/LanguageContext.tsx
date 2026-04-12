@@ -53,14 +53,55 @@ const translations = {
     generate: "Generar",
     recentContent: "Contenido reciente",
     selectBusinessFirst: "Selecciona un negocio primero",
-    weeklyPlanGenerated: "¡Plan semanal generado! Lo encontrarás en Biblioteca de contenido > Planes guardados.",
+    weeklyPlanGenerated: "¡Plan semanal generado! Ve al Calendario para ver tu semana.",
     errorGeneratingPlan: "Error al generar plan",
     calendarNav: "Calendario",
     recordingDay: "Día de grabación",
-    libraryNav: "Biblioteca de contenido",
+    libraryNav: "Contenido guardado",
     storiesIdeas: "Ideas de Stories",
+    goToCalendar: "Ir al calendario",
 
-    // Calendar
+    // Quick action descriptions
+    quickActionCalendarDesc: "Planifica y sigue tu semana",
+    quickActionShootingDesc: "Organiza lo que vas a grabar",
+    quickActionLibraryDesc: "Recupera piezas guardadas",
+    specialDatesHelper: "Añádelo para que el plan se adapte mejor a tu semana",
+    viewAll: "Ver todo →",
+
+    // Content type labels
+    typeCarousel: "Carrusel",
+    typeReel: "Reel",
+    typePost: "Post",
+    typeStory: "Story",
+
+    // Business types
+    businessType_restaurant: "Restaurante",
+    businessType_shop: "Tienda",
+    businessType_clinic: "Clínica",
+    businessType_interiorDesign: "Interiorismo",
+    businessType_beauty: "Belleza",
+    businessType_gym: "Gimnasio",
+    businessType_cafe: "Cafetería",
+    businessType_bakery: "Panadería",
+    businessType_hotel: "Hotel",
+    businessType_other: "Otro",
+
+    // Visual styles
+    visualStyle_gourmet: "Fotografía gourmet",
+    visualStyle_lifestyle: "Lifestyle",
+    visualStyle_minimalist: "Minimalista",
+    visualStyle_editorial: "Editorial",
+    visualStyle_modernIG: "Instagram moderno",
+    visualStyle_darkMood: "Dark mood",
+    visualStyle_lightBg: "Fondo claro",
+
+    // 404
+    notFoundTitle: "Página no encontrada",
+    notFoundDesc: "La página que buscas no existe",
+    returnHome: "Volver al inicio",
+
+    // Media Library nav
+    mediaLibraryNav: "Mis imágenes",
     calendarSubtitle: "Planifica y sigue tu contenido semana a semana",
     plans: "Planes",
     createdOn: "Creado el",
@@ -119,7 +160,7 @@ const translations = {
     chooseFromLibrary: "Elegir de biblioteca",
 
     // Media Library
-    mediaLibraryNav: "Imágenes",
+    mediaLibraryNav: "Mis imágenes",
     mediaLibraryTitle: "Biblioteca de imágenes",
     mediaLibrarySubtitle: "Todas las imágenes de tu negocio en un solo lugar",
     mediaAll: "Todas",
