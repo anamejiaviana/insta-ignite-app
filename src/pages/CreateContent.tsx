@@ -302,8 +302,12 @@ export default function CreateContent() {
       } else if (imageSource === "edit" && uploadedImage) {
         await editImage(uploadedImage, data.imagePrompt);
       } else if (imageSource === "upload" && uploadedImage) {
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
-        autoSaveAsset(uploadedImage, "uploaded");
+        // Use the persistent URL from Storage if available, otherwise fall back to state
+        const persistentUrl = uploadedPersistentUrl.current || uploadedImage;
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: persistentUrl } : null);
+        if (!persistentUrl.startsWith("data:")) {
+          autoSaveAsset(persistentUrl, "uploaded");
+        }
       } else if (imageSource === "library" && uploadedImage) {
         // Already selected from library — just use it
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
