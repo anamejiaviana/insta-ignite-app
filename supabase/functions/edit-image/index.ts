@@ -58,6 +58,55 @@ async function uploadToStorage(base64DataUrl: string): Promise<string | null> {
   }
 }
 
+async function checkAndIncrementUsage(userId: string): Promise<{ allowed: boolean; current: number; limit: number }> {
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return { allowed: true, current: 0, limit: 9999 };
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const month = new Date().toISOString().slice(0, 7);
+
+  const { data: limitData } = await supabase.rpc('get_image_limit', { _user_id: userId });
+  const imageLimit = limitData ?? 30;
+
+  const { data: counterData } = await supabase
+    .from('usage_counters')
+    .select('count')
+    .eq('user_id', userId)
+    .eq('resource_type', 'images')
+    .eq('month', month)
+    .maybeSingle();
+
+  const currentCount = counterData?.count ?? 0;
+
+  if (currentCount >= imageLimit) {
+    return { allowed: false, current: currentCount, limit: imageLimit };
+  }
+
+  await supabase.rpc('increment_usage', {
+    _user_id: userId,
+    _resource_type: 'images',
+    _month: month,
+    _amount: 1,
+  });
+
+  return { allowed: true, current: currentCount + 1, limit: imageLimit };
+}
+
+function extractUserId(req: Request): string | null {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) return null;
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || null;
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -69,6 +118,22 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    // Check usage limits
+    const userId = extractUserId(req);
+    if (userId) {
+      const usage = await checkAndIncrementUsage(userId);
+      if (!usage.allowed) {
+        return new Response(JSON.stringify({
+          error: 'image_limit_reached',
+          current: usage.current,
+          limit: usage.limit,
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const brandContext = brandConfig?.visual_style 
