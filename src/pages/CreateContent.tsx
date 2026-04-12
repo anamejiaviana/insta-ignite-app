@@ -92,6 +92,7 @@ export default function CreateContent() {
   const [carouselSlideCount, setCarouselSlideCount] = useState(3);
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadedPersistentUrl = useRef<string | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const getImageLoadingMessage = () => {
