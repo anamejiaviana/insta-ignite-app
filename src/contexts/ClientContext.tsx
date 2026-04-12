@@ -8,6 +8,7 @@ export interface Client {
   type: string | null;
   city: string | null;
   address: string | null;
+  website: string | null;
   tone: string | null;
   objective: string | null;
   keywords: string[];
