@@ -293,6 +293,9 @@ Organiza estos reels en una sesión de grabación de ${numDays || 1} día(s).`
       throw new Error('Failed to parse AI response');
     }
 
+    const userId = extractUserId(req);
+    if (userId) trackUsage(userId, 'text_shooting_plan');
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

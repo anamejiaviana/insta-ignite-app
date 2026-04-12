@@ -109,6 +109,9 @@ serve(async (req) => {
       throw new Error('Failed to parse AI response');
     }
 
+    const userId = extractUserId(req);
+    if (userId) trackUsage(userId, 'text_hooks');
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

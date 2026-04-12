@@ -253,6 +253,9 @@ ${postExamples}
     (parsed.posts || []).forEach((p: any) => { p.type = 'post'; });
     (parsed.carousels || []).forEach((c: any) => { c.type = 'carousel'; });
 
+    const userId = extractUserId(req);
+    if (userId) trackUsage(userId, 'text_weekly_plan');
+
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
