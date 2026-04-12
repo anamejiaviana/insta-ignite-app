@@ -219,12 +219,35 @@ export default function CreateContent() {
     }
   }, []);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setUploadedImage(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Show preview immediately via data URI
+    const reader = new FileReader();
+    reader.onloadend = () => setUploadedImage(reader.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload to Storage for a persistent URL
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const fileName = `uploaded/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("post-images")
+        .upload(fileName, file, { contentType: file.type, upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from("post-images")
+        .getPublicUrl(fileName);
+
+      if (publicUrlData?.publicUrl) {
+        // Replace the data URI with the persistent URL
+        setUploadedImage(publicUrlData.publicUrl);
+      }
+    } catch (err) {
+      console.error("Error uploading image to storage:", err);
+      // Keep the data URI as fallback — user can still create content
     }
   };
 
@@ -278,6 +301,7 @@ export default function CreateContent() {
         await editImage(uploadedImage, data.imagePrompt);
       } else if (imageSource === "upload" && uploadedImage) {
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
+        autoSaveAsset(uploadedImage, "uploaded");
       } else if (imageSource === "library" && uploadedImage) {
         // Already selected from library — just use it
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
