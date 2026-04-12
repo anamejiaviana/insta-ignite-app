@@ -549,7 +549,6 @@ const translations = {
     chooseFromLibrary: "Choose from library",
 
     // Media Library
-    mediaLibraryNav: "Images",
     mediaLibraryTitle: "Image Library",
     mediaLibrarySubtitle: "All your business images in one place",
     mediaAll: "All",
