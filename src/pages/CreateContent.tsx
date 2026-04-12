@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedPostPreview } from "@/components/post/GeneratedPostPreview";
-import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon } from "lucide-react";
+import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTriangle } from "lucide-react";
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
+import { useImageUsage } from "@/hooks/useImageUsage";
+import { useNavigate as useNav } from "react-router-dom";
 
 const POST_TYPES = [
   { value: "post", labelKey: "typePost" as const },
@@ -95,7 +97,10 @@ export default function CreateContent() {
   const uploadedPersistentUrl = useRef<string | null>(null);
   const uploadImagePromiseRef = useRef<Promise<string | null> | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const { usage, refreshUsage } = useImageUsage();
 
+  const needsAIImage = imageSource === "generate" || imageSource === "edit" || postType === "carousel";
+  const isImageBlocked = usage.limitReached && needsAIImage;
   const getImageLoadingMessage = () => {
     if (postType === "carousel") return t("generatingCarousel");
     if (imageSource === "edit") return t("editingImageWithAI");
@@ -380,9 +385,15 @@ export default function CreateContent() {
         body: { prompt, postType, brandConfig: { visual_style: visualStyle || activeClient?.default_visual_style } },
       });
       if (error) throw error;
+      if (data.error === 'image_limit_reached') {
+        refreshUsage();
+        toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
+        return;
+      }
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
       autoSaveAsset(data.imageUrl, "generated", prompt);
+      refreshUsage();
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGeneratingImage"), description: error.message });
     }
@@ -402,6 +413,11 @@ export default function CreateContent() {
           },
         });
         if (error) throw error;
+        if (data.error === 'image_limit_reached') {
+          refreshUsage();
+          toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
+          break;
+        }
         if (data.error) throw new Error(data.error);
         urls.push(data.imageUrl);
         setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls] } : null);
@@ -423,9 +439,15 @@ export default function CreateContent() {
         body: { imageUrl, editPrompt: editPrompt || prompt, postType, brandConfig: { visual_style: visualStyle } },
       });
       if (error) throw error;
+      if (data.error === 'image_limit_reached') {
+        refreshUsage();
+        toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
+        return;
+      }
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
       autoSaveAsset(data.imageUrl, "edited", editPrompt || prompt);
+      refreshUsage();
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
     }
@@ -496,7 +518,36 @@ export default function CreateContent() {
       )}
 
       <h1 className="text-3xl font-bold">{t("createContent")}</h1>
-      <p className="text-sm text-muted-foreground mt-1 mb-8">{t("createContentSubtitle")}</p>
+      <p className="text-sm text-muted-foreground mt-1 mb-4">{t("createContentSubtitle")}</p>
+
+      {/* Image usage indicator */}
+      {!generatedPost && (
+        <div className={`flex items-center gap-2 text-xs mb-6 px-3 py-2 rounded-lg ${
+          usage.limitReached
+            ? "bg-destructive/10 text-destructive border border-destructive/20"
+            : usage.remaining <= 5
+              ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-500/20"
+              : "bg-muted/50 text-muted-foreground"
+        }`}>
+          {usage.limitReached ? (
+            <>
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1">{t("imageLimitReached")}</span>
+              <button
+                onClick={() => navigate("/plans")}
+                className="font-medium underline underline-offset-2 hover:opacity-80 shrink-0"
+              >
+                {t("upgradePlan")}
+              </button>
+            </>
+          ) : (
+            <>
+              <Image className="h-3.5 w-3.5 shrink-0" />
+              <span>{usage.remaining} / {usage.limit} {t("imagesRemaining")}</span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Show prefill details if coming from weekly plan */}
       {hasPrefillDetails && !generatedPost && (
@@ -674,9 +725,11 @@ export default function CreateContent() {
             </div>
           </div>
 
-          <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim()} className="w-full">
+          <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim() || isImageBlocked} className="w-full">
             {loading ? (
               <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? getImageLoadingMessage() : t("generatingContent")}</>
+            ) : isImageBlocked ? (
+              <><AlertTriangle className="h-5 w-5" /> {t("imageLimitReached")}</>
             ) : (
               <><Sparkles className="h-5 w-5" /> {t("generateContentBtn")}</>
             )}

@@ -361,6 +361,12 @@ const translations = {
     generatingCarousel: "Generando carrusel... espera a que se creen todas las imágenes",
     editingImageWithAI: "Editando imagen con IA...",
 
+    // Usage limits
+    imagesRemaining: "imágenes restantes este mes",
+    imageLimitReached: "Has alcanzado el límite de imágenes de tu plan este mes",
+    imageLimitReachedDesc: "Mejora tu plan para seguir generando imágenes con IA.",
+    upgradePlan: "Mejorar plan",
+
     // Plans
     plansNav: "Planes y precios",
     plansTitle: "Planes y precios",
@@ -749,6 +755,12 @@ const translations = {
     generatingImage: "Generating image...",
     generatingCarousel: "Generating carousel... please wait until all images are ready",
     editingImageWithAI: "Editing image with AI...",
+
+    // Usage limits
+    imagesRemaining: "images remaining this month",
+    imageLimitReached: "You've reached your plan's image limit this month",
+    imageLimitReachedDesc: "Upgrade your plan to keep generating images with AI.",
+    upgradePlan: "Upgrade plan",
 
     // Plans
     plansNav: "Plans & Pricing",
