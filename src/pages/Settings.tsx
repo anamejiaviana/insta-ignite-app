@@ -194,10 +194,16 @@ export default function Settings() {
   };
 
   const deleteClient = async (id: string) => {
+    // Collect image URLs BEFORE cascade delete removes the rows
+    const { collectClientImageUrls, cleanupStorageUrls } = await import("@/lib/storageCleanup");
+    const imageUrls = await collectClientImageUrls(id);
+
     const { error } = await (supabase as any).from("clients").delete().eq("id", id);
     if (error) {
       toast({ variant: "destructive", title: t("errorDeletingBusiness") });
     } else {
+      // Cleanup orphaned storage files (best-effort, non-blocking)
+      cleanupStorageUrls(imageUrls);
       toast({ title: t("businessDeleted") });
       await refreshClients();
     }

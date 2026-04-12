@@ -138,11 +138,18 @@ export default function Library() {
   };
 
   const deletePost = async (id: string) => {
+    // Collect image URLs before deleting the row
+    const post = posts.find((p) => p.id === id);
+    const imageUrls = [post?.generated_image_url, post?.original_image_url];
+
     const { error } = await supabase.from("generated_posts").delete().eq("id", id);
     if (!error) {
       setPosts((prev) => prev.filter((p) => p.id !== id));
       if (detail?.type === "post" && detail.data.id === id) setDetail(null);
       toast({ title: t("contentDeleted") });
+      // Cleanup orphaned storage files (best-effort)
+      const { cleanupStorageUrls } = await import("@/lib/storageCleanup");
+      cleanupStorageUrls(imageUrls);
     }
   };
 
