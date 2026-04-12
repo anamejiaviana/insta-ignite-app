@@ -305,6 +305,7 @@ export default function Settings() {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+              <p className="text-[11px] text-muted-foreground">{t("settingsFormHelper")}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -346,6 +347,12 @@ export default function Settings() {
               <div className="space-y-1">
                 <Label className="text-xs">{t("businessAddress")}</Label>
                 <Input placeholder={t("addressPlaceholder")} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="bg-secondary border-border h-9" />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">{t("businessWebsite")}</Label>
+                <Input placeholder={t("websitePlaceholder")} value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} className="bg-secondary border-border h-9" />
+                <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{t("websiteHelper")}</p>
               </div>
 
               <div className="space-y-1">
