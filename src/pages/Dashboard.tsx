@@ -170,12 +170,17 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("dashboardSubtitle")}</p>
         {clients.length === 0 && (
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t("startAddingBusiness")}{" "}
-            <button onClick={() => navigate("/settings")} className="text-primary underline">
-              {t("settings")}
-            </button>
-          </p>
+          <div className="mt-4 p-5 rounded-xl border-2 border-primary/30 bg-primary/5 space-y-2">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <span className="text-xl">👋</span> {t("onboardingBannerTitle")}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t("onboardingBannerDesc")}
+            </p>
+            <Button variant="gradient" size="sm" onClick={() => navigate("/settings")} className="mt-2">
+              {t("onboardingBannerCTA")}
+            </Button>
+          </div>
         )}
       </div>
 
