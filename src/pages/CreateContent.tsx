@@ -518,7 +518,36 @@ export default function CreateContent() {
       )}
 
       <h1 className="text-3xl font-bold">{t("createContent")}</h1>
-      <p className="text-sm text-muted-foreground mt-1 mb-8">{t("createContentSubtitle")}</p>
+      <p className="text-sm text-muted-foreground mt-1 mb-4">{t("createContentSubtitle")}</p>
+
+      {/* Image usage indicator */}
+      {!generatedPost && (
+        <div className={`flex items-center gap-2 text-xs mb-6 px-3 py-2 rounded-lg ${
+          usage.limitReached
+            ? "bg-destructive/10 text-destructive border border-destructive/20"
+            : usage.remaining <= 5
+              ? "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border border-yellow-500/20"
+              : "bg-muted/50 text-muted-foreground"
+        }`}>
+          {usage.limitReached ? (
+            <>
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1">{t("imageLimitReached")}</span>
+              <button
+                onClick={() => navigate("/plans")}
+                className="font-medium underline underline-offset-2 hover:opacity-80 shrink-0"
+              >
+                {t("upgradePlan")}
+              </button>
+            </>
+          ) : (
+            <>
+              <Image className="h-3.5 w-3.5 shrink-0" />
+              <span>{usage.remaining} / {usage.limit} {t("imagesRemaining")}</span>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Show prefill details if coming from weekly plan */}
       {hasPrefillDetails && !generatedPost && (
