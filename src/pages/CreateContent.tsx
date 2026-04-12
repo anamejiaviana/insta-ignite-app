@@ -545,6 +545,20 @@ export default function CreateContent() {
                   )}
                 </div>
               )}
+              {imageSource === "library" && (
+                <div className="mt-3">
+                  <Button variant="outline" onClick={() => setMediaPickerOpen(true)} className="w-full h-28 border-dashed">
+                    {uploadedImage ? (
+                      <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <ImageIcon className="h-8 w-8" />
+                        <span className="text-sm">{t("chooseFromLibrary")}</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
