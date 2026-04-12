@@ -178,6 +178,47 @@ export type Database = {
           },
         ]
       }
+      media_assets: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          file_name: string | null
+          id: string
+          image_url: string
+          original_prompt: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          image_url: string
+          original_prompt?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          image_url?: string
+          original_prompt?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_assets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shooting_plans: {
         Row: {
           client_id: string | null
