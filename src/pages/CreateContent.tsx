@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedPostPreview } from "@/components/post/GeneratedPostPreview";
-import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft } from "lucide-react";
+import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon } from "lucide-react";
+import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
+import { saveMediaAsset } from "@/lib/mediaAssets";
 
 const POST_TYPES = [
   { value: "post", label: "Post" },
@@ -37,6 +39,7 @@ const VISUAL_STYLES = [
 
 const IMAGE_SOURCES = [
   { value: "generate", label: "generateWithAI", icon: Sparkles },
+  { value: "library", label: "chooseFromLibrary", icon: ImageIcon },
   { value: "upload", label: "uploadImage", icon: Upload },
   { value: "edit", label: "editWithAI", icon: Wand2 },
 ];
