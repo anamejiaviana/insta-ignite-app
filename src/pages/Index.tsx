@@ -14,6 +14,7 @@ import HookGenerator from "./HookGenerator";
 import ContentCalendar from "./ContentCalendar";
 import ShootingDay from "./ShootingDay";
 import Library from "./Library";
+import MediaLibrary from "./MediaLibrary";
 import Settings from "./Settings";
 import Plans from "./Plans";
 import NotFound from "./NotFound";
@@ -69,6 +70,7 @@ const Index = () => {
           <Route path="strategy/calendar" element={<ContentCalendar />} />
           <Route path="shooting" element={<ShootingDay />} />
           <Route path="library" element={<Library />} />
+          <Route path="media" element={<MediaLibrary />} />
           <Route path="settings" element={<Settings />} />
           <Route path="plans" element={<Plans />} />
           <Route path="*" element={<NotFound />} />

@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedPostPreview } from "@/components/post/GeneratedPostPreview";
-import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft } from "lucide-react";
+import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon } from "lucide-react";
+import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
+import { saveMediaAsset } from "@/lib/mediaAssets";
 
 const POST_TYPES = [
   { value: "post", label: "Post" },
@@ -37,6 +39,7 @@ const VISUAL_STYLES = [
 
 const IMAGE_SOURCES = [
   { value: "generate", label: "generateWithAI", icon: Sparkles },
+  { value: "library", label: "chooseFromLibrary", icon: ImageIcon },
   { value: "upload", label: "uploadImage", icon: Upload },
   { value: "edit", label: "editWithAI", icon: Wand2 },
 ];
@@ -89,6 +92,7 @@ export default function CreateContent() {
   const [carouselSlideCount, setCarouselSlideCount] = useState(3);
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const getImageLoadingMessage = () => {
     if (postType === "carousel") return t("generatingCarousel");
@@ -274,6 +278,9 @@ export default function CreateContent() {
         await editImage(uploadedImage, data.imagePrompt);
       } else if (imageSource === "upload" && uploadedImage) {
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
+      } else if (imageSource === "library" && uploadedImage) {
+        // Already selected from library — just use it
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
       }
       toast({ title: t("contentGenerated") });
     } catch (error: any) {
@@ -281,6 +288,15 @@ export default function CreateContent() {
     } finally {
       setLoading(false);
       setLoadingPhase(null);
+    }
+  };
+
+  const getUserId = async () => (await supabase.auth.getUser()).data.user?.id;
+
+  const autoSaveAsset = async (url: string, source: "generated" | "uploaded" | "edited", prompt?: string) => {
+    const uid = await getUserId();
+    if (uid && activeClient?.id) {
+      saveMediaAsset({ userId: uid, clientId: activeClient.id, imageUrl: url, source, originalPrompt: prompt });
     }
   };
 
@@ -292,6 +308,7 @@ export default function CreateContent() {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
+      autoSaveAsset(data.imageUrl, "generated", prompt);
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGeneratingImage"), description: error.message });
     }
@@ -314,6 +331,7 @@ export default function CreateContent() {
         if (data.error) throw new Error(data.error);
         urls.push(data.imageUrl);
         setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls] } : null);
+        autoSaveAsset(data.imageUrl, "generated", prompts[i]);
       } catch (error: any) {
         console.error(`Error generating carousel image ${i + 1}:`, error);
         urls.push("");
@@ -333,6 +351,7 @@ export default function CreateContent() {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
+      autoSaveAsset(data.imageUrl, "edited", editPrompt || prompt);
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
     }
@@ -488,7 +507,7 @@ export default function CreateContent() {
           {postType === "post" && (
             <div className="space-y-2">
               <Label>{t("imageSource")}</Label>
-              <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
+              <div className="flex flex-col sm:grid sm:grid-cols-4 gap-2">
                 {IMAGE_SOURCES.map((src) => (
                   <button
                     key={src.value}
@@ -524,6 +543,20 @@ export default function CreateContent() {
                   {imageSource === "edit" && uploadedImage && (
                     <Textarea placeholder={t("editInstructions")} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
                   )}
+                </div>
+              )}
+              {imageSource === "library" && (
+                <div className="mt-3">
+                  <Button variant="outline" onClick={() => setMediaPickerOpen(true)} className="w-full h-28 border-dashed">
+                    {uploadedImage ? (
+                      <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <ImageIcon className="h-8 w-8" />
+                        <span className="text-sm">{t("chooseFromLibrary")}</span>
+                      </div>
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
@@ -597,6 +630,15 @@ export default function CreateContent() {
             prefillData={prefill ? { title: prefill.title, hook: prefill.hook, shots: prefill.shots, script: prefill.description } : undefined}
           />
         </div>
+      )}
+
+      {activeClient && (
+        <MediaPickerDialog
+          open={mediaPickerOpen}
+          onClose={() => setMediaPickerOpen(false)}
+          onSelect={(url) => setUploadedImage(url)}
+          clientId={activeClient.id}
+        />
       )}
     </div>
   );
