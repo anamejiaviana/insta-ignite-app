@@ -92,6 +92,7 @@ export default function CreateContent() {
   const [carouselSlideCount, setCarouselSlideCount] = useState(3);
   const editedCopiesRef = useRef<{ mainCopy: string; storyCopy: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadedPersistentUrl = useRef<string | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const getImageLoadingMessage = () => {
@@ -223,6 +224,8 @@ export default function CreateContent() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    uploadedPersistentUrl.current = null;
+
     // Show preview immediately via data URI
     const reader = new FileReader();
     reader.onloadend = () => setUploadedImage(reader.result as string);
@@ -242,12 +245,11 @@ export default function CreateContent() {
         .getPublicUrl(fileName);
 
       if (publicUrlData?.publicUrl) {
-        // Replace the data URI with the persistent URL
+        uploadedPersistentUrl.current = publicUrlData.publicUrl;
         setUploadedImage(publicUrlData.publicUrl);
       }
     } catch (err) {
       console.error("Error uploading image to storage:", err);
-      // Keep the data URI as fallback — user can still create content
     }
   };
 
@@ -300,8 +302,12 @@ export default function CreateContent() {
       } else if (imageSource === "edit" && uploadedImage) {
         await editImage(uploadedImage, data.imagePrompt);
       } else if (imageSource === "upload" && uploadedImage) {
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
-        autoSaveAsset(uploadedImage, "uploaded");
+        // Use the persistent URL from Storage if available, otherwise fall back to state
+        const persistentUrl = uploadedPersistentUrl.current || uploadedImage;
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: persistentUrl } : null);
+        if (!persistentUrl.startsWith("data:")) {
+          autoSaveAsset(persistentUrl, "uploaded");
+        }
       } else if (imageSource === "library" && uploadedImage) {
         // Already selected from library — just use it
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
@@ -419,6 +425,7 @@ export default function CreateContent() {
     setObjective("");
     setCta("");
     setUploadedImage(null);
+    uploadedPersistentUrl.current = null;
     setEditPrompt("");
     setStep("content");
   };
