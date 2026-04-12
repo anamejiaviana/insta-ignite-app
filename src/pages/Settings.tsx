@@ -32,16 +32,16 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const BUSINESS_TYPES = [
-  "restaurante",
-  "tienda",
-  "clínica",
-  "interiorismo",
-  "belleza",
-  "gimnasio",
-  "cafetería",
-  "panadería",
-  "hotel",
-  "otro",
+  { value: "restaurante", key: "businessType_restaurant" as const },
+  { value: "tienda", key: "businessType_shop" as const },
+  { value: "clínica", key: "businessType_clinic" as const },
+  { value: "interiorismo", key: "businessType_interiorDesign" as const },
+  { value: "belleza", key: "businessType_beauty" as const },
+  { value: "gimnasio", key: "businessType_gym" as const },
+  { value: "cafetería", key: "businessType_cafe" as const },
+  { value: "panadería", key: "businessType_bakery" as const },
+  { value: "hotel", key: "businessType_hotel" as const },
+  { value: "otro", key: "businessType_other" as const },
 ];
 
 const CONTENT_LANGUAGES = [
@@ -51,13 +51,13 @@ const CONTENT_LANGUAGES = [
 ];
 
 const VISUAL_STYLES = [
-  "fotografía gourmet",
-  "lifestyle",
-  "minimalista",
-  "editorial",
-  "instagram moderno",
-  "dark mood",
-  "fondo claro",
+  { value: "fotografía gourmet", key: "visualStyle_gourmet" as const },
+  { value: "lifestyle", key: "visualStyle_lifestyle" as const },
+  { value: "minimalista", key: "visualStyle_minimalist" as const },
+  { value: "editorial", key: "visualStyle_editorial" as const },
+  { value: "instagram moderno", key: "visualStyle_modernIG" as const },
+  { value: "dark mood", key: "visualStyle_darkMood" as const },
+  { value: "fondo claro", key: "visualStyle_lightBg" as const },
 ];
 
 const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
