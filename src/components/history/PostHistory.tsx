@@ -68,6 +68,10 @@ export function PostHistory({ userId }: PostHistoryProps) {
 
   const deletePost = async (id: string) => {
     try {
+      // Collect image URLs before deleting the row
+      const post = posts.find((p) => p.id === id);
+      const imageUrls = [post?.generated_image_url, post?.original_image_url];
+
       const { error } = await supabase
         .from("generated_posts")
         .delete()
@@ -77,6 +81,9 @@ export function PostHistory({ userId }: PostHistoryProps) {
       setPosts(posts.filter((p) => p.id !== id));
       if (selectedPost?.id === id) setSelectedPost(null);
       toast({ title: "Post eliminado" });
+      // Cleanup orphaned storage files (best-effort)
+      const { cleanupStorageUrls } = await import("@/lib/storageCleanup");
+      cleanupStorageUrls(imageUrls);
     } catch (error: any) {
       toast({
         variant: "destructive",
