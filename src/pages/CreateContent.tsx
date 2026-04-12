@@ -631,6 +631,15 @@ export default function CreateContent() {
           />
         </div>
       )}
+
+      {activeClient && (
+        <MediaPickerDialog
+          open={mediaPickerOpen}
+          onClose={() => setMediaPickerOpen(false)}
+          onSelect={(url) => setUploadedImage(url)}
+          clientId={activeClient.id}
+        />
+      )}
     </div>
   );
 }
