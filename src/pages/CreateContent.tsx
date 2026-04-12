@@ -331,6 +331,7 @@ export default function CreateContent() {
         if (data.error) throw new Error(data.error);
         urls.push(data.imageUrl);
         setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls] } : null);
+        autoSaveAsset(data.imageUrl, "generated", prompts[i]);
       } catch (error: any) {
         console.error(`Error generating carousel image ${i + 1}:`, error);
         urls.push("");
@@ -350,6 +351,7 @@ export default function CreateContent() {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
+      autoSaveAsset(data.imageUrl, "edited", editPrompt || prompt);
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
     }
