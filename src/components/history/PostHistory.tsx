@@ -70,7 +70,7 @@ export function PostHistory({ userId }: PostHistoryProps) {
     try {
       // Collect image URLs before deleting the row
       const post = posts.find((p) => p.id === id);
-      const imageUrls = [post?.generated_image_url, post?.original_image_url];
+      const imageUrls = [post?.generated_image_url];
 
       const { error } = await supabase
         .from("generated_posts")
