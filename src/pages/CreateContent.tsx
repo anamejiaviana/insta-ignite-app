@@ -425,6 +425,7 @@ export default function CreateContent() {
     setObjective("");
     setCta("");
     setUploadedImage(null);
+    uploadedPersistentUrl.current = null;
     setEditPrompt("");
     setStep("content");
   };
