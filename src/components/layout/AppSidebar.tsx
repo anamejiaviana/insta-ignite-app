@@ -29,7 +29,8 @@ const items: { titleKey: TranslationKey; url: string; icon: any }[] = [
   { titleKey: "createContent", url: "/create", icon: PenSquare },
   { titleKey: "calendar", url: "/strategy/calendar", icon: Calendar },
   { titleKey: "shootingDay", url: "/shooting", icon: Camera },
-  { titleKey: "library", url: "/library", icon: FolderOpen },
+  { titleKey: "mediaLibraryNav", url: "/media", icon: ImageIcon },
+  { titleKey: "libraryNav", url: "/library", icon: FolderOpen },
   { titleKey: "settings", url: "/settings", icon: Settings },
   { titleKey: "plansNav", url: "/plans", icon: CreditCard },
 ];
