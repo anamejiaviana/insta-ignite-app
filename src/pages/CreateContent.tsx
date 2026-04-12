@@ -424,8 +424,6 @@ export default function CreateContent() {
         autoSaveAsset(data.imageUrl, "generated", prompts[i]);
       } catch (error: any) {
         console.error(`Error generating carousel image ${i + 1}:`, error);
-      } catch (error: any) {
-        console.error(`Error generating carousel image ${i + 1}:`, error);
         urls.push("");
       }
     }
