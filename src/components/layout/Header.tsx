@@ -20,8 +20,8 @@ export function Header({ onSettingsClick, userName }: HeaderProps) {
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-lg leading-none">InstaGen</h1>
-            <p className="text-xs text-muted-foreground">Generador de Posts</p>
+            <h1 className="font-bold text-lg leading-none">Anypostly</h1>
+            <p className="text-xs text-muted-foreground">Content planner</p>
           </div>
         </div>
 
