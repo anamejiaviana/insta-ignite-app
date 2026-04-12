@@ -442,14 +442,55 @@ const translations = {
     generate: "Generate",
     recentContent: "Recent content",
     selectBusinessFirst: "Select a business first",
-    weeklyPlanGenerated: "Weekly plan generated! Find it in Content Library > Saved plans.",
+    weeklyPlanGenerated: "Weekly plan generated! Go to Calendar to see your week.",
     errorGeneratingPlan: "Error generating plan",
     calendarNav: "Calendar",
     recordingDay: "Recording day",
-    libraryNav: "Content Library",
+    libraryNav: "Saved Content",
     storiesIdeas: "Stories ideas",
+    goToCalendar: "Go to Calendar",
 
-    // Calendar
+    // Quick action descriptions
+    quickActionCalendarDesc: "Plan and track your week",
+    quickActionShootingDesc: "Organize what you'll record",
+    quickActionLibraryDesc: "Retrieve saved pieces",
+    specialDatesHelper: "Add it so the plan adapts better to your week",
+    viewAll: "View all →",
+
+    // Content type labels
+    typeCarousel: "Carousel",
+    typeReel: "Reel",
+    typePost: "Post",
+    typeStory: "Story",
+
+    // Business types
+    businessType_restaurant: "Restaurant",
+    businessType_shop: "Shop",
+    businessType_clinic: "Clinic",
+    businessType_interiorDesign: "Interior design",
+    businessType_beauty: "Beauty",
+    businessType_gym: "Gym",
+    businessType_cafe: "Café",
+    businessType_bakery: "Bakery",
+    businessType_hotel: "Hotel",
+    businessType_other: "Other",
+
+    // Visual styles
+    visualStyle_gourmet: "Gourmet photography",
+    visualStyle_lifestyle: "Lifestyle",
+    visualStyle_minimalist: "Minimalist",
+    visualStyle_editorial: "Editorial",
+    visualStyle_modernIG: "Modern Instagram",
+    visualStyle_darkMood: "Dark mood",
+    visualStyle_lightBg: "Light background",
+
+    // 404
+    notFoundTitle: "Page not found",
+    notFoundDesc: "The page you're looking for doesn't exist",
+    returnHome: "Return to home",
+
+    // Media Library nav
+    mediaLibraryNav: "My Images",
     calendarSubtitle: "Plan and track your content week by week",
     plans: "Plans",
     createdOn: "Created on",
