@@ -160,7 +160,6 @@ const translations = {
     chooseFromLibrary: "Elegir de biblioteca",
 
     // Media Library
-    mediaLibraryNav: "Mis imágenes",
     mediaLibraryTitle: "Biblioteca de imágenes",
     mediaLibrarySubtitle: "Todas las imágenes de tu negocio en un solo lugar",
     mediaAll: "Todas",
