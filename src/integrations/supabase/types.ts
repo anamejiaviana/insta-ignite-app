@@ -264,6 +264,36 @@ export type Database = {
           },
         ]
       }
+      usage_counters: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          month: string
+          resource_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          month: string
+          resource_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          month?: string
+          resource_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_plans: {
         Row: {
           business_limit: number
@@ -358,12 +388,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_image_limit: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_usage: {
+        Args: {
+          _amount?: number
+          _month: string
+          _resource_type: string
+          _user_id: string
+        }
+        Returns: number
       }
     }
     Enums: {
