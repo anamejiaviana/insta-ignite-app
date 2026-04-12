@@ -278,6 +278,9 @@ export default function CreateContent() {
         await editImage(uploadedImage, data.imagePrompt);
       } else if (imageSource === "upload" && uploadedImage) {
         setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
+      } else if (imageSource === "library" && uploadedImage) {
+        // Already selected from library — just use it
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
       }
       toast({ title: t("contentGenerated") });
     } catch (error: any) {
@@ -285,6 +288,15 @@ export default function CreateContent() {
     } finally {
       setLoading(false);
       setLoadingPhase(null);
+    }
+  };
+
+  const getUserId = async () => (await supabase.auth.getUser()).data.user?.id;
+
+  const autoSaveAsset = async (url: string, source: "generated" | "uploaded" | "edited", prompt?: string) => {
+    const uid = await getUserId();
+    if (uid && activeClient?.id) {
+      saveMediaAsset({ userId: uid, clientId: activeClient.id, imageUrl: url, source, originalPrompt: prompt });
     }
   };
 
@@ -296,6 +308,7 @@ export default function CreateContent() {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
+      autoSaveAsset(data.imageUrl, "generated", prompt);
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGeneratingImage"), description: error.message });
     }
