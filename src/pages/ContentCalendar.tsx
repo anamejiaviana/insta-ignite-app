@@ -187,9 +187,36 @@ export default function ContentCalendar() {
       ]
     : [];
 
-  const allStories: EnrichedStory[] = planData?.stories
-    ? planData.stories.map((s, i) => ({ ...s, _key: `story-${i}`, _dayIndex: getDayIndex(s.day || "") }))
-    : [];
+  // Stories don't have a `day` field in plan data, so distribute them
+  // across the week on days with least content to avoid piling on Monday.
+  const allStories: EnrichedStory[] = (() => {
+    if (!planData?.stories?.length) return [];
+    const stories = planData.stories.map((s, i) => ({ ...s, _key: `story-${i}`, _dayIndex: -1 }));
+
+    // If a story has an explicit day, use it
+    stories.forEach(s => {
+      const raw = (planData.stories.find((_, i) => `story-${i}` === s._key) as any)?.day;
+      if (raw && DAY_MAP[raw.toLowerCase().trim()] !== undefined) {
+        s._dayIndex = DAY_MAP[raw.toLowerCase().trim()];
+      }
+    });
+
+    // For stories without a day, distribute to days with least total items
+    const dayCounts = Array.from({ length: 7 }, (_, i) =>
+      allItems.filter(it => it._dayIndex === i).length + stories.filter(st => st._dayIndex === i).length
+    );
+
+    stories.forEach(s => {
+      if (s._dayIndex >= 0) return;
+      // Find day with least content
+      const minCount = Math.min(...dayCounts);
+      const bestDay = dayCounts.indexOf(minCount);
+      s._dayIndex = bestDay;
+      dayCounts[bestDay]++;
+    });
+
+    return stories;
+  })();
 
   const generateContent = (item: WeeklyPlanItem) => {
     navigate("/create", {
