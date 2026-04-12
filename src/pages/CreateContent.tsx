@@ -385,9 +385,15 @@ export default function CreateContent() {
         body: { prompt, postType, brandConfig: { visual_style: visualStyle || activeClient?.default_visual_style } },
       });
       if (error) throw error;
+      if (data.error === 'image_limit_reached') {
+        refreshUsage();
+        toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
+        return;
+      }
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
       autoSaveAsset(data.imageUrl, "generated", prompt);
+      refreshUsage();
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGeneratingImage"), description: error.message });
     }
@@ -407,10 +413,17 @@ export default function CreateContent() {
           },
         });
         if (error) throw error;
+        if (data.error === 'image_limit_reached') {
+          refreshUsage();
+          toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
+          break;
+        }
         if (data.error) throw new Error(data.error);
         urls.push(data.imageUrl);
         setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls] } : null);
         autoSaveAsset(data.imageUrl, "generated", prompts[i]);
+      } catch (error: any) {
+        console.error(`Error generating carousel image ${i + 1}:`, error);
       } catch (error: any) {
         console.error(`Error generating carousel image ${i + 1}:`, error);
         urls.push("");
@@ -428,9 +441,15 @@ export default function CreateContent() {
         body: { imageUrl, editPrompt: editPrompt || prompt, postType, brandConfig: { visual_style: visualStyle } },
       });
       if (error) throw error;
+      if (data.error === 'image_limit_reached') {
+        refreshUsage();
+        toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
+        return;
+      }
       if (data.error) throw new Error(data.error);
       setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
       autoSaveAsset(data.imageUrl, "edited", editPrompt || prompt);
+      refreshUsage();
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
     }
