@@ -224,6 +224,8 @@ export default function CreateContent() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    uploadedPersistentUrl.current = null;
+
     // Show preview immediately via data URI
     const reader = new FileReader();
     reader.onloadend = () => setUploadedImage(reader.result as string);
@@ -243,12 +245,11 @@ export default function CreateContent() {
         .getPublicUrl(fileName);
 
       if (publicUrlData?.publicUrl) {
-        // Replace the data URI with the persistent URL
+        uploadedPersistentUrl.current = publicUrlData.publicUrl;
         setUploadedImage(publicUrlData.publicUrl);
       }
     } catch (err) {
       console.error("Error uploading image to storage:", err);
-      // Keep the data URI as fallback — user can still create content
     }
   };
 
