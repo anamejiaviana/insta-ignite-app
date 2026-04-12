@@ -489,6 +489,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-3 gap-2 md:gap-3">
