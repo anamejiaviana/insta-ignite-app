@@ -96,6 +96,11 @@ const translations = {
     fridayShort: "Vie",
     saturdayShort: "Sáb",
     sundayShort: "Dom",
+    statusPending: "Por hacer",
+    statusReady: "Generado",
+    statusDone: "Publicado",
+    viewDetail: "Ver detalle",
+    noContentThisDay: "",
 
     // Create Content
     createContentSubtitle: "Crea una publicación individual de forma manual",
@@ -440,6 +445,11 @@ const translations = {
     fridayShort: "Fri",
     saturdayShort: "Sat",
     sundayShort: "Sun",
+    statusPending: "To do",
+    statusReady: "Generated",
+    statusDone: "Published",
+    viewDetail: "View detail",
+    noContentThisDay: "",
 
     // Create Content
     createContentSubtitle: "Create a single piece of content manually",
