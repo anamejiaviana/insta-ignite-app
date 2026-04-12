@@ -320,7 +320,7 @@ export default function Settings() {
                     </SelectTrigger>
                     <SelectContent>
                       {BUSINESS_TYPES.map((bt) => (
-                        <SelectItem key={bt} value={bt}>{bt.charAt(0).toUpperCase() + bt.slice(1)}</SelectItem>
+                        <SelectItem key={bt.value} value={bt.value}>{t(bt.key)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -378,7 +378,7 @@ export default function Settings() {
                     </SelectTrigger>
                     <SelectContent>
                       {VISUAL_STYLES.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                        <SelectItem key={s.value} value={s.value}>{t(s.key)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
