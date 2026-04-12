@@ -607,7 +607,7 @@ const translations = {
     strategyProduct: "Product",
     strategyDemosReveals: "Demos, reveals",
     strategyTestimonialsCases: "Testimonials, cases",
-    strategyOffersCTAs: "Offers, direct CTAs",
+    strategyOffersCTAs: "Offers, direct promotions",
 
     // Carousel
     carouselSlideCount: "How many images do you want in the carousel?",
