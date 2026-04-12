@@ -507,7 +507,7 @@ export default function CreateContent() {
           {postType === "post" && (
             <div className="space-y-2">
               <Label>{t("imageSource")}</Label>
-              <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
+              <div className="flex flex-col sm:grid sm:grid-cols-4 gap-2">
                 {IMAGE_SOURCES.map((src) => (
                   <button
                     key={src.value}
