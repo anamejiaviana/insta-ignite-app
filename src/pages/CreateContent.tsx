@@ -97,7 +97,10 @@ export default function CreateContent() {
   const uploadedPersistentUrl = useRef<string | null>(null);
   const uploadImagePromiseRef = useRef<Promise<string | null> | null>(null);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const { usage, refreshUsage } = useImageUsage();
 
+  const needsAIImage = imageSource === "generate" || imageSource === "edit" || postType === "carousel";
+  const isImageBlocked = usage.limitReached && needsAIImage;
   const getImageLoadingMessage = () => {
     if (postType === "carousel") return t("generatingCarousel");
     if (imageSource === "edit") return t("editingImageWithAI");
