@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedPostPreview } from "@/components/post/GeneratedPostPreview";
-import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon } from "lucide-react";
+import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTriangle } from "lucide-react";
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
+import { useImageUsage } from "@/hooks/useImageUsage";
+import { useNavigate as useNav } from "react-router-dom";
 
 const POST_TYPES = [
   { value: "post", labelKey: "typePost" as const },
