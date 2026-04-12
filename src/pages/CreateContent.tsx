@@ -21,20 +21,20 @@ import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 
 const POST_TYPES = [
-  { value: "post", label: "Post" },
-  { value: "reel", label: "Reel" },
-  { value: "carousel", label: "Carrusel" },
-  { value: "story", label: "Story" },
+  { value: "post", labelKey: "typePost" as const },
+  { value: "reel", labelKey: "typeReel" as const },
+  { value: "carousel", labelKey: "typeCarousel" as const },
+  { value: "story", labelKey: "typeStory" as const },
 ];
 
 const VISUAL_STYLES = [
-  "fotografía gourmet",
-  "lifestyle",
-  "minimalista",
-  "editorial",
-  "instagram moderno",
-  "dark mood",
-  "fondo claro",
+  { value: "fotografía gourmet", key: "visualStyle_gourmet" as const },
+  { value: "lifestyle", key: "visualStyle_lifestyle" as const },
+  { value: "minimalista", key: "visualStyle_minimalist" as const },
+  { value: "editorial", key: "visualStyle_editorial" as const },
+  { value: "instagram moderno", key: "visualStyle_modernIG" as const },
+  { value: "dark mood", key: "visualStyle_darkMood" as const },
+  { value: "fondo claro", key: "visualStyle_lightBg" as const },
 ];
 
 const IMAGE_SOURCES = [
@@ -530,18 +530,18 @@ export default function CreateContent() {
           <div className="space-y-2">
             <Label>{t("contentType")}</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {POST_TYPES.map((t) => (
+              {POST_TYPES.map((pt) => (
                 <button
-                  key={t.value}
-                  onClick={() => setPostType(t.value)}
+                  key={pt.value}
+                  onClick={() => setPostType(pt.value)}
                   className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
-                    postType === t.value
+                    postType === pt.value
                       ? "text-primary-foreground shadow-md"
                       : "bg-secondary text-muted-foreground hover:text-foreground"
                   }`}
-                  style={postType === t.value ? { background: "var(--gradient-primary)" } : undefined}
+                  style={postType === pt.value ? { background: "var(--gradient-primary)" } : undefined}
                 >
-                  {t.label}
+                  {t(pt.labelKey)}
                 </button>
               ))}
             </div>
@@ -578,7 +578,7 @@ export default function CreateContent() {
               </SelectTrigger>
               <SelectContent>
                 {VISUAL_STYLES.map((s) => (
-                  <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>{t(s.key)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

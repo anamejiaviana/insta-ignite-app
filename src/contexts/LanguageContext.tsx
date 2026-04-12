@@ -53,14 +53,55 @@ const translations = {
     generate: "Generar",
     recentContent: "Contenido reciente",
     selectBusinessFirst: "Selecciona un negocio primero",
-    weeklyPlanGenerated: "¡Plan semanal generado! Lo encontrarás en Biblioteca de contenido > Planes guardados.",
+    weeklyPlanGenerated: "¡Plan semanal generado! Ve al Calendario para ver tu semana.",
     errorGeneratingPlan: "Error al generar plan",
     calendarNav: "Calendario",
     recordingDay: "Día de grabación",
-    libraryNav: "Biblioteca de contenido",
+    libraryNav: "Contenido guardado",
     storiesIdeas: "Ideas de Stories",
+    goToCalendar: "Ir al calendario",
 
-    // Calendar
+    // Quick action descriptions
+    quickActionCalendarDesc: "Planifica y sigue tu semana",
+    quickActionShootingDesc: "Organiza lo que vas a grabar",
+    quickActionLibraryDesc: "Recupera piezas guardadas",
+    specialDatesHelper: "Añádelo para que el plan se adapte mejor a tu semana",
+    viewAll: "Ver todo →",
+
+    // Content type labels
+    typeCarousel: "Carrusel",
+    typeReel: "Reel",
+    typePost: "Post",
+    typeStory: "Story",
+
+    // Business types
+    businessType_restaurant: "Restaurante",
+    businessType_shop: "Tienda",
+    businessType_clinic: "Clínica",
+    businessType_interiorDesign: "Interiorismo",
+    businessType_beauty: "Belleza",
+    businessType_gym: "Gimnasio",
+    businessType_cafe: "Cafetería",
+    businessType_bakery: "Panadería",
+    businessType_hotel: "Hotel",
+    businessType_other: "Otro",
+
+    // Visual styles
+    visualStyle_gourmet: "Fotografía gourmet",
+    visualStyle_lifestyle: "Lifestyle",
+    visualStyle_minimalist: "Minimalista",
+    visualStyle_editorial: "Editorial",
+    visualStyle_modernIG: "Instagram moderno",
+    visualStyle_darkMood: "Dark mood",
+    visualStyle_lightBg: "Fondo claro",
+
+    // 404
+    notFoundTitle: "Página no encontrada",
+    notFoundDesc: "La página que buscas no existe",
+    returnHome: "Volver al inicio",
+
+    // Media Library nav
+    mediaLibraryNav: "Mis imágenes",
     calendarSubtitle: "Planifica y sigue tu contenido semana a semana",
     plans: "Planes",
     createdOn: "Creado el",
@@ -119,7 +160,6 @@ const translations = {
     chooseFromLibrary: "Elegir de biblioteca",
 
     // Media Library
-    mediaLibraryNav: "Imágenes",
     mediaLibraryTitle: "Biblioteca de imágenes",
     mediaLibrarySubtitle: "Todas las imágenes de tu negocio en un solo lugar",
     mediaAll: "Todas",
@@ -402,14 +442,55 @@ const translations = {
     generate: "Generate",
     recentContent: "Recent content",
     selectBusinessFirst: "Select a business first",
-    weeklyPlanGenerated: "Weekly plan generated! Find it in Content Library > Saved plans.",
+    weeklyPlanGenerated: "Weekly plan generated! Go to Calendar to see your week.",
     errorGeneratingPlan: "Error generating plan",
     calendarNav: "Calendar",
     recordingDay: "Recording day",
-    libraryNav: "Content Library",
+    libraryNav: "Saved Content",
     storiesIdeas: "Stories ideas",
+    goToCalendar: "Go to Calendar",
 
-    // Calendar
+    // Quick action descriptions
+    quickActionCalendarDesc: "Plan and track your week",
+    quickActionShootingDesc: "Organize what you'll record",
+    quickActionLibraryDesc: "Retrieve saved pieces",
+    specialDatesHelper: "Add it so the plan adapts better to your week",
+    viewAll: "View all →",
+
+    // Content type labels
+    typeCarousel: "Carousel",
+    typeReel: "Reel",
+    typePost: "Post",
+    typeStory: "Story",
+
+    // Business types
+    businessType_restaurant: "Restaurant",
+    businessType_shop: "Shop",
+    businessType_clinic: "Clinic",
+    businessType_interiorDesign: "Interior design",
+    businessType_beauty: "Beauty",
+    businessType_gym: "Gym",
+    businessType_cafe: "Café",
+    businessType_bakery: "Bakery",
+    businessType_hotel: "Hotel",
+    businessType_other: "Other",
+
+    // Visual styles
+    visualStyle_gourmet: "Gourmet photography",
+    visualStyle_lifestyle: "Lifestyle",
+    visualStyle_minimalist: "Minimalist",
+    visualStyle_editorial: "Editorial",
+    visualStyle_modernIG: "Modern Instagram",
+    visualStyle_darkMood: "Dark mood",
+    visualStyle_lightBg: "Light background",
+
+    // 404
+    notFoundTitle: "Page not found",
+    notFoundDesc: "The page you're looking for doesn't exist",
+    returnHome: "Return to home",
+
+    // Media Library nav
+    mediaLibraryNav: "My Images",
     calendarSubtitle: "Plan and track your content week by week",
     plans: "Plans",
     createdOn: "Created on",
@@ -468,7 +549,6 @@ const translations = {
     chooseFromLibrary: "Choose from library",
 
     // Media Library
-    mediaLibraryNav: "Images",
     mediaLibraryTitle: "Image Library",
     mediaLibrarySubtitle: "All your business images in one place",
     mediaAll: "All",

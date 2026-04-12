@@ -158,9 +158,9 @@ export default function Dashboard() {
   };
 
   const quickActions = [
-    { label: t("calendarNav"), desc: "Planifica y sigue tu semana", icon: Calendar, path: "/strategy/calendar" },
-    { label: t("recordingDay"), desc: "Organiza lo que vas a grabar", icon: Camera, path: "/shooting" },
-    { label: t("libraryNav"), desc: "Recupera piezas guardadas", icon: FolderOpen, path: "/library" },
+    { label: t("calendarNav"), desc: t("quickActionCalendarDesc"), icon: Calendar, path: "/strategy/calendar" },
+    { label: t("recordingDay"), desc: t("quickActionShootingDesc"), icon: Camera, path: "/shooting" },
+    { label: t("libraryNav"), desc: t("quickActionLibraryDesc"), icon: FolderOpen, path: "/library" },
   ];
 
   return (
@@ -324,7 +324,7 @@ export default function Dashboard() {
                   onChange={(e) => setSpecialDates(e.target.value)}
                   className="bg-secondary border-border"
                 />
-                <p className="text-[10px] text-muted-foreground/60">Añádelo para que el plan se adapte mejor a tu semana</p>
+                <p className="text-[10px] text-muted-foreground/60">{t("specialDatesHelper")}</p>
               </div>
               <Button
                 variant="gradient"
@@ -470,6 +470,24 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           )}
+          {/* CTA to Calendar */}
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 className="font-semibold text-sm">{t("weeklyPlanGenerated").split("!")[0]}!</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("weeklyPlanGenerated").split("! ")[1]}</p>
+              </div>
+              <Button
+                variant="gradient"
+                size="lg"
+                onClick={() => navigate("/strategy/calendar")}
+                className="shrink-0 w-full sm:w-auto"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                {t("goToCalendar")}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -501,12 +519,12 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold">{t("recentContent")}</h2>
             <Button variant="ghost" size="sm" onClick={() => navigate("/library")} className="text-xs text-muted-foreground hover:text-foreground">
-              Ver todo →
+              {t("viewAll")}
             </Button>
           </div>
           <div className="space-y-2">
             {recentPosts.map((post) => {
-              const typeLabel = post.post_type === "carousel" ? "Carrusel" : post.post_type === "reel" ? "Reel" : "Post";
+              const typeLabel = post.post_type === "carousel" ? t("typeCarousel") : post.post_type === "reel" ? t("typeReel") : post.post_type === "story" ? t("typeStory") : t("typePost");
               const typeColor = post.post_type === "carousel"
                 ? "bg-amber-500/15 text-amber-400"
                 : post.post_type === "reel"

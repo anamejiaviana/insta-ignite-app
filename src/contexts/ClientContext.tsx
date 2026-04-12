@@ -39,7 +39,7 @@ export function useClients() {
 export function ClientProvider({ children, userId }: { children: ReactNode; userId: string }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [activeClientId, setActiveClientId] = useState<string | null>(() => {
-    return localStorage.getItem("insta-ignite-active-client") || null;
+    return localStorage.getItem("anypostly-active-client") || localStorage.getItem("insta-ignite-active-client") || null;
   });
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +69,7 @@ export function ClientProvider({ children, userId }: { children: ReactNode; user
 
   useEffect(() => {
     if (activeClientId) {
-      localStorage.setItem("insta-ignite-active-client", activeClientId);
+      localStorage.setItem("anypostly-active-client", activeClientId);
     }
   }, [activeClientId]);
 

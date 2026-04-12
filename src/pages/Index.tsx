@@ -64,7 +64,7 @@ const Index = () => {
         <Route element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="create" element={<CreateContent />} />
-          <Route path="strategy" element={<Strategy />} />
+          <Route path="strategy" element={<ContentCalendar />} />
           <Route path="strategy/reels" element={<ReelIdeas />} />
           <Route path="strategy/hooks" element={<HookGenerator />} />
           <Route path="strategy/calendar" element={<ContentCalendar />} />

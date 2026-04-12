@@ -63,10 +63,10 @@ export function AppSidebar() {
             className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
             style={{ background: "var(--gradient-primary)" }}
           >
-            <span className="text-primary-foreground font-bold text-sm">II</span>
+            <span className="text-primary-foreground font-bold text-sm">A</span>
           </div>
           {!collapsed && (
-            <span className="font-bold text-lg gradient-text">Insta-Ignite</span>
+            <span className="font-bold text-lg gradient-text">Anypostly</span>
           )}
         </div>
       </SidebarHeader>
