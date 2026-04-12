@@ -725,9 +725,11 @@ export default function CreateContent() {
             </div>
           </div>
 
-          <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim()} className="w-full">
+          <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim() || isImageBlocked} className="w-full">
             {loading ? (
               <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? getImageLoadingMessage() : t("generatingContent")}</>
+            ) : isImageBlocked ? (
+              <><AlertTriangle className="h-5 w-5" /> {t("imageLimitReached")}</>
             ) : (
               <><Sparkles className="h-5 w-5" /> {t("generateContentBtn")}</>
             )}
