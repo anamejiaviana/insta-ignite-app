@@ -18,8 +18,10 @@ const UI_LANGUAGES: { value: UILanguage; label: string }[] = [
   { value: "en", label: "English" },
 ];
 
+type Mode = "login" | "signup" | "forgot";
+
 export function AuthForm() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -27,41 +29,53 @@ export function AuthForm() {
   const { toast } = useToast();
   const { t, uiLanguage, setUILanguage } = useLanguage();
 
+  const isLogin = mode === "login";
+  const isSignup = mode === "signup";
+  const isForgot = mode === "forgot";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: t("welcomeBack") });
-      } else {
+      } else if (isSignup) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/`,
             data: { full_name: name },
           },
         });
         if (error) throw error;
         toast({ title: t("accountCreated"), description: t("accountCreatedDesc") });
+      } else if (isForgot) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast({ title: t("resetEmailSent"), description: t("resetEmailSentDesc") });
+        setMode("login");
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
       setLoading(false);
     }
   };
 
   const currentLangLabel = UI_LANGUAGES.find((l) => l.value === uiLanguage)?.label;
+
+  const title = isForgot ? t("forgotPasswordTitle") : isLogin ? t("loginTitle") : t("signupTitle");
+  const subtitle = isForgot
+    ? t("forgotPasswordSubtitle")
+    : isLogin
+    ? t("loginSubtitle")
+    : t("signupSubtitle");
 
   return (
     <div className="w-full max-w-md mx-auto relative">
@@ -89,16 +103,12 @@ export function AuthForm() {
 
       <div className="glass rounded-2xl p-8 shadow-elevated animate-scale-in">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold gradient-text mb-2">
-            {isLogin ? t("loginTitle") : t("signupTitle")}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            {isLogin ? t("loginSubtitle") : t("signupSubtitle")}
-          </p>
+          <h2 className="text-2xl font-bold gradient-text mb-2">{title}</h2>
+          <p className="text-muted-foreground text-sm">{subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {!isLogin && (
+          {isSignup && (
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
                 {t("nameLabel")}
@@ -112,7 +122,7 @@ export function AuthForm() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10 bg-secondary border-border focus:border-primary"
-                  required={!isLogin}
+                  required={isSignup}
                 />
               </div>
             </div>
@@ -136,37 +146,44 @@ export function AuthForm() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium">
-              {t("passwordLabel")}
-            </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 bg-secondary border-border focus:border-primary"
-                required
-                minLength={6}
-              />
+          {!isForgot && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  {t("passwordLabel")}
+                </Label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => setMode("forgot")}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {t("forgotPasswordLink")}
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 bg-secondary border-border focus:border-primary"
+                  required
+                  minLength={6}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          <Button
-            type="submit"
-            variant="gradient"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
+          <Button type="submit" variant="gradient" size="lg" className="w-full" disabled={loading}>
             {loading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
-                {isLogin ? t("loginButton") : t("signupButton")}
+                {isForgot ? t("sendResetLink") : isLogin ? t("loginButton") : t("signupButton")}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -174,16 +191,26 @@ export function AuthForm() {
         </form>
 
         <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {isLogin ? t("noAccount") : t("hasAccount")}
-            <span className="text-primary font-medium">
-              {isLogin ? t("registerLink") : t("loginLink")}
-            </span>
-          </button>
+          {isForgot ? (
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← <span className="text-primary font-medium">{t("backToLogin")}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setMode(isLogin ? "signup" : "login")}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isLogin ? t("noAccount") : t("hasAccount")}
+              <span className="text-primary font-medium">
+                {isLogin ? t("registerLink") : t("loginLink")}
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </div>
