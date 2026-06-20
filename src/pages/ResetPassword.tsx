@@ -22,58 +22,71 @@ export default function ResetPassword() {
   useEffect(() => {
     let cancelled = false;
 
-    const initRecovery = async () => {
+    const tryFlow = async (fn: () => Promise<any>) => {
       try {
-        const url = new URL(window.location.href);
-        const hashParams = new URLSearchParams(
-          window.location.hash.startsWith("#") ? window.location.hash.slice(1) : ""
-        );
-
-        // 1) PKCE flow: ?code=...
-        const code = url.searchParams.get("code");
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          url.searchParams.delete("code");
-          window.history.replaceState({}, "", url.pathname + url.search);
-        }
-
-        // 2) OTP token hash flow: ?token_hash=...&type=recovery
-        const tokenHash = url.searchParams.get("token_hash");
-        const type = url.searchParams.get("type");
-        if (tokenHash && type) {
-          const { error } = await supabase.auth.verifyOtp({
-            type: type as any,
-            token_hash: tokenHash,
-          });
-          if (error) throw error;
-          url.searchParams.delete("token_hash");
-          url.searchParams.delete("type");
-          window.history.replaceState({}, "", url.pathname + url.search);
-        }
-
-        // 3) Implicit hash flow: #access_token=...&refresh_token=...
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          if (error) throw error;
-          window.history.replaceState({}, "", url.pathname + url.search);
-        }
-
-        if (cancelled) return;
-        const { data } = await supabase.auth.getSession();
-        if (data.session) setReady(true);
-      } catch (err: any) {
-        if (!cancelled) setSessionError(err.message ?? "Auth session missing");
+        const res = await fn();
+        return !res?.error;
+      } catch {
+        return false;
       }
     };
 
+    const initRecovery = async () => {
+      const url = new URL(window.location.href);
+      const hashParams = new URLSearchParams(
+        window.location.hash.startsWith("#") ? window.location.hash.slice(1) : ""
+      );
+
+      // Implicit hash flow (most common for recovery): #access_token=...
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      if (accessToken && refreshToken) {
+        await tryFlow(() =>
+          supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        );
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+
+      // PKCE flow: ?code=...
+      const code = url.searchParams.get("code");
+      if (code) {
+        await tryFlow(() => supabase.auth.exchangeCodeForSession(code));
+        url.searchParams.delete("code");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+
+      // OTP token hash flow: ?token_hash=...&type=recovery
+      const tokenHash = url.searchParams.get("token_hash");
+      const type = url.searchParams.get("type");
+      if (tokenHash && type) {
+        await tryFlow(() =>
+          supabase.auth.verifyOtp({ type: type as any, token_hash: tokenHash })
+        );
+        url.searchParams.delete("token_hash");
+        url.searchParams.delete("type");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+
+      if (cancelled) return;
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setReady(true);
+        return;
+      }
+      // Give onAuthStateChange a moment before declaring the link invalid
+      setTimeout(async () => {
+        if (cancelled) return;
+        const { data: d2 } = await supabase.auth.getSession();
+        if (d2.session) setReady(true);
+        else setSessionError("invalid");
+      }, 2500);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) setReady(true);
+      if (event === "PASSWORD_RECOVERY" || session) {
+        setReady(true);
+        setSessionError(null);
+      }
     });
 
     initRecovery();
