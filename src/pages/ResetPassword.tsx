@@ -5,30 +5,82 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Loader2, ArrowRight } from "lucide-react";
+import { Lock, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
+    let cancelled = false;
+
+    const initRecovery = async () => {
+      try {
+        const url = new URL(window.location.href);
+        const hashParams = new URLSearchParams(
+          window.location.hash.startsWith("#") ? window.location.hash.slice(1) : ""
+        );
+
+        // 1) PKCE flow: ?code=...
+        const code = url.searchParams.get("code");
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          url.searchParams.delete("code");
+          window.history.replaceState({}, "", url.pathname + url.search);
+        }
+
+        // 2) OTP token hash flow: ?token_hash=...&type=recovery
+        const tokenHash = url.searchParams.get("token_hash");
+        const type = url.searchParams.get("type");
+        if (tokenHash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            type: type as any,
+            token_hash: tokenHash,
+          });
+          if (error) throw error;
+          url.searchParams.delete("token_hash");
+          url.searchParams.delete("type");
+          window.history.replaceState({}, "", url.pathname + url.search);
+        }
+
+        // 3) Implicit hash flow: #access_token=...&refresh_token=...
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
+          window.history.replaceState({}, "", url.pathname + url.search);
+        }
+
+        if (cancelled) return;
+        const { data } = await supabase.auth.getSession();
+        if (data.session) setReady(true);
+      } catch (err: any) {
+        if (!cancelled) setSessionError(err.message ?? "Auth session missing");
+      }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) setReady(true);
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
-    });
-    // Failsafe: enable form after a short delay so user can always type
-    const t = setTimeout(() => setReady(true), 1500);
+
+    initRecovery();
+
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
-      clearTimeout(t);
     };
   }, []);
 
@@ -44,6 +96,10 @@ export default function ResetPassword() {
     }
     setLoading(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error(t("resetLinkInvalid"));
+      }
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       toast({ title: t("passwordUpdated"), description: t("passwordUpdatedDesc") });
@@ -67,7 +123,11 @@ export default function ResetPassword() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold gradient-text mb-2">{t("resetPasswordTitle")}</h2>
             <p className="text-muted-foreground text-sm">
-              {ready ? t("resetPasswordSubtitle") : t("resetPasswordWaiting")}
+              {sessionError
+                ? t("resetLinkInvalid")
+                : ready
+                ? t("resetPasswordSubtitle")
+                : t("resetPasswordWaiting")}
             </p>
           </div>
 
@@ -80,15 +140,22 @@ export default function ResetPassword() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-secondary border-border focus:border-primary"
+                  className="pl-10 pr-10 bg-secondary border-border focus:border-primary"
                   required
                   minLength={6}
-                  disabled={!ready}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
@@ -100,19 +167,18 @@ export default function ResetPassword() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="confirm"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  className="pl-10 bg-secondary border-border focus:border-primary"
+                  className="pl-10 pr-10 bg-secondary border-border focus:border-primary"
                   required
                   minLength={6}
-                  disabled={!ready}
                 />
               </div>
             </div>
 
-            <Button type="submit" variant="gradient" size="lg" className="w-full" disabled={loading || !ready}>
+            <Button type="submit" variant="gradient" size="lg" className="w-full" disabled={loading}>
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (

@@ -39,6 +39,9 @@ const translations = {
     passwordUpdatedDesc: "Inicia sesión con tu nueva contraseña.",
     passwordTooShort: "La contraseña debe tener al menos 6 caracteres",
     passwordsDoNotMatch: "Las contraseñas no coinciden",
+    resetLinkInvalid: "Enlace de recuperación inválido o caducado. Solicita uno nuevo.",
+    showPassword: "Mostrar contraseña",
+    hidePassword: "Ocultar contraseña",
 
     // Sidebar
     dashboard: "Inicio",
@@ -451,6 +454,9 @@ const translations = {
     passwordUpdatedDesc: "Sign in with your new password.",
     passwordTooShort: "Password must be at least 6 characters",
     passwordsDoNotMatch: "Passwords do not match",
+    resetLinkInvalid: "Recovery link invalid or expired. Please request a new one.",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
 
     // Sidebar
     dashboard: "Home",
