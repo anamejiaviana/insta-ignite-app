@@ -454,6 +454,9 @@ const translations = {
     passwordUpdatedDesc: "Sign in with your new password.",
     passwordTooShort: "Password must be at least 6 characters",
     passwordsDoNotMatch: "Passwords do not match",
+    resetLinkInvalid: "Recovery link invalid or expired. Please request a new one.",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
 
     // Sidebar
     dashboard: "Home",
