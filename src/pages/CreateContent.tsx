@@ -20,7 +20,7 @@ import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTri
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 import { useImageUsage } from "@/hooks/useImageUsage";
-import { isReel, shouldAutoGenerateImage, extractReelPackage, REEL_FORMAT_INSTRUCTIONS, type ReelPackage } from "@/lib/contentRules";
+import { isReel, shouldAutoGenerateImage, extractReelPackage, buildReelInstructions, voiceoverInstruction, type ReelPackage, type ReelVoiceMode } from "@/lib/contentRules";
 import { useNavigate as useNav } from "react-router-dom";
 
 const POST_TYPES = [
@@ -101,6 +101,8 @@ export default function CreateContent() {
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const { usage, refreshUsage } = useImageUsage();
 
+  const [voiceMode, setVoiceMode] = useState<ReelVoiceMode>("voiceover");
+  const [voiceLoading, setVoiceLoading] = useState(false);
   const postTypeIsReel = isReel(postType);
   const needsAIImage = shouldAutoGenerateImage(postType, imageSource);
   const isImageBlocked = usage.limitReached && needsAIImage;
@@ -121,6 +123,7 @@ export default function CreateContent() {
         imagePrompt: prefill.imagePrompt || "",
         reel: prefillIsReel
           ? {
+              voiceMode: "voiceover",
               hook: prefill.hook,
               script: prefill.description,
               storyboard: prefill.shots?.map((s) => ({ shot: s })),
@@ -148,7 +151,7 @@ export default function CreateContent() {
 
           const reelExtra = prefillIsReel
             ? `Hook ya definido: ${prefill.hook || "-"}. Planos ya definidos: ${(prefill.shots || []).join(" | ") || "-"}. Copy principal: ${prefill.caption}.
-A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyboard": [{ "shot": "...", "duration": "3s", "onScreenText": "..." }] (respeta y detalla los planos ya definidos), "onScreenTexts": ["..."], "recordingTips": ["3 a 5 consejos prácticos de grabación con móvil, vertical 9:16"] }. NO generes imágenes.`
+A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyboard": [{ "shot": "...", "duration": "3s", "onScreenText": "..." }] (respeta y detalla los planos ya definidos), "onScreenTexts": ["..."], "recordingTips": ["3 a 5 consejos prácticos de grabación con móvil, vertical 9:16"], ${voiceoverInstruction("voiceover")} }. NO generes imágenes.`
             : `A partir del siguiente copy principal, genera SOLO una versión corta para Stories de Instagram (máx 200 caracteres, directo e impactante). Responde en JSON: { "storyCopy": "..." }`;
 
           const { data, error } = await supabase.functions.invoke("generate-post", {
@@ -174,6 +177,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
                   storyboard: extra?.storyboard?.length ? extra.storyboard : prev.reel?.storyboard,
                   onScreenTexts: extra?.onScreenTexts,
                   recordingTips: extra?.recordingTips,
+                  voiceover: extra?.voiceover,
                 };
               }
               return next;
@@ -364,7 +368,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
           clientContext,
           language: activeClient?.content_language || "es",
           carouselSlideCount: postType === "carousel" ? carouselSlideCount : undefined,
-          ...(reelMode ? { customFormat: true, formatInstructions: REEL_FORMAT_INSTRUCTIONS } : {}),
+          ...(reelMode ? { customFormat: true, formatInstructions: buildReelInstructions(voiceMode) } : {}),
         },
       });
       if (error) throw error;
@@ -377,7 +381,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
           storyCopy: data.storyCopy || "",
           hashtags: Array.isArray(data.hashtags) ? data.hashtags : [],
           imagePrompt: data.imagePrompt || "",
-          reel: extractReelPackage(data),
+          reel: { ...extractReelPackage(data), voiceMode, ...(voiceMode === "music_only" ? { voiceover: undefined } : {}) },
         });
         toast({ title: t("contentGenerated") });
         return;
@@ -770,6 +774,26 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
               </div>
             </div>
           </div>
+
+          {postTypeIsReel && (
+            <div className="space-y-2">
+              <Label>Cómo se contará el Reel</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {([
+                  ["voiceover", "Voz en off"],
+                  ["to_camera", "Hablar a cámara"],
+                  ["music_only", "Solo música y textos"],
+                ] as [ReelVoiceMode, string][]).map(([m, label]) => (
+                  <Button key={m} type="button" variant={voiceMode === m ? "default" : "outline"} size="sm" onClick={() => setVoiceMode(m)} aria-pressed={voiceMode === m}>
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {voiceMode === "music_only" ? "No se creará guion de locución: el mensaje irá en los textos en pantalla." : "Se creará un guion de locución listo para leer y copiar."}
+              </p>
+            </div>
+          )}
 
           {postTypeIsReel && (
             <div className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
