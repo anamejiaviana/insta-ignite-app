@@ -114,11 +114,14 @@ export function GeneratedPostPreview({
   };
 
   const handlePrepareShootingDay = () => {
+    const hook = prefillData?.hook || post.reel?.hook;
+    const script = prefillData?.script || post.reel?.script;
+    const shots = prefillData?.shots?.length ? prefillData.shots : post.reel?.storyboard?.map((s) => s.shot);
     const ideaParts = [
       prefillData?.title || "",
-      prefillData?.hook ? `Hook: ${prefillData.hook}` : "",
-      prefillData?.script ? `Guión: ${prefillData.script}` : "",
-      prefillData?.shots?.length ? `Planos: ${prefillData.shots.join(", ")}` : "",
+      hook ? `Hook: ${hook}` : "",
+      script ? `Guión: ${script}` : "",
+      shots?.length ? `Planos: ${shots.join(", ")}` : "",
     ].filter(Boolean);
 
     navigate("/shooting", {
