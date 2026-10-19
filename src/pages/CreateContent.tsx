@@ -20,6 +20,7 @@ import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTri
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 import { useImageUsage } from "@/hooks/useImageUsage";
+import { isReel, shouldAutoGenerateImage, extractReelPackage, REEL_FORMAT_INSTRUCTIONS, type ReelPackage } from "@/lib/contentRules";
 import { useNavigate as useNav } from "react-router-dom";
 
 const POST_TYPES = [
@@ -54,6 +55,7 @@ interface GeneratedPost {
   imageUrl?: string;
   slidePrompts?: string[];
   imageUrls?: string[];
+  reel?: ReelPackage;
 }
 
 interface PrefillData {
@@ -99,7 +101,8 @@ export default function CreateContent() {
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const { usage, refreshUsage } = useImageUsage();
 
-  const needsAIImage = imageSource === "generate" || imageSource === "edit" || postType === "carousel";
+  const postTypeIsReel = isReel(postType);
+  const needsAIImage = shouldAutoGenerateImage(postType, imageSource);
   const isImageBlocked = usage.limitReached && needsAIImage;
   const getImageLoadingMessage = () => {
     if (postType === "carousel") return t("generatingCarousel");
@@ -109,16 +112,25 @@ export default function CreateContent() {
 
   useEffect(() => {
     if (prefill?.caption) {
+      const prefillIsReel = isReel(prefill.postType);
       // Set initial post with caption data, then generate storyCopy via AI
       const initialPost: GeneratedPost = {
         mainCopy: prefill.caption,
         storyCopy: "",
         hashtags: prefill.hashtags || [],
         imagePrompt: prefill.imagePrompt || "",
+        reel: prefillIsReel
+          ? {
+              hook: prefill.hook,
+              script: prefill.description,
+              storyboard: prefill.shots?.map((s) => ({ shot: s })),
+              coverIdea: prefill.imagePrompt,
+            }
+          : undefined,
       };
       setGeneratedPost(initialPost);
 
-      // Generate storyCopy from the caption
+      // Generate storyCopy from the caption (texto; en Reel también textos en pantalla y consejos)
       const generateStoryCopy = async () => {
         try {
           const clientContext = activeClient
@@ -134,6 +146,11 @@ export default function CreateContent() {
               }
             : null;
 
+          const reelExtra = prefillIsReel
+            ? `Hook ya definido: ${prefill.hook || "-"}. Planos ya definidos: ${(prefill.shots || []).join(" | ") || "-"}. Copy principal: ${prefill.caption}.
+A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyboard": [{ "shot": "...", "duration": "3s", "onScreenText": "..." }] (respeta y detalla los planos ya definidos), "onScreenTexts": ["..."], "recordingTips": ["3 a 5 consejos prácticos de grabación con móvil, vertical 9:16"] }. NO generes imágenes.`
+            : `A partir del siguiente copy principal, genera SOLO una versión corta para Stories de Instagram (máx 200 caracteres, directo e impactante). Responde en JSON: { "storyCopy": "..." }`;
+
           const { data, error } = await supabase.functions.invoke("generate-post", {
             body: {
               title: prefill.title,
@@ -142,14 +159,25 @@ export default function CreateContent() {
               clientContext,
               language: activeClient?.content_language || "es",
               customFormat: true,
-              formatInstructions: `A partir del siguiente copy principal, genera SOLO una versión corta para Stories de Instagram (máx 200 caracteres, directo e impactante). Responde en JSON: { "storyCopy": "..." }`,
+              formatInstructions: reelExtra,
             },
           });
 
-          if (!error && data && !data.error && data.storyCopy) {
-            setGeneratedPost((prev) =>
-              prev ? { ...prev, storyCopy: data.storyCopy } : null
-            );
+          if (!error && data && !data.error) {
+            setGeneratedPost((prev) => {
+              if (!prev) return null;
+              const next = { ...prev, storyCopy: data.storyCopy || prev.storyCopy };
+              if (prefillIsReel) {
+                const extra = extractReelPackage(data);
+                next.reel = {
+                  ...prev.reel,
+                  storyboard: extra?.storyboard?.length ? extra.storyboard : prev.reel?.storyboard,
+                  onScreenTexts: extra?.onScreenTexts,
+                  recordingTips: extra?.recordingTips,
+                };
+              }
+              return next;
+            });
           }
         } catch (e) {
           console.error("Error generating storyCopy:", e);
@@ -158,7 +186,8 @@ export default function CreateContent() {
 
       generateStoryCopy();
 
-      if (prefill.imagePrompt) {
+      // Reel: nunca generar imagen automáticamente (ni consumir cuota)
+      if (prefill.imagePrompt && !prefillIsReel) {
         setStep("image");
         setLoading(true);
         setLoadingPhase("image");
@@ -323,6 +352,7 @@ export default function CreateContent() {
           }
         : null;
 
+      const reelMode = isReel(postType);
       const { data, error } = await supabase.functions.invoke("generate-post", {
         body: {
           title,
@@ -334,10 +364,24 @@ export default function CreateContent() {
           clientContext,
           language: activeClient?.content_language || "es",
           carouselSlideCount: postType === "carousel" ? carouselSlideCount : undefined,
+          ...(reelMode ? { customFormat: true, formatInstructions: REEL_FORMAT_INSTRUCTIONS } : {}),
         },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
+
+      if (reelMode) {
+        // Reel: solo texto. Nunca se generan ni editan imágenes automáticamente.
+        setGeneratedPost({
+          mainCopy: data.mainCopy || "",
+          storyCopy: data.storyCopy || "",
+          hashtags: Array.isArray(data.hashtags) ? data.hashtags : [],
+          imagePrompt: data.imagePrompt || "",
+          reel: extractReelPackage(data),
+        });
+        toast({ title: t("contentGenerated") });
+        return;
+      }
 
       setGeneratedPost(data);
       setStep("image");
@@ -350,7 +394,7 @@ export default function CreateContent() {
 
       if (postType === "carousel" && data.slidePrompts?.length > 0) {
         await generateCarouselImages(data.slidePrompts);
-      } else if (imageSource === "generate") {
+      } else if (imageSource === "generate" && shouldAutoGenerateImage(postType, imageSource)) {
         await generateImage(data.imagePrompt);
       } else if (imageSource === "edit" && resolvedUploadedImage) {
         await editImage(resolvedUploadedImage, data.imagePrompt);
@@ -725,6 +769,12 @@ export default function CreateContent() {
             </div>
           </div>
 
+          {postTypeIsReel && (
+            <div className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+              Para Reels se genera el guion, el hook, los planos a grabar, los textos en pantalla, el copy y los hashtags. No se crean imágenes ni vídeos automáticamente y no se gasta cuota de imágenes. Si quieres una portada, podrás generarla después de forma opcional.
+            </div>
+          )}
+
           <Button variant="gradient" size="xl" onClick={generateContent} disabled={loading || !title.trim() || isImageBlocked} className="w-full">
             {loading ? (
               <><Loader2 className="h-5 w-5 animate-spin" /> {loadingPhase === "image" ? getImageLoadingMessage() : t("generatingContent")}</>
@@ -751,6 +801,7 @@ export default function CreateContent() {
                 if (postType === "carousel" && generatedPost.slidePrompts?.length) {
                   await generateCarouselImages(generatedPost.slidePrompts);
                 } else if (generatedPost.imagePrompt) {
+                  // Para Reel solo se llega aquí por el botón manual "Generar portada"
                   await generateImage(generatedPost.imagePrompt);
                 }
               } finally {
