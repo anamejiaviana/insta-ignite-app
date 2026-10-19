@@ -400,6 +400,7 @@ export type Database = {
     }
     Functions: {
       get_image_limit: { Args: { _user_id: string }; Returns: number }
+      get_text_limit: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -415,6 +416,14 @@ export type Database = {
           _user_id: string
         }
         Returns: number
+      }
+      release_quota: {
+        Args: { _month: string; _resource_type: string; _user_id: string }
+        Returns: undefined
+      }
+      reserve_quota: {
+        Args: { _resource_type: string; _user_id: string }
+        Returns: Json
       }
     }
     Enums: {
