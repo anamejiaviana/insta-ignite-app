@@ -1,3 +1,4 @@
+import { TONE_GUIDELINES, HOOK_GUIDANCE } from "../_shared/tone.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.88.0";
 
@@ -38,8 +39,10 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    const systemPrompt = `Eres un copywriter experto en hooks virales para Instagram y TikTok.
-    Generas hooks que captan la atención en los primeros 3 segundos.
+    const systemPrompt = `Eres un copywriter experto en hooks para Instagram y TikTok de negocios locales.
+    Generas hooks cálidos, específicos y honestos que captan la atención en los primeros 3 segundos.
+    ${TONE_GUIDELINES}
+    ${HOOK_GUIDANCE}
     TODOS los hooks DEBEN estar escritos en ${langName}.
     
     Responde SIEMPRE en formato JSON válido:
@@ -49,7 +52,7 @@ serve(async (req) => {
 
     const topicContext = topic ? `sobre el tema: ${topic}` : '';
 
-    const userPrompt = `Genera 15 hooks irresistibles ${topicContext} para este negocio:
+    const userPrompt = `Genera 15 hooks atractivos ${topicContext} para este negocio:
     - Nombre: ${client.name}
     - Tipo: ${client.type}
     - Ciudad: ${client.city}
@@ -59,10 +62,10 @@ serve(async (req) => {
     
     Los hooks deben:
     - Captar la atención en 3 segundos
-    - Generar curiosidad
+    - Generar curiosidad positiva (detalle concreto, pregunta genuina, beneficio)
     - Ser directos y concisos
-    - Adaptarse al tono del negocio
-    - Ser variados (preguntas, afirmaciones impactantes, datos, provocaciones)
+    - Respetar el tono declarado del negocio
+    - Ser variados (preguntas genuinas, detalles del proceso, beneficios, mini historias, consejos), sin provocaciones, acusaciones ni datos inventados
     - Poder usarse tanto en reels como en captions
     - NUNCA inventar direcciones ni ubicaciones exactas que no se hayan proporcionado`;
 
