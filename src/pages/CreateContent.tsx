@@ -522,7 +522,9 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
         content_category: "post",
         content_data: postType === "carousel" && generatedPost.imageUrls?.length
           ? { carouselImageUrls: generatedPost.imageUrls }
-          : null,
+          : isReel(postType) && generatedPost.reel
+            ? { reel: generatedPost.reel }
+            : null,
       };
 
       const { error } = await (supabase as any).from("generated_posts").insert(insertData);

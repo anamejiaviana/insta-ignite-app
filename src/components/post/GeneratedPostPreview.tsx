@@ -21,6 +21,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ReelPackage } from "@/lib/contentRules";
+import { ReelPackageView } from "./ReelPackageView";
 
 interface GeneratedPost {
   mainCopy: string;
@@ -30,6 +32,7 @@ interface GeneratedPost {
   imageUrl?: string;
   slidePrompts?: string[];
   imageUrls?: string[];
+  reel?: ReelPackage;
 }
 
 interface GeneratedPostPreviewProps {
