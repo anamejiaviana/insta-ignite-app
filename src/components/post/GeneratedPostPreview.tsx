@@ -43,6 +43,8 @@ interface GeneratedPostPreviewProps {
   onSave: () => Promise<void> | void;
   onReset: () => void;
   onRegenerateImage: () => void;
+  onChangeVoiceMode?: (mode: import("@/lib/contentRules").ReelVoiceMode) => void;
+  voiceLoading?: boolean;
   onCopyChange?: (mainCopy: string, storyCopy: string) => void;
   fromCalendar?: boolean;
   calendarPlanId?: string;
@@ -62,6 +64,8 @@ export function GeneratedPostPreview({
   onSave,
   onReset,
   onRegenerateImage,
+  onChangeVoiceMode,
+  voiceLoading,
   onCopyChange,
   fromCalendar,
   calendarPlanId,
@@ -185,6 +189,8 @@ export function GeneratedPostPreview({
             coverIdea={post.imagePrompt}
             loading={loading}
             onGenerateCover={onRegenerateImage}
+            onChangeVoiceMode={onChangeVoiceMode}
+            voiceLoading={voiceLoading}
             onCopy={copyToClipboard}
           />
         ) : (

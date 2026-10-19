@@ -104,6 +104,39 @@ export default function CreateContent() {
   const [voiceMode, setVoiceMode] = useState<ReelVoiceMode>("voiceover");
   const [voiceLoading, setVoiceLoading] = useState(false);
   const postTypeIsReel = isReel(postType);
+
+  // Reel: cambia el modo de narración y (re)genera solo el guion de locución. Nunca imágenes.
+  const changeReelVoiceMode = async (mode: ReelVoiceMode) => {
+    setVoiceMode(mode);
+    if (!generatedPost?.reel) return;
+    if (mode === "music_only") {
+      setGeneratedPost((prev) => prev && prev.reel ? { ...prev, reel: { ...prev.reel, voiceMode: mode, voiceover: undefined } } : prev);
+      return;
+    }
+    setVoiceLoading(true);
+    try {
+      const r = generatedPost.reel;
+      const shots = (r.storyboard || []).map((s, i) => `${i + 1}. ${s.shot}${s.duration ? ` (${s.duration})` : ""}`).join(" | ");
+      const { data, error } = await supabase.functions.invoke("generate-post", {
+        body: {
+          title: title || prefill?.title || "Reel",
+          description: `Hook: ${r.hook || "-"}. Guion: ${r.script || "-"}. Planos: ${shots || "-"}. Caption: ${generatedPost.mainCopy}`,
+          postType: "reel",
+          clientContext: activeClient ? { name: activeClient.name, type: activeClient.type, city: activeClient.city, address: activeClient.address, tone: activeClient.tone, objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context } : null,
+          language: activeClient?.content_language || "es",
+          customFormat: true,
+          formatInstructions: `Genera SOLO JSON: { ${voiceoverInstruction(mode)} }. Basado en el hook, guion y planos dados. NO generes imágenes.`,
+        },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      const vo = extractReelPackage(data)?.voiceover;
+      setGeneratedPost((prev) => prev && prev.reel ? { ...prev, reel: { ...prev.reel, voiceMode: mode, voiceover: vo } } : prev);
+    } catch (e) {
+      toast({ title: "No se pudo crear el guion de locución", description: "Inténtalo de nuevo en unos segundos.", variant: "destructive" });
+    } finally {
+      setVoiceLoading(false);
+    }
+  };
   const needsAIImage = shouldAutoGenerateImage(postType, imageSource);
   const isImageBlocked = usage.limitReached && needsAIImage;
   const getImageLoadingMessage = () => {
@@ -820,6 +853,8 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             loadingMessage={getImageLoadingMessage()}
             onSave={savePost}
             onReset={resetGenerator}
+            onChangeVoiceMode={changeReelVoiceMode}
+            voiceLoading={voiceLoading}
             onRegenerateImage={async () => {
               setLoading(true);
               setLoadingPhase("image");
