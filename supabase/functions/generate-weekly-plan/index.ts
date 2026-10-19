@@ -1,32 +1,16 @@
+import { guarded } from "../_shared/guard.ts";
 import { TONE_GUIDELINES, HOOK_GUIDANCE } from "../_shared/tone.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.88.0";
 
-function extractUserId(req: Request): string | null {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader) return null;
-  try {
-    const token = authHeader.replace('Bearer ', '');
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || null;
-  } catch { return null; }
-}
 
-function trackUsage(userId: string, resourceType: string) {
-  const url = Deno.env.get('SUPABASE_URL');
-  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!url || !key) return;
-  const sb = createClient(url, key);
-  const month = new Date().toISOString().slice(0, 7);
-  sb.rpc('increment_usage', { _user_id: userId, _resource_type: resourceType, _month: month, _amount: 1 }).then(() => {});
-}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(guarded('text', 'text_weekly_plan', async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -255,8 +239,6 @@ ${postExamples}
     (parsed.posts || []).forEach((p: any) => { p.type = 'post'; });
     (parsed.carousels || []).forEach((c: any) => { c.type = 'carousel'; });
 
-    const userId = extractUserId(req);
-    if (userId) trackUsage(userId, 'text_weekly_plan');
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -268,4 +250,4 @@ ${postExamples}
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+}));
