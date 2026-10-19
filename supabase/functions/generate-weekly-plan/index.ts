@@ -1,3 +1,4 @@
+import { TONE_GUIDELINES, HOOK_GUIDANCE } from "../_shared/tone.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.88.0";
 
@@ -76,10 +77,10 @@ serve(async (req) => {
           "type": "reel",
           "day": "Día de la semana",
           "idea": "Título de la idea",
-          "hook": "Frase gancho que ROMPA PATRÓN en 3 segundos (contraste, error, verdad incómoda o frustración reconocible)",
-          "script": "Guion con estructura emocional: hook → tensión/problema reconocible → valor concreto y específico → revelación → CTA emocional natural",
+          "hook": "Frase gancho atractiva y honesta para los 3 primeros segundos (detalle concreto, pregunta genuina, beneficio o curiosidad)",
+          "script": "Guion natural: hook → proceso o valor concreto y específico → resultado/personalidad de marca → CTA amable",
           "shots": ["plano 1", "plano 2", "plano 3"],
-          "caption": "Caption optimizado con CTA emocional coherente con el contenido",
+          "caption": "Caption cálido con CTA natural coherente con el contenido",
           "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
         }`).join(',\n');
 
@@ -118,17 +119,18 @@ ${carouselExamples}
       ? ` El array "carousels" debe tener exactamente ${numCarousels} elementos. Cada carrusel debe incluir "imagePrompt".`
       : '';
 
-    const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales con profundo conocimiento de retención y psicología de audiencia.
-    Generas planes de contenido semanales prácticos, emocionalmente potentes y grabables.
+    const systemPrompt = `Eres un estratega de contenido para Instagram especializado en negocios locales y en comunicación cercana y auténtica.
+    Generas planes de contenido semanales prácticos, creativos, cálidos y grabables.
+    ${TONE_GUIDELINES}
     
     PRINCIPIOS DE CALIDAD PARA REELS (aplicar a TODOS los reels del plan):
-    - Estructura interna: HOOK → CONFLICTO/TENSIÓN → VALOR REAL → REVELACIÓN → CTA EMOCIONAL
-    - Hooks que ROMPAN PATRÓN: contraste, error común, verdad incómoda, frustración reconocible o dato sorprendente
+    - ${HOOK_GUIDANCE}
+    - Sin estructura obligatoria: combina detalle, proceso, valor real y personalidad de marca
     - PROHIBIDO: "Hoy te voy a contar...", "3 tips para...", "¿Sabías que...?", hooks genéricos o predecibles
-    - Los guiones deben conectar con lo que la audiencia SIENTE, no solo explicar
+    - Los guiones deben transmitir oficio, cercanía y valor real
     - El valor debe ser CONCRETO: técnicas específicas, datos, ejemplos prácticos. NUNCA "sé constante" o "crea contenido de valor"
-    - Los CTAs deben ser continuación emocional natural del reel, NO "sígueme para más"
-    - Variar tono y ángulo entre reels: educativo, emocional, revelador, behind the scenes, contraste
+    - Los CTAs deben ser continuación natural y sin presión del reel, NO "sígueme para más"
+    - Variar tono y ángulo entre reels: educativo, behind the scenes, proceso artesanal, historia, consejo útil, producto en detalle
     - Evitar clichés de content creator y lenguaje corporativo vacío
     
     TODO el contenido generado (ideas, hooks, guiones, captions, hashtags) DEBE estar en ${langName}.
@@ -176,9 +178,9 @@ ${postExamples}
     3. 3-4 ideas de stories`}
     
     Requisitos:
-    - Los hooks de los reels deben ROMPER PATRÓN: contraste, error revelado, frustración reconocible, dato inesperado. NO usar "Hoy te enseño...", "3 tips para..." ni "¿Sabías que...?"
-    - Los guiones de reels deben tener tensión emocional y valor CONCRETO (técnicas, datos, ejemplos), NO consejos vagos
-    - Los CTAs de reels deben conectar emocionalmente con el dolor o deseo activado, no ser genéricos
+    - Hooks de reels atractivos y honestos (detalle concreto, pregunta genuina, beneficio, curiosidad), sin acusaciones ni alarmismo
+    - Guiones con valor CONCRETO (procesos, técnicas, ejemplos reales), sin inventar datos
+    - CTAs naturales y amables, coherentes con el tono declarado
     - Contenido grabable en 15-30 minutos en el propio negocio
     - Captions con palabras clave del negocio
     - Mencionar la ciudad cuando sea natural

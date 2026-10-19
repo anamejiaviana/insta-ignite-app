@@ -1,3 +1,4 @@
+import { TONE_GUIDELINES, HOOK_GUIDANCE } from "../_shared/tone.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.88.0";
 
@@ -91,25 +92,26 @@ serve(async (req) => {
     const isReel = postType === 'reel';
     const reelGuidance = isReel ? `
     PRINCIPIOS DE CALIDAD PARA REELS:
-    - Estructura interna: HOOK → CONFLICTO/TENSIÓN → VALOR REAL → REVELACIÓN → CTA EMOCIONAL
-    - El hook debe romper patrón: contraste, error común, verdad incómoda o frustración reconocible. NUNCA "Hoy te voy a contar..." ni "¿Sabías que...?"
-    - El guion debe conectar con lo que la audiencia SIENTE, no solo explicar
+    - ${HOOK_GUIDANCE}
+    - Recorrido flexible (elige el que encaje): detalle o pregunta → proceso/valor concreto → resultado o personalidad de marca → CTA amable
+    - El guion debe transmitir oficio, cercanía y valor real, no solo explicar
     - El valor debe ser concreto y específico, no genérico ("sé constante", "crea contenido de valor" están PROHIBIDOS)
-    - El CTA debe ser una continuación emocional natural, no "sígueme para más"
+    - El CTA debe ser una continuación natural y sin presión, no "sígueme para más"
     - Evitar clichés de content creator y lenguaje corporativo vacío
     ` : '';
 
-    const systemPrompt = `Eres un experto copywriter para Instagram especializado en negocios locales. Genera contenido optimizado para engagement y retención.
+    const systemPrompt = `Eres un experto copywriter para Instagram especializado en negocios locales. Escribes contenido cálido, auténtico y específico que conecta con la gente y genera interés real.
+    ${TONE_GUIDELINES}
     TODO el contenido (captions, stories, hashtags) DEBE estar en ${langName}.
     ${contextBlock}
     ${reelGuidance}
     ${responseFormat}`;
 
     const reelRequirements = isReel ? `
-    - El mainCopy debe seguir estructura emocional: hook potente → problema/tensión reconocible → valor concreto → revelación → CTA que conecte con el dolor/deseo activado
-    - El hook (primera línea) debe ROMPER PATRÓN: contraste, error revelado, frustración o dato inesperado
+    - El mainCopy debe abrir con un hook atractivo y honesto, aportar valor concreto y cerrar con un CTA amable
+    - El hook (primera línea): detalle concreto, pregunta genuina, beneficio o curiosidad verdadera, sin conflicto forzado
     - El valor debe ser ESPECÍFICO: técnicas, datos, ejemplos prácticos. NO consejos vagos
-    - El CTA debe sentirse como continuación natural del contenido emocional, no genérico` : '';
+    - El CTA debe sentirse como continuación natural del contenido, no genérico ni manipulador` : '';
 
     const userPrompt = `Genera contenido para Instagram con estos datos:
     - Tipo de publicación: ${postType}
@@ -122,7 +124,7 @@ serve(async (req) => {
     
     El contenido debe:
     - Estar escrito completamente en ${langName}
-    - Ser persuasivo, auténtico y optimizado para el algoritmo de Instagram
+    - Ser cercano, auténtico, específico y optimizado para el algoritmo de Instagram
     - Incluir palabras clave del negocio cuando tenga sentido
     - Mencionar la ciudad cuando sea relevante
     - Integrar el CTA de forma natural
