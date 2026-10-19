@@ -21,6 +21,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ReelPackage } from "@/lib/contentRules";
+import { ReelPackageView } from "./ReelPackageView";
 
 interface GeneratedPost {
   mainCopy: string;
@@ -30,6 +32,7 @@ interface GeneratedPost {
   imageUrl?: string;
   slidePrompts?: string[];
   imageUrls?: string[];
+  reel?: ReelPackage;
 }
 
 interface GeneratedPostPreviewProps {
@@ -111,11 +114,14 @@ export function GeneratedPostPreview({
   };
 
   const handlePrepareShootingDay = () => {
+    const hook = prefillData?.hook || post.reel?.hook;
+    const script = prefillData?.script || post.reel?.script;
+    const shots = prefillData?.shots?.length ? prefillData.shots : post.reel?.storyboard?.map((s) => s.shot);
     const ideaParts = [
       prefillData?.title || "",
-      prefillData?.hook ? `Hook: ${prefillData.hook}` : "",
-      prefillData?.script ? `Guión: ${prefillData.script}` : "",
-      prefillData?.shots?.length ? `Planos: ${prefillData.shots.join(", ")}` : "",
+      hook ? `Hook: ${hook}` : "",
+      script ? `Guión: ${script}` : "",
+      shots?.length ? `Planos: ${shots.join(", ")}` : "",
     ].filter(Boolean);
 
     navigate("/shooting", {
@@ -125,9 +131,9 @@ export function GeneratedPostPreview({
         sourcePlanId: calendarPlanId,
         sourceContent: {
           title: prefillData?.title,
-          hook: prefillData?.hook,
-          shots: prefillData?.shots,
-          script: prefillData?.script,
+          hook,
+          shots,
+          script,
           mainCopy: editedMainCopy,
           storyCopy: editedStoryCopy,
           postType,
@@ -172,7 +178,17 @@ export function GeneratedPostPreview({
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 overflow-hidden">
-        {/* Image Preview */}
+        {postType === "reel" ? (
+          <ReelPackageView
+            reel={post.reel}
+            coverUrl={post.imageUrl}
+            coverIdea={post.imagePrompt}
+            loading={loading}
+            onGenerateCover={onRegenerateImage}
+            onCopy={copyToClipboard}
+          />
+        ) : (
+        /* Image Preview */
         <div className="space-y-3 min-w-0">
           <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
             <Smartphone className="h-4 w-4 text-primary shrink-0" />
@@ -283,6 +299,7 @@ export function GeneratedPostPreview({
             )}
           </div>
         </div>
+        )}
 
         {/* Content Preview */}
         <div className="space-y-5">
