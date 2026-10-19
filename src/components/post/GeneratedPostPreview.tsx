@@ -175,7 +175,17 @@ export function GeneratedPostPreview({
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 overflow-hidden">
-        {/* Image Preview */}
+        {postType === "reel" ? (
+          <ReelPackageView
+            reel={post.reel}
+            coverUrl={post.imageUrl}
+            coverIdea={post.imagePrompt}
+            loading={loading}
+            onGenerateCover={onRegenerateImage}
+            onCopy={copyToClipboard}
+          />
+        ) : (
+        /* Image Preview */
         <div className="space-y-3 min-w-0">
           <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
             <Smartphone className="h-4 w-4 text-primary shrink-0" />
@@ -286,6 +296,7 @@ export function GeneratedPostPreview({
             )}
           </div>
         </div>
+        )}
 
         {/* Content Preview */}
         <div className="space-y-5">
