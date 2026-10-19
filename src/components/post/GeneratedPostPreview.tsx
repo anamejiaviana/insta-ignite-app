@@ -131,9 +131,9 @@ export function GeneratedPostPreview({
         sourcePlanId: calendarPlanId,
         sourceContent: {
           title: prefillData?.title,
-          hook: prefillData?.hook,
-          shots: prefillData?.shots,
-          script: prefillData?.script,
+          hook,
+          shots,
+          script,
           mainCopy: editedMainCopy,
           storyCopy: editedStoryCopy,
           postType,
