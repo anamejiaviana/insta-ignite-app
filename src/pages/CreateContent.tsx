@@ -582,8 +582,136 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     uploadedPersistentUrl.current = null;
     uploadImagePromiseRef.current = null;
     setEditPrompt("");
+    setEditPresets([]);
+    setCarouselPhotos([]);
     setStep("content");
   };
+
+  const sources = IMAGE_SOURCES.filter((s) => !(postType === "carousel" && s.value === "library"));
+  const mainSources = sources.filter((s) => s.value !== "generate");
+
+  const renderImagePicker = () => (
+    <div className="space-y-2">
+      <Label>{t("imageSource")}</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {mainSources.map((src) => (
+          <button
+            key={src.value}
+            type="button"
+            aria-pressed={imageSource === src.value}
+            onClick={() => setImageSource(src.value)}
+            className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+              imageSource === src.value ? "text-primary-foreground shadow-md" : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+            style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
+          >
+            <src.icon className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">{src.label}</span>
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        aria-pressed={imageSource === "generate"}
+        onClick={() => setImageSource("generate")}
+        className={`w-full text-left text-xs rounded-lg px-3 py-2 border transition-colors ${
+          imageSource === "generate" ? "border-primary text-foreground bg-primary/10" : "border-dashed border-border text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        <Sparkles className="inline h-3.5 w-3.5 mr-1" />
+        Opcional: generar una imagen desde cero con IA (no muestra tu producto real)
+      </button>
+
+      {imageSource === "upload" && (
+        <p className="text-xs text-muted-foreground">Recomendado: una foto real de tu negocio. Se usa tal cual y no gasta cupo de imágenes.</p>
+      )}
+      {imageSource === "edit" && (
+        <p className="text-xs text-muted-foreground">La IA ajusta tu foto (luz, color, encuadre, fondo) sin cambiar el producto, las personas, los ingredientes ni tu local. El resultado puede variar: revísalo antes de publicar.</p>
+      )}
+
+      {(imageSource === "upload" || imageSource === "edit") && (
+        <div className="space-y-3 mt-2">
+          {postType === "carousel" ? (
+            <>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleCarouselFiles} className="hidden" />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full h-28 border-dashed">
+                {carouselPhotos.length ? (
+                  <div className="flex gap-1 overflow-hidden">
+                    {carouselPhotos.slice(0, 6).map((u) => <img key={u} src={u} alt="" className="h-20 w-20 rounded object-cover" />)}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Image className="h-8 w-8" />
+                    <span className="text-sm">Sube tus fotos (hasta 10, una por diapositiva)</span>
+                  </div>
+                )}
+              </Button>
+              {(carouselPhotos.length > 0 || photosUploading > 0) && (
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{carouselPhotos.length} foto(s){photosUploading > 0 ? ` · subiendo ${photosUploading}…` : ""}</span>
+                  {carouselPhotos.length > 0 && <button type="button" className="underline" onClick={() => setCarouselPhotos([])}>Quitar fotos</button>}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full h-28 border-dashed">
+                {uploadedImage ? (
+                  <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Image className="h-8 w-8" />
+                    <span className="text-sm">Sube tu foto</span>
+                  </div>
+                )}
+              </Button>
+            </>
+          )}
+          {imageSource === "edit" && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium">¿Qué quieres mejorar?</p>
+              <div className="flex flex-wrap gap-2">
+                {EDIT_PRESETS.map((p) => {
+                  const on = editPresets.includes(p.id);
+                  return (
+                    <Button key={p.id} type="button" size="sm" variant={on ? "default" : "outline"} aria-pressed={on}
+                      onClick={() => setEditPresets((prev) => on ? prev.filter((x) => x !== p.id) : [...prev, p.id])}>
+                      {p.label}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Textarea placeholder="Otros ajustes (opcional). Ej: un poco más cálida, quitar la servilleta del fondo…" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
+              <p className="text-xs text-muted-foreground">Si no eliges nada, se hace una mejora suave de luz y color.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {imageSource === "library" && (
+        <div className="mt-2">
+          <Button type="button" variant="outline" onClick={() => setMediaPickerOpen(true)} className="w-full h-28 border-dashed">
+            {uploadedImage ? (
+              <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                <ImageIcon className="h-8 w-8" />
+                <span className="text-sm">{t("chooseFromLibrary")}</span>
+              </div>
+            )}
+          </Button>
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
+        {pendingCost > 0
+          ? `Esta opción gastará ${pendingCost} imagen(es) de tu cupo. `
+          : "Esta opción no gasta cupo de imágenes. "}
+        "Mejorar con IA" y "Generar desde cero" comparten el mismo cupo: te quedan {usage.remaining} de {usage.limit} este mes.
+      </p>
+    </div>
+  );
 
   const hasPrefillDetails = prefill?.hook || prefill?.shots;
 
