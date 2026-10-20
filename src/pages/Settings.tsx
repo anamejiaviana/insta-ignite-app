@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Pencil, Trash2, Save, X, Loader2, Globe, Lock } from "lucide-react";
+import { EditorialGuideCard } from "@/components/brand/EditorialGuideCard";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import {
   AlertDialog,
@@ -241,6 +242,8 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+
+      <EditorialGuideCard />
 
       <Card className="bg-card border-border">
         <CardHeader className="flex flex-row items-center justify-between">

@@ -303,6 +303,7 @@ export default function EditorialGuide() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6 pb-24">
       <div className="space-y-2">
+        <Button variant="ghost" size="sm" className="-ml-2" onClick={() => navigate("/settings")}><ArrowLeft className="h-4 w-4 mr-1" />{l === "en" ? "Back to settings" : "Volver a configuración"}</Button>
         <h1 className="text-2xl font-bold flex items-center gap-2"><BookOpen className="h-6 w-6 text-primary" />{T.title}</h1>
         <p className="text-sm text-muted-foreground">{T.subtitle}</p>
         <p className="text-xs text-muted-foreground"><Badge variant="secondary" className="mr-2">{activeClient.name}</Badge>{langNote}</p>
