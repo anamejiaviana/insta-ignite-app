@@ -6,11 +6,44 @@ export function isReel(postType: string) {
   return postType === "reel";
 }
 
-/** ¿Debe el flujo generar/editar imágenes de IA automáticamente tras el texto? */
+/** Fuente de imagen por defecto: la foto real del negocio. */
+export const DEFAULT_IMAGE_SOURCE = "upload";
+
+/**
+ * ¿Usa este contenido la IA de imagen (gasta cupo)? Solo si el usuario eligió
+ * expresamente "Mejorar con IA" o "Generar desde cero". Nunca en Reels.
+ */
 export function shouldAutoGenerateImage(postType: string, imageSource: string): boolean {
   if (isReel(postType)) return false;
-  if (postType === "carousel") return true;
   return imageSource === "generate" || imageSource === "edit";
+}
+
+/** Imágenes de cupo que gastará la acción elegida (editar y generar comparten cupo). */
+export function imageCost(postType: string, imageSource: string, slideCount: number, photoCount: number): number {
+  if (!shouldAutoGenerateImage(postType, imageSource)) return 0;
+  if (postType === "carousel") return imageSource === "edit" ? photoCount : slideCount;
+  return 1;
+}
+
+export const EDIT_PRESETS = [
+  { id: "light", label: "Mejorar luz", instruction: "mejora la iluminación de forma natural (más luminosa, sombras suaves)" },
+  { id: "color", label: "Color natural", instruction: "corrige el balance de blancos y deja colores naturales y apetecibles, sin saturar" },
+  { id: "crop", label: "Encuadre para Instagram", instruction: "reencuadra y endereza la foto para Instagram centrando el sujeto principal, sin deformarlo" },
+  { id: "background", label: "Limpiar fondo", instruction: "ordena y suaviza el fondo quitando solo distracciones pequeñas (manchas, cables, objetos sueltos irrelevantes), sin cambiar el lugar" },
+  { id: "sharp", label: "Más nitidez", instruction: "aumenta ligeramente la nitidez y reduce el ruido" },
+] as const;
+
+export const PRESERVE_IDENTITY_RULE =
+  "Edita ESTA foto real del negocio. Conserva exactamente el producto, las personas (caras, cuerpo, ropa), los ingredientes, el local, los textos y logotipos que ya aparecen. No añadas ni quites productos, personas, ingredientes ni objetos importantes y no inventes elementos nuevos. No añadas texto.";
+
+/** Prompt de edición: siempre conserva la identidad; por defecto solo una mejora suave. */
+export function buildEditPrompt(presetIds: string[], freeText: string): string {
+  const chosen = EDIT_PRESETS.filter((p) => presetIds.includes(p.id)).map((p) => p.instruction);
+  const extra = freeText.trim();
+  const changes = chosen.length || extra
+    ? [...chosen, ...(extra ? [extra] : [])].join("; ")
+    : "mejora suave de luz y color, aspecto natural y profesional";
+  return `${PRESERVE_IDENTITY_RULE} Cambios permitidos: ${changes}.`;
 }
 
 export interface ReelShot {
