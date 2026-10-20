@@ -402,10 +402,20 @@ export default function Settings() {
               <div className="space-y-1">
                 <Label className="text-xs">{t("extraContext")}</Label>
                 <Textarea
+                  ref={(el) => {
+                    if (!el) return;
+                    el.style.height = "auto";
+                    el.style.height = `${el.scrollHeight + 2}px`;
+                  }}
                   placeholder={t("extraContextPlaceholder")}
                   value={form.extra_context}
-                  onChange={(e) => setForm({ ...form, extra_context: e.target.value })}
-                  className="bg-secondary border-border min-h-[80px] text-sm"
+                  onChange={(e) => {
+                    const el = e.currentTarget;
+                    el.style.height = "auto";
+                    el.style.height = `${el.scrollHeight + 2}px`;
+                    setForm({ ...form, extra_context: e.target.value });
+                  }}
+                  className="bg-secondary border-border min-h-[120px] max-h-[55dvh] overflow-y-auto overscroll-contain touch-pan-y resize-y text-base md:text-sm leading-relaxed [-webkit-overflow-scrolling:touch]"
                 />
                 <p className="text-[11px] text-muted-foreground leading-tight mt-1">
                   {t("extraContextHelper")}
