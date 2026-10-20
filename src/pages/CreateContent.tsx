@@ -223,72 +223,8 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
 
       generateStoryCopy();
 
-      // Reel: nunca generar imagen automáticamente (ni consumir cuota)
-      if (prefill.imagePrompt && !prefillIsReel) {
-        setStep("image");
-        setLoading(true);
-        setLoadingPhase("image");
-        if (prefill.postType === "carousel") {
-          // For carousels from calendar, generate slide prompts via AI then generate images
-          const generateCarouselFromCalendar = async () => {
-            try {
-              const clientContext = activeClient
-                ? {
-                    name: activeClient.name,
-                    type: activeClient.type,
-                    city: activeClient.city,
-                    address: activeClient.address,
-                    tone: activeClient.tone,
-                    objective: activeClient.objective,
-                    keywords: activeClient.keywords,
-                    extra_context: activeClient.extra_context,
-                  }
-                : null;
-
-              const { data, error } = await supabase.functions.invoke("generate-post", {
-                body: {
-                  title: prefill.title,
-                  description: prefill.description || prefill.caption,
-                  postType: "carousel",
-                  clientContext,
-                  language: activeClient?.content_language || "es",
-                  carouselSlideCount: carouselSlideCount,
-                },
-              });
-
-              if (!error && data && !data.error && data.slidePrompts?.length > 0) {
-                setGeneratedPost((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        mainCopy: data.mainCopy || prev.mainCopy,
-                        storyCopy: data.storyCopy || prev.storyCopy,
-                        hashtags: data.hashtags || prev.hashtags,
-                        imagePrompt: data.imagePrompt || prev.imagePrompt,
-                        slidePrompts: data.slidePrompts,
-                      }
-                    : null
-                );
-                await generateCarouselImages(data.slidePrompts);
-              } else if (prefill.imagePrompt) {
-                // Fallback: generate single image if no slide prompts returned
-                await generateImage(prefill.imagePrompt);
-              }
-            } catch (e) {
-              console.error("Error generating carousel from calendar:", e);
-            } finally {
-              setLoading(false);
-              setLoadingPhase(null);
-            }
-          };
-          generateCarouselFromCalendar();
-        } else {
-          generateImage(prefill.imagePrompt).finally(() => {
-            setLoading(false);
-            setLoadingPhase(null);
-          });
-        }
-      }
+      // Desde el calendario nunca se crea ni edita una imagen con IA automáticamente:
+      // el usuario elige su foto (o la IA, de forma explícita) en el panel "Añade la imagen".
     }
   }, []);
 
