@@ -846,6 +846,23 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
         </div>
       ) : (
         <div className="glass rounded-2xl p-6 md:p-8 animate-fade-in">
+          {needsImagePanel && (
+            <div className="mb-6 rounded-xl border border-border bg-card/50 p-4 space-y-3">
+              <div>
+                <h3 className="font-semibold">Añade la imagen</h3>
+                <p className="text-xs text-muted-foreground">El texto ya está listo. Elige la imagen: no se ha creado ninguna con IA sin tu permiso.</p>
+              </div>
+              {renderImagePicker()}
+              <Button variant="gradient" className="w-full" disabled={loading || !canApplyImage || (pendingCost > 0 && usage.remaining < 1)} onClick={async () => {
+                setLoading(true); setStep("image"); setLoadingPhase("image");
+                try { await applyImageSource({ slidePrompts: generatedPost.slidePrompts, imagePrompt: generatedPost.imagePrompt }); }
+                finally { setLoading(false); setLoadingPhase(null); }
+              }}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {imageSource === "generate" ? `Generar con IA (gasta ${pendingCost})` : imageSource === "edit" ? `Mejorar con IA (gasta ${pendingCost})` : "Usar esta imagen"}
+              </Button>
+            </div>
+          )}
           <GeneratedPostPreview
             post={generatedPost}
             postType={postType}
@@ -854,8 +871,14 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             onSave={savePost}
             onReset={resetGenerator}
             onChangeVoiceMode={changeReelVoiceMode}
+            regenerateLabel={!postTypeIsReel && imageSource !== "generate" ? "Cambiar imagen" : undefined}
             voiceLoading={voiceLoading}
             onRegenerateImage={async () => {
+              // Fotos propias: "Cambiar imagen" vuelve a mostrar el selector, sin IA.
+              if (!postTypeIsReel && imageSource !== "generate") {
+                setGeneratedPost((prev) => prev ? { ...prev, imageUrl: undefined, imageUrls: undefined } : prev);
+                return;
+              }
               setLoading(true);
               setLoadingPhase("image");
               try {
