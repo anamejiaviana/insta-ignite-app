@@ -1,3 +1,4 @@
+import { shrinkDataUrl, withTimeout } from "@/lib/imageResize";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -464,19 +465,27 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
   const editOne = async (imageUrl: string): Promise<string | null | "limit"> => {
     const prompt = buildEditPrompt(editPresets, editPrompt);
     try {
+      const sendUrl = await shrinkDataUrl(imageUrl);
       // Sin estilo visual: no queremos que la IA reinterprete la foto real.
-      const { data, error } = await supabase.functions.invoke("edit-image", {
-        body: { imageUrl, editPrompt: prompt, postType },
-      });
-      if (data?.error === 'image_limit_reached' || (error as any)?.context?.status === 429) {
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke("edit-image", { body: { imageUrl: sendUrl, editPrompt: prompt, postType } }),
+        150_000,
+        "La mejora con IA está tardando demasiado. Inténtalo de nuevo en un momento; no se ha gastado tu cupo.",
+      );
+      let body: any = data;
+      if (error && (error as any)?.context?.json) {
+        try { body = await (error as any).context.json(); } catch { /* sin cuerpo */ }
+      }
+      if (body?.error === 'image_limit_reached') {
         refreshUsage();
         toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
         return "limit";
       }
+      if (body?.error) throw new Error(body.error);
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      autoSaveAsset(data.imageUrl, "edited", prompt);
-      return data.imageUrl as string;
+      if (!body?.imageUrl) throw new Error("No se recibió la foto mejorada.");
+      autoSaveAsset(body.imageUrl, "edited", prompt);
+      return body.imageUrl as string;
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
       return null;

@@ -95,7 +95,28 @@ serve(guarded('images', null, async (req, userId) => {
 
     console.log('Editing image with prompt:', enhancedPrompt);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // La IA no siempre puede descargar URLs externas (URL_TIMEOUT). Enviamos la foto ya incrustada.
+    let inlineImage = imageUrl;
+    if (!imageUrl.startsWith('data:')) {
+      const imgRes = await fetch(imageUrl);
+      if (!imgRes.ok) {
+        return new Response(JSON.stringify({ error: 'No se pudo leer la foto subida. Vuelve a subirla.' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const buf = new Uint8Array(await imgRes.arrayBuffer());
+      if (buf.length > 15 * 1024 * 1024) {
+        return new Response(JSON.stringify({ error: 'La foto es demasiado grande.' }), {
+          status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      let bin = '';
+      for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+      const ct = imgRes.headers.get('content-type') || 'image/jpeg';
+      inlineImage = `data:${ct};base64,${btoa(bin)}`;
+    }
+
+    const callGateway = () => fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
@@ -107,33 +128,38 @@ serve(guarded('images', null, async (req, userId) => {
           {
             role: 'user',
             content: [
-              {
-                type: 'text',
-                text: enhancedPrompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageUrl
-                }
-              }
-            ]
-          }
+              { type: 'text', text: enhancedPrompt },
+              { type: 'image_url', image_url: { url: inlineImage } },
+            ],
+          },
         ],
-        modalities: ['image', 'text']
+        modalities: ['image', 'text'],
       }),
     });
+
+    // Reintento acotado solo para fallos temporales (5xx), máx. 2 intentos más.
+    let response = await callGateway();
+    for (let attempt = 1; attempt <= 2 && response.status >= 500; attempt++) {
+      console.warn('AI Gateway', response.status, '- retry', attempt);
+      await response.text();
+      await new Promise((r) => setTimeout(r, 1500 * attempt + Math.random() * 500));
+      response = await callGateway();
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI Gateway error:', response.status, errorText);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Límite de solicitudes excedido. Intenta de nuevo en un momento.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      throw new Error(`AI Gateway error: ${response.status}`);
+      const msg = response.status === 429
+        ? 'Hay mucha demanda ahora mismo. Intenta de nuevo en un momento.'
+        : response.status === 402
+        ? 'El servicio de IA no tiene saldo disponible ahora mismo.'
+        : response.status >= 500
+        ? 'El servicio de IA no está disponible ahora mismo. Inténtalo en unos minutos; no se ha gastado tu cupo.'
+        : 'La IA no pudo procesar esta foto. Prueba con otra foto.';
+      return new Response(JSON.stringify({ error: msg }), {
+        status: response.status >= 500 ? 503 : response.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
@@ -142,7 +168,9 @@ serve(guarded('images', null, async (req, userId) => {
     let editedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (!editedImageUrl) {
-      throw new Error('No edited image generated');
+      return new Response(JSON.stringify({ error: 'La IA no devolvió ninguna foto. Prueba de nuevo o con otra foto; no se ha gastado tu cupo.' }), {
+        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Upload to Storage if it's a base64 data URL
