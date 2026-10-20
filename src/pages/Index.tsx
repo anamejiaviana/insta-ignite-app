@@ -17,6 +17,7 @@ import Library from "./Library";
 import MediaLibrary from "./MediaLibrary";
 import Settings from "./Settings";
 import Plans from "./Plans";
+import EditorialGuide from "./EditorialGuide";
 import NotFound from "./NotFound";
 
 const Index = () => {
@@ -72,6 +73,7 @@ const Index = () => {
           <Route path="library" element={<Library />} />
           <Route path="media" element={<MediaLibrary />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="editorial" element={<EditorialGuide />} />
           <Route path="plans" element={<Plans />} />
           <Route path="*" element={<NotFound />} />
         </Route>
