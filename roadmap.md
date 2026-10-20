@@ -5,3 +5,4 @@
 - [x] Reel: guion de locución separado + selector Voz en off / Hablar a cámara / Solo música y textos
 - [x] "Tu negocio, tus fotos": Subir mi foto por defecto, Mejorar con IA con preajustes, Generar desde cero opcional; calendario sin imágenes automáticas
 - [ ] Publicar edge functions generate-image/edit-image (carpeta por usuario + solo editar fotos propias) — espera autorización
+- [x] Asistente guiado de manual editorial (6 pasos, propuesta IA revisable, aprobar, copy de prueba) aplicado a todos los generadores de texto
