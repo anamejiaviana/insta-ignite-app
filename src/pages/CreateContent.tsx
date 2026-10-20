@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, type TranslationKey } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,10 +42,10 @@ const VISUAL_STYLES = [
 
 // Orden = prioridad: tu foto primero; generar desde cero es secundario y opcional.
 const IMAGE_SOURCES = [
-  { value: "upload", label: "Subir mi foto", icon: Upload },
-  { value: "edit", label: "Mejorar con IA", icon: Wand2 },
-  { value: "library", label: "Mis fotos guardadas", icon: ImageIcon },
-  { value: "generate", label: "Generar desde cero", icon: Sparkles },
+  { value: "upload", label: "srcUpload" as const, icon: Upload },
+  { value: "edit", label: "srcEdit" as const, icon: Wand2 },
+  { value: "library", label: "srcLibrary" as const, icon: ImageIcon },
+  { value: "generate", label: "srcGenerate" as const, icon: Sparkles },
 ];
 
 interface GeneratedPost {
@@ -292,7 +292,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
         if (url) setCarouselPhotos((prev) => [...prev, url]);
       } catch (err) {
         console.error("Error uploading carousel photo:", err);
-        toast({ variant: "destructive", title: "No se pudo subir una foto", description: f.name });
+        toast({ variant: "destructive", title: t("photoUploadFailed"), description: f.name });
       } finally {
         setPhotosUploading((n) => Math.max(0, n - 1));
       }
@@ -623,7 +623,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
           >
             <src.icon className="h-4 w-4 shrink-0" />
-            <span className="text-xs sm:text-sm">{src.label}</span>
+            <span className="text-xs sm:text-sm">{t(src.label as TranslationKey)}</span>
           </button>
         ))}
       </div>
@@ -636,14 +636,14 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
         }`}
       >
         <Sparkles className="inline h-3.5 w-3.5 mr-1" />
-        Opcional: generar una imagen desde cero con IA (no muestra tu producto real)
+        {t("srcGenerateOptional")}
       </button>
 
       {imageSource === "upload" && (
-        <p className="text-xs text-muted-foreground">Recomendado: una foto real de tu negocio. Se usa tal cual y no gasta cupo de imágenes.</p>
+        <p className="text-xs text-muted-foreground">{t("srcUploadHint")}</p>
       )}
       {imageSource === "edit" && (
-        <p className="text-xs text-muted-foreground">La IA ajusta tu foto (luz, color, encuadre, fondo) sin cambiar el producto, las personas, los ingredientes ni tu local. El resultado puede variar: revísalo antes de publicar.</p>
+        <p className="text-xs text-muted-foreground">{t("srcEditHint")}</p>
       )}
 
       {(imageSource === "upload" || imageSource === "edit") && (
@@ -659,14 +659,14 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <Image className="h-8 w-8" />
-                    <span className="text-sm">Sube tus fotos (hasta 10, una por diapositiva)</span>
+                    <span className="text-sm">{t("uploadPhotosCarousel")}</span>
                   </div>
                 )}
               </Button>
               {(carouselPhotos.length > 0 || photosUploading > 0) && (
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{carouselPhotos.length} foto(s){photosUploading > 0 ? ` · subiendo ${photosUploading}…` : ""}</span>
-                  {carouselPhotos.length > 0 && <button type="button" className="underline" onClick={() => setCarouselPhotos([])}>Quitar fotos</button>}
+                  <span>{t("photosCount", { n: carouselPhotos.length })}{photosUploading > 0 ? ` · ${t("photosUploading", { n: photosUploading })}` : ""}</span>
+                  {carouselPhotos.length > 0 && <button type="button" className="underline" onClick={() => setCarouselPhotos([])}>{t("removePhotos")}</button>}
                 </div>
               )}
             </>
@@ -679,7 +679,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <Image className="h-8 w-8" />
-                    <span className="text-sm">Sube tu foto</span>
+                    <span className="text-sm">{t("uploadYourPhoto")}</span>
                   </div>
                 )}
               </Button>
@@ -687,20 +687,20 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
           )}
           {imageSource === "edit" && (
             <div className="space-y-2">
-              <p className="text-xs font-medium">¿Qué quieres mejorar?</p>
+              <p className="text-xs font-medium">{t("whatToImprove")}</p>
               <div className="flex flex-wrap gap-2">
                 {EDIT_PRESETS.map((p) => {
                   const on = editPresets.includes(p.id);
                   return (
                     <Button key={p.id} type="button" size="sm" variant={on ? "default" : "outline"} aria-pressed={on}
                       onClick={() => setEditPresets((prev) => on ? prev.filter((x) => x !== p.id) : [...prev, p.id])}>
-                      {p.label}
+                      {t(`editPreset_${p.id}` as TranslationKey)}
                     </Button>
                   );
                 })}
               </div>
-              <Textarea placeholder="Otros ajustes (opcional). Ej: un poco más cálida, quitar la servilleta del fondo…" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
-              <p className="text-xs text-muted-foreground">Si no eliges nada, se hace una mejora suave de luz y color.</p>
+              <Textarea placeholder={t("editOtherPlaceholder")} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
+              <p className="text-xs text-muted-foreground">{t("editDefaultHint")}</p>
             </div>
           )}
         </div>
@@ -723,11 +723,11 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
 
       <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
         {pendingCost > 0
-          ? `Esta opción gastará ${pendingCost} imagen(es) de tu cupo. `
+          ? `${t("quotaWillSpend", { n: pendingCost })} `
           : needsAIImage
-            ? "Gastará 1 imagen de tu cupo por cada foto que mejores. "
-            : "Esta opción no gasta cupo de imágenes. "}
-        "Mejorar con IA" y "Generar desde cero" comparten el mismo cupo: te quedan {usage.remaining} de {usage.limit} este mes.
+            ? `${t("quotaPerPhoto")} `
+            : `${t("quotaNone")} `}
+        {t("quotaShared", { r: usage.remaining, l: usage.limit })}
       </p>
     </div>
   );
@@ -940,7 +940,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
           {needsImagePanel && (
             <div className="mb-6 rounded-xl border border-border bg-card/50 p-4 space-y-3">
               <div>
-                <h3 className="font-semibold">Añade la imagen</h3>
+                <h3 className="font-semibold">{t("addTheImage")}</h3>
                 <p className="text-xs text-muted-foreground">El texto ya está listo. Elige la imagen: no se ha creado ninguna con IA sin tu permiso.</p>
               </div>
               {renderImagePicker()}
@@ -950,7 +950,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
                 finally { setLoading(false); setLoadingPhase(null); }
               }}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {imageSource === "generate" ? `Generar con IA (gasta ${pendingCost})` : imageSource === "edit" ? `Mejorar con IA (gasta ${pendingCost})` : "Usar esta imagen"}
+                {imageSource === "generate" ? t("btnGenerateCost", { n: pendingCost }) : imageSource === "edit" ? t("btnEditCost", { n: pendingCost }) : t("btnUseImage")}
               </Button>
             </div>
           )}
@@ -962,7 +962,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             onSave={savePost}
             onReset={resetGenerator}
             onChangeVoiceMode={changeReelVoiceMode}
-            regenerateLabel={!postTypeIsReel && imageSource !== "generate" ? "Cambiar imagen" : undefined}
+            regenerateLabel={!postTypeIsReel && imageSource !== "generate" ? t("changeImage") : undefined}
             voiceLoading={voiceLoading}
             onRegenerateImage={async () => {
               // Fotos propias: "Cambiar imagen" vuelve a mostrar el selector, sin IA.
