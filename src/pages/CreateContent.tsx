@@ -724,7 +724,9 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
         {pendingCost > 0
           ? `Esta opción gastará ${pendingCost} imagen(es) de tu cupo. `
-          : "Esta opción no gasta cupo de imágenes. "}
+          : needsAIImage
+            ? "Gastará 1 imagen de tu cupo por cada foto que mejores. "
+            : "Esta opción no gasta cupo de imágenes. "}
         "Mejorar con IA" y "Generar desde cero" comparten el mismo cupo: te quedan {usage.remaining} de {usage.limit} este mes.
       </p>
     </div>
