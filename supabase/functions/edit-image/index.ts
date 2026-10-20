@@ -14,7 +14,7 @@ function base64ToUint8Array(base64: string): Uint8Array {
   return arr;
 }
 
-async function uploadToStorage(base64DataUrl: string): Promise<string | null> {
+async function uploadToStorage(base64DataUrl: string, userId: string): Promise<string | null> {
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -34,7 +34,8 @@ async function uploadToStorage(base64DataUrl: string): Promise<string | null> {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const fileName = `${crypto.randomUUID()}.${ext}`;
-    const filePath = `edited/${fileName}`;
+    // Carpeta por usuario verificado (las URLs antiguas en edited/ siguen funcionando)
+    const filePath = `${userId}/edited/${fileName}`;
 
     const { error } = await supabase.storage
       .from('post-images')
@@ -61,7 +62,7 @@ async function uploadToStorage(base64DataUrl: string): Promise<string | null> {
 
 
 
-serve(guarded('images', null, async (req) => {
+serve(guarded('images', null, async (req, userId) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -137,7 +138,7 @@ serve(guarded('images', null, async (req) => {
 
     // Upload to Storage if it's a base64 data URL
     if (editedImageUrl.startsWith('data:image/')) {
-      const storageUrl = await uploadToStorage(editedImageUrl);
+      const storageUrl = await uploadToStorage(editedImageUrl, userId);
       if (storageUrl) {
         console.log('Edited image uploaded to Storage successfully');
         editedImageUrl = storageUrl;
