@@ -20,7 +20,7 @@ import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTri
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 import { useImageUsage } from "@/hooks/useImageUsage";
-import { isReel, shouldAutoGenerateImage, extractReelPackage, buildReelInstructions, voiceoverInstruction, type ReelPackage, type ReelVoiceMode } from "@/lib/contentRules";
+import { isReel, shouldAutoGenerateImage, extractReelPackage, buildReelInstructions, voiceoverInstruction, DEFAULT_IMAGE_SOURCE, EDIT_PRESETS, buildEditPrompt, imageCost, type ReelPackage, type ReelVoiceMode } from "@/lib/contentRules";
 import { useNavigate as useNav } from "react-router-dom";
 
 const POST_TYPES = [
@@ -40,11 +40,12 @@ const VISUAL_STYLES = [
   { value: "fondo claro", key: "visualStyle_lightBg" as const },
 ];
 
+// Orden = prioridad: tu foto primero; generar desde cero es secundario y opcional.
 const IMAGE_SOURCES = [
-  { value: "generate", label: "generateWithAI", icon: Sparkles },
-  { value: "library", label: "chooseFromLibrary", icon: ImageIcon },
-  { value: "upload", label: "uploadImage", icon: Upload },
-  { value: "edit", label: "editWithAI", icon: Wand2 },
+  { value: "upload", label: "Subir mi foto", icon: Upload },
+  { value: "edit", label: "Mejorar con IA", icon: Wand2 },
+  { value: "library", label: "Mis fotos guardadas", icon: ImageIcon },
+  { value: "generate", label: "Generar desde cero", icon: Sparkles },
 ];
 
 interface GeneratedPost {
@@ -82,7 +83,10 @@ export default function CreateContent() {
 
   const [postType, setPostType] = useState(prefill?.postType || "post");
   const [visualStyle, setVisualStyle] = useState("");
-  const [imageSource, setImageSource] = useState("generate");
+  const [imageSource, setImageSource] = useState<string>(DEFAULT_IMAGE_SOURCE);
+  const [editPresets, setEditPresets] = useState<string[]>([]);
+  const [carouselPhotos, setCarouselPhotos] = useState<string[]>([]);
+  const [photosUploading, setPhotosUploading] = useState(0);
   const [title, setTitle] = useState(prefill?.title || "");
   const [description, setDescription] = useState(prefill?.description || "");
   const [objective, setObjective] = useState("");
@@ -139,6 +143,12 @@ export default function CreateContent() {
   };
   const needsAIImage = shouldAutoGenerateImage(postType, imageSource);
   const isImageBlocked = usage.limitReached && needsAIImage;
+  const pendingCost = imageCost(postType, imageSource, carouselSlideCount, carouselPhotos.length);
+  const hasImage = Boolean(generatedPost?.imageUrl || generatedPost?.imageUrls?.some(Boolean));
+  const needsImagePanel = Boolean(generatedPost) && !postTypeIsReel && !hasImage && !loading;
+  const canApplyImage =
+    imageSource === "generate" ||
+    (postType === "carousel" ? carouselPhotos.length > 0 && photosUploading === 0 : Boolean(uploadedImage));
   const getImageLoadingMessage = () => {
     if (postType === "carousel") return t("generatingCarousel");
     if (imageSource === "edit") return t("editingImageWithAI");
@@ -223,72 +233,8 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
 
       generateStoryCopy();
 
-      // Reel: nunca generar imagen automáticamente (ni consumir cuota)
-      if (prefill.imagePrompt && !prefillIsReel) {
-        setStep("image");
-        setLoading(true);
-        setLoadingPhase("image");
-        if (prefill.postType === "carousel") {
-          // For carousels from calendar, generate slide prompts via AI then generate images
-          const generateCarouselFromCalendar = async () => {
-            try {
-              const clientContext = activeClient
-                ? {
-                    name: activeClient.name,
-                    type: activeClient.type,
-                    city: activeClient.city,
-                    address: activeClient.address,
-                    tone: activeClient.tone,
-                    objective: activeClient.objective,
-                    keywords: activeClient.keywords,
-                    extra_context: activeClient.extra_context,
-                  }
-                : null;
-
-              const { data, error } = await supabase.functions.invoke("generate-post", {
-                body: {
-                  title: prefill.title,
-                  description: prefill.description || prefill.caption,
-                  postType: "carousel",
-                  clientContext,
-                  language: activeClient?.content_language || "es",
-                  carouselSlideCount: carouselSlideCount,
-                },
-              });
-
-              if (!error && data && !data.error && data.slidePrompts?.length > 0) {
-                setGeneratedPost((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        mainCopy: data.mainCopy || prev.mainCopy,
-                        storyCopy: data.storyCopy || prev.storyCopy,
-                        hashtags: data.hashtags || prev.hashtags,
-                        imagePrompt: data.imagePrompt || prev.imagePrompt,
-                        slidePrompts: data.slidePrompts,
-                      }
-                    : null
-                );
-                await generateCarouselImages(data.slidePrompts);
-              } else if (prefill.imagePrompt) {
-                // Fallback: generate single image if no slide prompts returned
-                await generateImage(prefill.imagePrompt);
-              }
-            } catch (e) {
-              console.error("Error generating carousel from calendar:", e);
-            } finally {
-              setLoading(false);
-              setLoadingPhase(null);
-            }
-          };
-          generateCarouselFromCalendar();
-        } else {
-          generateImage(prefill.imagePrompt).finally(() => {
-            setLoading(false);
-            setLoadingPhase(null);
-          });
-        }
-      }
+      // Desde el calendario nunca se crea ni edita una imagen con IA automáticamente:
+      // el usuario elige su foto (o la IA, de forma explícita) en el panel "Añade la imagen".
     }
   }, []);
 
@@ -333,6 +279,24 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     }
 
     return uploadedImage;
+  };
+
+  const handleCarouselFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).slice(0, Math.max(0, 10 - carouselPhotos.length));
+    e.target.value = "";
+    if (!files.length) return;
+    setPhotosUploading(files.length);
+    for (const f of files) {
+      try {
+        const url = await uploadFileToStorage(f);
+        if (url) setCarouselPhotos((prev) => [...prev, url]);
+      } catch (err) {
+        console.error("Error uploading carousel photo:", err);
+        toast({ variant: "destructive", title: "No se pudo subir una foto", description: f.name });
+      } finally {
+        setPhotosUploading((n) => Math.max(0, n - 1));
+      }
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -423,25 +387,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       setGeneratedPost(data);
       setStep("image");
       setLoadingPhase("image");
-
-      const resolvedUploadedImage =
-        imageSource === "upload" || imageSource === "edit"
-          ? await resolveUploadedImageUrl()
-          : uploadedImage;
-
-      if (postType === "carousel" && data.slidePrompts?.length > 0) {
-        await generateCarouselImages(data.slidePrompts);
-      } else if (imageSource === "generate" && shouldAutoGenerateImage(postType, imageSource)) {
-        await generateImage(data.imagePrompt);
-      } else if (imageSource === "edit" && resolvedUploadedImage) {
-        await editImage(resolvedUploadedImage, data.imagePrompt);
-      } else if (imageSource === "upload" && resolvedUploadedImage) {
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: resolvedUploadedImage } : null);
-        await autoSaveAsset(resolvedUploadedImage, "uploaded");
-      } else if (imageSource === "library" && uploadedImage) {
-        // Already selected from library — just use it
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
-      }
+      await applyImageSource({ slidePrompts: data.slidePrompts, imagePrompt: data.imagePrompt });
       toast({ title: t("contentGenerated") });
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGenerating"), description: error.message });
@@ -514,23 +460,94 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     }
   };
 
-  const editImage = async (imageUrl: string, prompt: string) => {
+  // Mejora la foto propia conservando su identidad. Devuelve la URL o null (límite / error).
+  const editOne = async (imageUrl: string): Promise<string | null | "limit"> => {
+    const prompt = buildEditPrompt(editPresets, editPrompt);
     try {
+      // Sin estilo visual: no queremos que la IA reinterprete la foto real.
       const { data, error } = await supabase.functions.invoke("edit-image", {
-        body: { imageUrl, editPrompt: editPrompt || prompt, postType, brandConfig: { visual_style: visualStyle } },
+        body: { imageUrl, editPrompt: prompt, postType },
       });
-      if (error) throw error;
-      if (data.error === 'image_limit_reached') {
+      if (data?.error === 'image_limit_reached' || (error as any)?.context?.status === 429) {
         refreshUsage();
         toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
-        return;
+        return "limit";
       }
+      if (error) throw error;
       if (data.error) throw new Error(data.error);
-      setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
-      autoSaveAsset(data.imageUrl, "edited", editPrompt || prompt);
-      refreshUsage();
+      autoSaveAsset(data.imageUrl, "edited", prompt);
+      return data.imageUrl as string;
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
+      return null;
+    } finally {
+      refreshUsage();
+    }
+  };
+
+  const editImage = async (imageUrl: string) => {
+    const url = await editOne(imageUrl);
+    if (url && url !== "limit") setGeneratedPost((prev) => prev ? { ...prev, imageUrl: url } : null);
+  };
+
+  const editCarouselPhotos = async (photos: string[]) => {
+    const urls: string[] = [];
+    for (const p of photos) {
+      const r = await editOne(p);
+      if (r === "limit") break;
+      urls.push(r || p); // si falla una, se queda la foto original
+      setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls], imageUrl: urls[0] } : null);
+    }
+  };
+
+  const buildClientContext = () => activeClient
+    ? {
+        name: activeClient.name, type: activeClient.type, city: activeClient.city, address: activeClient.address,
+        tone: activeClient.tone, objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context,
+      }
+    : null;
+
+  // Carrusel sin descripciones por diapositiva (p. ej. desde el calendario): solo texto, sin imágenes.
+  const fetchCarouselSlidePrompts = async (): Promise<string[] | undefined> => {
+    const { data, error } = await supabase.functions.invoke("generate-post", {
+      body: {
+        title: title || prefill?.title, description: description || prefill?.description || prefill?.caption,
+        postType: "carousel", clientContext: buildClientContext(), language: activeClient?.content_language || "es",
+        carouselSlideCount,
+      },
+    });
+    if (error || !data || data.error || !data.slidePrompts?.length) return undefined;
+    setGeneratedPost((prev) => prev ? { ...prev, slidePrompts: data.slidePrompts } : prev);
+    return data.slidePrompts;
+  };
+
+  /** Aplica la fuente de imagen elegida. Solo gasta cupo con "edit" o "generate" elegidos por el usuario. */
+  const applyImageSource = async (ctx: { slidePrompts?: string[]; imagePrompt?: string }) => {
+    if (isReel(postType)) return;
+    if (postType === "carousel") {
+      if (imageSource === "generate") {
+        const prompts = ctx.slidePrompts?.length ? ctx.slidePrompts : await fetchCarouselSlidePrompts();
+        if (prompts?.length) await generateCarouselImages(prompts);
+        else if (ctx.imagePrompt) await generateImage(ctx.imagePrompt);
+      } else if (imageSource === "edit") {
+        if (carouselPhotos.length) await editCarouselPhotos(carouselPhotos);
+      } else if (carouselPhotos.length) {
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...carouselPhotos], imageUrl: carouselPhotos[0] } : null);
+        carouselPhotos.forEach((u) => autoSaveAsset(u, "uploaded"));
+      }
+      return;
+    }
+    if (imageSource === "generate") {
+      if (ctx.imagePrompt) await generateImage(ctx.imagePrompt);
+      return;
+    }
+    const url = imageSource === "library" ? uploadedImage : await resolveUploadedImageUrl();
+    if (!url) return;
+    if (imageSource === "edit") {
+      await editImage(url);
+    } else {
+      setGeneratedPost((prev) => prev ? { ...prev, imageUrl: url } : null);
+      if (imageSource === "upload") await autoSaveAsset(url, "uploaded");
     }
   };
 
@@ -582,8 +599,138 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     uploadedPersistentUrl.current = null;
     uploadImagePromiseRef.current = null;
     setEditPrompt("");
+    setEditPresets([]);
+    setCarouselPhotos([]);
     setStep("content");
   };
+
+  const sources = IMAGE_SOURCES.filter((s) => !(postType === "carousel" && s.value === "library"));
+  const mainSources = sources.filter((s) => s.value !== "generate");
+
+  const renderImagePicker = () => (
+    <div className="space-y-2">
+      <Label>{t("imageSource")}</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {mainSources.map((src) => (
+          <button
+            key={src.value}
+            type="button"
+            aria-pressed={imageSource === src.value}
+            onClick={() => setImageSource(src.value)}
+            className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+              imageSource === src.value ? "text-primary-foreground shadow-md" : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+            style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
+          >
+            <src.icon className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">{src.label}</span>
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        aria-pressed={imageSource === "generate"}
+        onClick={() => setImageSource("generate")}
+        className={`w-full text-left text-xs rounded-lg px-3 py-2 border transition-colors ${
+          imageSource === "generate" ? "border-primary text-foreground bg-primary/10" : "border-dashed border-border text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        <Sparkles className="inline h-3.5 w-3.5 mr-1" />
+        Opcional: generar una imagen desde cero con IA (no muestra tu producto real)
+      </button>
+
+      {imageSource === "upload" && (
+        <p className="text-xs text-muted-foreground">Recomendado: una foto real de tu negocio. Se usa tal cual y no gasta cupo de imágenes.</p>
+      )}
+      {imageSource === "edit" && (
+        <p className="text-xs text-muted-foreground">La IA ajusta tu foto (luz, color, encuadre, fondo) sin cambiar el producto, las personas, los ingredientes ni tu local. El resultado puede variar: revísalo antes de publicar.</p>
+      )}
+
+      {(imageSource === "upload" || imageSource === "edit") && (
+        <div className="space-y-3 mt-2">
+          {postType === "carousel" ? (
+            <>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleCarouselFiles} className="hidden" />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full h-28 border-dashed">
+                {carouselPhotos.length ? (
+                  <div className="flex gap-1 overflow-hidden">
+                    {carouselPhotos.slice(0, 6).map((u) => <img key={u} src={u} alt="" className="h-20 w-20 rounded object-cover" />)}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Image className="h-8 w-8" />
+                    <span className="text-sm">Sube tus fotos (hasta 10, una por diapositiva)</span>
+                  </div>
+                )}
+              </Button>
+              {(carouselPhotos.length > 0 || photosUploading > 0) && (
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{carouselPhotos.length} foto(s){photosUploading > 0 ? ` · subiendo ${photosUploading}…` : ""}</span>
+                  {carouselPhotos.length > 0 && <button type="button" className="underline" onClick={() => setCarouselPhotos([])}>Quitar fotos</button>}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full h-28 border-dashed">
+                {uploadedImage ? (
+                  <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Image className="h-8 w-8" />
+                    <span className="text-sm">Sube tu foto</span>
+                  </div>
+                )}
+              </Button>
+            </>
+          )}
+          {imageSource === "edit" && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium">¿Qué quieres mejorar?</p>
+              <div className="flex flex-wrap gap-2">
+                {EDIT_PRESETS.map((p) => {
+                  const on = editPresets.includes(p.id);
+                  return (
+                    <Button key={p.id} type="button" size="sm" variant={on ? "default" : "outline"} aria-pressed={on}
+                      onClick={() => setEditPresets((prev) => on ? prev.filter((x) => x !== p.id) : [...prev, p.id])}>
+                      {p.label}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Textarea placeholder="Otros ajustes (opcional). Ej: un poco más cálida, quitar la servilleta del fondo…" value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
+              <p className="text-xs text-muted-foreground">Si no eliges nada, se hace una mejora suave de luz y color.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {imageSource === "library" && (
+        <div className="mt-2">
+          <Button type="button" variant="outline" onClick={() => setMediaPickerOpen(true)} className="w-full h-28 border-dashed">
+            {uploadedImage ? (
+              <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                <ImageIcon className="h-8 w-8" />
+                <span className="text-sm">{t("chooseFromLibrary")}</span>
+              </div>
+            )}
+          </Button>
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 px-3 py-2">
+        {pendingCost > 0
+          ? `Esta opción gastará ${pendingCost} imagen(es) de tu cupo. `
+          : needsAIImage
+            ? "Gastará 1 imagen de tu cupo por cada foto que mejores. "
+            : "Esta opción no gasta cupo de imágenes. "}
+        "Mejorar con IA" y "Generar desde cero" comparten el mismo cupo: te quedan {usage.remaining} de {usage.limit} este mes.
+      </p>
+    </div>
+  );
 
   const hasPrefillDetails = prefill?.hook || prefill?.shots;
 
@@ -718,64 +865,8 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             </Select>
           </div>
 
-          {/* Image Source - only for posts */}
-          {postType === "post" && (
-            <div className="space-y-2">
-              <Label>{t("imageSource")}</Label>
-              <div className="flex flex-col sm:grid sm:grid-cols-4 gap-2">
-                {IMAGE_SOURCES.map((src) => (
-                  <button
-                    key={src.value}
-                    onClick={() => setImageSource(src.value)}
-                    className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                      imageSource === src.value
-                        ? "text-primary-foreground shadow-md"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                    style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
-                  >
-                    <src.icon className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm">{t(src.label as any)}</span>
-                  </button>
-                ))}
-              </div>
-              {imageSource === "edit" && (
-                <p className="text-xs text-muted-foreground mt-1">{t("editWithAIDesc")}</p>
-              )}
-              {(imageSource === "upload" || imageSource === "edit") && (
-                <div className="space-y-3 mt-3">
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full h-28 border-dashed">
-                    {uploadedImage ? (
-                      <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <Image className="h-8 w-8" />
-                        <span className="text-sm">{t("uploadImage")}</span>
-                      </div>
-                    )}
-                  </Button>
-                  {imageSource === "edit" && uploadedImage && (
-                    <Textarea placeholder={t("editInstructions")} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
-                  )}
-                </div>
-              )}
-              {imageSource === "library" && (
-                <div className="mt-3">
-                  <Button variant="outline" onClick={() => setMediaPickerOpen(true)} className="w-full h-28 border-dashed">
-                    {uploadedImage ? (
-                      <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <ImageIcon className="h-8 w-8" />
-                        <span className="text-sm">{t("chooseFromLibrary")}</span>
-                      </div>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Imagen: tu foto por defecto (Post, Carrusel, Story). Reel nunca. */}
+          {!postTypeIsReel && renderImagePicker()}
 
           {/* Content Fields */}
           <div className="space-y-4">
@@ -846,6 +937,23 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
         </div>
       ) : (
         <div className="glass rounded-2xl p-6 md:p-8 animate-fade-in">
+          {needsImagePanel && (
+            <div className="mb-6 rounded-xl border border-border bg-card/50 p-4 space-y-3">
+              <div>
+                <h3 className="font-semibold">Añade la imagen</h3>
+                <p className="text-xs text-muted-foreground">El texto ya está listo. Elige la imagen: no se ha creado ninguna con IA sin tu permiso.</p>
+              </div>
+              {renderImagePicker()}
+              <Button variant="gradient" className="w-full" disabled={loading || !canApplyImage || (pendingCost > 0 && usage.remaining < 1)} onClick={async () => {
+                setLoading(true); setStep("image"); setLoadingPhase("image");
+                try { await applyImageSource({ slidePrompts: generatedPost.slidePrompts, imagePrompt: generatedPost.imagePrompt }); }
+                finally { setLoading(false); setLoadingPhase(null); }
+              }}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {imageSource === "generate" ? `Generar con IA (gasta ${pendingCost})` : imageSource === "edit" ? `Mejorar con IA (gasta ${pendingCost})` : "Usar esta imagen"}
+              </Button>
+            </div>
+          )}
           <GeneratedPostPreview
             post={generatedPost}
             postType={postType}
@@ -854,8 +962,14 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             onSave={savePost}
             onReset={resetGenerator}
             onChangeVoiceMode={changeReelVoiceMode}
+            regenerateLabel={!postTypeIsReel && imageSource !== "generate" ? "Cambiar imagen" : undefined}
             voiceLoading={voiceLoading}
             onRegenerateImage={async () => {
+              // Fotos propias: "Cambiar imagen" vuelve a mostrar el selector, sin IA.
+              if (!postTypeIsReel && imageSource !== "generate") {
+                setGeneratedPost((prev) => prev ? { ...prev, imageUrl: undefined, imageUrls: undefined } : prev);
+                return;
+              }
               setLoading(true);
               setLoadingPhase("image");
               try {
