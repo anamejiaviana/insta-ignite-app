@@ -43,6 +43,7 @@ interface GeneratedPostPreviewProps {
   onSave: () => Promise<void> | void;
   onReset: () => void;
   onRegenerateImage: () => void;
+  regenerateLabel?: string;
   onChangeVoiceMode?: (mode: import("@/lib/contentRules").ReelVoiceMode) => void;
   voiceLoading?: boolean;
   onCopyChange?: (mainCopy: string, storyCopy: string) => void;
@@ -64,6 +65,7 @@ export function GeneratedPostPreview({
   onSave,
   onReset,
   onRegenerateImage,
+  regenerateLabel,
   onChangeVoiceMode,
   voiceLoading,
   onCopyChange,
@@ -280,7 +282,7 @@ export function GeneratedPostPreview({
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={onRegenerateImage} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
-              <span className="text-xs sm:text-sm">Regenerar</span>
+              <span className="text-xs sm:text-sm">{regenerateLabel || "Regenerar"}</span>
             </Button>
             <Button variant="outline" size="sm" onClick={downloadImage} disabled={!(isCarousel ? carouselImages[currentSlide] : post.imageUrl) || loading}>
               <Download className="h-4 w-4 mr-1 sm:mr-2" />
