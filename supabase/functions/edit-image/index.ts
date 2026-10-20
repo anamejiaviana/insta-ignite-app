@@ -69,6 +69,15 @@ serve(guarded('images', null, async (req, userId) => {
 
   try {
     const { imageUrl, editPrompt, postType, brandConfig } = await req.json();
+
+    // Solo se editan fotos del propio almacenamiento de la app (o una foto recién subida en base64).
+    const storagePrefix = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/post-images/`;
+    if (typeof imageUrl !== 'string' || !(imageUrl.startsWith(storagePrefix) || /^data:image\/(png|jpe?g|webp);base64,/.test(imageUrl))) {
+      return new Response(JSON.stringify({ error: 'invalid_image_url' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
