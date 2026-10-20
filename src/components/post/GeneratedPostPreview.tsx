@@ -239,7 +239,7 @@ export function GeneratedPostPreview({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-muted-foreground">Sin imagen</span>
+              <span className="text-muted-foreground">{t("noImage")}</span>
             )}
 
             {/* Carousel navigation arrows */}
@@ -282,7 +282,7 @@ export function GeneratedPostPreview({
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={onRegenerateImage} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-1 sm:mr-2" />
-              <span className="text-xs sm:text-sm">{regenerateLabel || "Regenerar"}</span>
+              <span className="text-xs sm:text-sm">{regenerateLabel || t("regenerate")}</span>
             </Button>
             <Button variant="outline" size="sm" onClick={downloadImage} disabled={!(isCarousel ? carouselImages[currentSlide] : post.imageUrl) || loading}>
               <Download className="h-4 w-4 mr-1 sm:mr-2" />

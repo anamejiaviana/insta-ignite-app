@@ -417,6 +417,38 @@ const translations = {
     plansCustomCTA: "Contactar",
     plansFooter: "Planifica, genera y organiza todo tu contenido desde un solo lugar.",
     plansUpgrade: "Ver planes",
+    srcUpload: "Subir mi foto",
+    srcEdit: "Mejorar con IA",
+    srcGenerate: "Generar desde cero",
+    srcLibrary: "Mis fotos guardadas",
+    srcGenerateOptional: "Opcional: generar una imagen desde cero con IA (no muestra tu producto real)",
+    srcUploadHint: "Recomendado: una foto real de tu negocio. Se usa tal cual y no gasta cupo de imágenes.",
+    srcEditHint: "La IA ajusta tu foto (luz, color, encuadre, fondo) sin cambiar el producto, las personas, los ingredientes ni tu local. El resultado puede variar: revísalo antes de publicar.",
+    uploadPhotosCarousel: "Sube tus fotos (hasta 10, una por diapositiva)",
+    photosCount: "{n} foto(s)",
+    photosUploading: "subiendo {n}…",
+    removePhotos: "Quitar fotos",
+    uploadYourPhoto: "Sube tu foto",
+    whatToImprove: "¿Qué quieres mejorar?",
+    editPreset_light: "Mejorar luz",
+    editPreset_color: "Color natural",
+    editPreset_crop: "Encuadre para Instagram",
+    editPreset_background: "Limpiar fondo",
+    editPreset_sharp: "Más nitidez",
+    editOtherPlaceholder: "Otros ajustes (opcional). Ej: un poco más cálida, quitar la servilleta del fondo…",
+    editDefaultHint: "Si no eliges nada, se hace una mejora suave de luz y color.",
+    quotaWillSpend: "Esta opción gastará {n} imagen(es) de tu cupo.",
+    quotaPerPhoto: "Gastará 1 imagen de tu cupo por cada foto que mejores.",
+    quotaNone: "Esta opción no gasta cupo de imágenes.",
+    quotaShared: "\"Mejorar con IA\" y \"Generar desde cero\" comparten el mismo cupo: te quedan {r} de {l} este mes.",
+    addTheImage: "Añade la imagen",
+    btnGenerateCost: "Generar con IA (gasta {n})",
+    btnEditCost: "Mejorar con IA (gasta {n})",
+    btnUseImage: "Usar esta imagen",
+    changeImage: "Cambiar imagen",
+    photoUploadFailed: "No se pudo subir una foto",
+    noImage: "Sin imagen",
+    regenerate: "Regenerar",
   },
   en: {
     // Auth
@@ -832,15 +864,82 @@ const translations = {
     plansCustomCTA: "Contact us",
     plansFooter: "Plan, generate, and organize all your content from one place.",
     plansUpgrade: "View plans",
+    srcUpload: "Upload my photo",
+    srcEdit: "Enhance with AI",
+    srcGenerate: "Generate from scratch",
+    srcLibrary: "My saved photos",
+    srcGenerateOptional: "Optional: generate an image from scratch with AI (it won't show your real product)",
+    srcUploadHint: "Recommended: a real photo of your business. It's used as is and doesn't use image quota.",
+    srcEditHint: "AI adjusts your photo (light, color, framing, background) without changing the product, people, ingredients or your premises. Results may vary: review it before posting.",
+    uploadPhotosCarousel: "Upload your photos (up to 10, one per slide)",
+    photosCount: "{n} photo(s)",
+    photosUploading: "uploading {n}…",
+    removePhotos: "Remove photos",
+    uploadYourPhoto: "Upload your photo",
+    whatToImprove: "What would you like to improve?",
+    editPreset_light: "Improve lighting",
+    editPreset_color: "Natural color",
+    editPreset_crop: "Instagram framing",
+    editPreset_background: "Clean background",
+    editPreset_sharp: "More sharpness",
+    editOtherPlaceholder: "Other tweaks (optional). E.g. a bit warmer, remove the napkin in the background…",
+    editDefaultHint: "If you choose nothing, a gentle light and color enhancement is applied.",
+    quotaWillSpend: "This option will use {n} image(s) from your quota.",
+    quotaPerPhoto: "It will use 1 image from your quota for each photo you enhance.",
+    quotaNone: "This option doesn't use image quota.",
+    quotaShared: "\"Enhance with AI\" and \"Generate from scratch\" share the same quota: {r} of {l} left this month.",
+    addTheImage: "Add the image",
+    btnGenerateCost: "Generate with AI (uses {n})",
+    btnEditCost: "Enhance with AI (uses {n})",
+    btnUseImage: "Use this image",
+    changeImage: "Change image",
+    photoUploadFailed: "A photo couldn't be uploaded",
+    noImage: "No image",
+    regenerate: "Regenerate",
   },
 } as const;
 
 export type TranslationKey = keyof typeof translations.es;
 
+export const caTranslations: Partial<Record<TranslationKey, string>> = {
+  srcUpload: "Pujar la meva foto",
+  srcEdit: "Millorar amb IA",
+  srcGenerate: "Generar des de zero",
+  srcLibrary: "Les meves fotos desades",
+  srcGenerateOptional: "Opcional: generar una imatge des de zero amb IA (no mostra el teu producte real)",
+  srcUploadHint: "Recomanat: una foto real del teu negoci. S'utilitza tal qual i no gasta quota d'imatges.",
+  srcEditHint: "La IA ajusta la teva foto (llum, color, enquadrament, fons) sense canviar el producte, les persones, els ingredients ni el teu local. El resultat pot variar: revisa'l abans de publicar.",
+  uploadPhotosCarousel: "Puja les teves fotos (fins a 10, una per diapositiva)",
+  photosCount: "{n} foto(s)",
+  photosUploading: "pujant {n}…",
+  removePhotos: "Treure fotos",
+  uploadYourPhoto: "Puja la teva foto",
+  whatToImprove: "Què vols millorar?",
+  editPreset_light: "Millorar la llum",
+  editPreset_color: "Color natural",
+  editPreset_crop: "Enquadrament per a Instagram",
+  editPreset_background: "Netejar el fons",
+  editPreset_sharp: "Més nitidesa",
+  editOtherPlaceholder: "Altres ajustos (opcional). Ex: una mica més càlida, treure el tovalló del fons…",
+  editDefaultHint: "Si no tries res, es fa una millora suau de llum i color.",
+  quotaWillSpend: "Aquesta opció gastarà {n} imatge(s) de la teva quota.",
+  quotaPerPhoto: "Gastarà 1 imatge de la teva quota per cada foto que milloris.",
+  quotaNone: "Aquesta opció no gasta quota d'imatges.",
+  quotaShared: "\"Millorar amb IA\" i \"Generar des de zero\" comparteixen la mateixa quota: et queden {r} de {l} aquest mes.",
+  addTheImage: "Afegeix la imatge",
+  btnGenerateCost: "Generar amb IA (gasta {n})",
+  btnEditCost: "Millorar amb IA (gasta {n})",
+  btnUseImage: "Fer servir aquesta imatge",
+  changeImage: "Canviar la imatge",
+  photoUploadFailed: "No s'ha pogut pujar una foto",
+  noImage: "Sense imatge",
+  regenerate: "Regenerar",
+};
+
 interface LanguageContextType {
   uiLanguage: UILanguage;
   setUILanguage: (lang: UILanguage) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey, vars?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
@@ -858,8 +957,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("ui-language", uiLanguage);
   }, [uiLanguage]);
 
-  const t = (key: TranslationKey): string => {
-    return translations[uiLanguage][key] || translations.es[key] || key;
+  const t = (key: TranslationKey, vars?: Record<string, string | number>): string => {
+    const raw: string = translations[uiLanguage]?.[key] || translations.es[key] || key;
+    return vars ? raw.replace(/\{(\w+)\}/g, (m, v) => (v in vars ? String(vars[v]) : m)) : raw;
   };
 
   return (
