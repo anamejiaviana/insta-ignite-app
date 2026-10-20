@@ -20,7 +20,7 @@ import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTri
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 import { useImageUsage } from "@/hooks/useImageUsage";
-import { isReel, shouldAutoGenerateImage, extractReelPackage, buildReelInstructions, voiceoverInstruction, type ReelPackage, type ReelVoiceMode } from "@/lib/contentRules";
+import { isReel, shouldAutoGenerateImage, extractReelPackage, buildReelInstructions, voiceoverInstruction, DEFAULT_IMAGE_SOURCE, EDIT_PRESETS, buildEditPrompt, imageCost, type ReelPackage, type ReelVoiceMode } from "@/lib/contentRules";
 import { useNavigate as useNav } from "react-router-dom";
 
 const POST_TYPES = [
@@ -40,11 +40,12 @@ const VISUAL_STYLES = [
   { value: "fondo claro", key: "visualStyle_lightBg" as const },
 ];
 
+// Orden = prioridad: tu foto primero; generar desde cero es secundario y opcional.
 const IMAGE_SOURCES = [
-  { value: "generate", label: "generateWithAI", icon: Sparkles },
-  { value: "library", label: "chooseFromLibrary", icon: ImageIcon },
-  { value: "upload", label: "uploadImage", icon: Upload },
-  { value: "edit", label: "editWithAI", icon: Wand2 },
+  { value: "upload", label: "Subir mi foto", icon: Upload },
+  { value: "edit", label: "Mejorar con IA", icon: Wand2 },
+  { value: "library", label: "Mis fotos guardadas", icon: ImageIcon },
+  { value: "generate", label: "Generar desde cero", icon: Sparkles },
 ];
 
 interface GeneratedPost {
@@ -82,7 +83,10 @@ export default function CreateContent() {
 
   const [postType, setPostType] = useState(prefill?.postType || "post");
   const [visualStyle, setVisualStyle] = useState("");
-  const [imageSource, setImageSource] = useState("generate");
+  const [imageSource, setImageSource] = useState<string>(DEFAULT_IMAGE_SOURCE);
+  const [editPresets, setEditPresets] = useState<string[]>([]);
+  const [carouselPhotos, setCarouselPhotos] = useState<string[]>([]);
+  const [photosUploading, setPhotosUploading] = useState(0);
   const [title, setTitle] = useState(prefill?.title || "");
   const [description, setDescription] = useState(prefill?.description || "");
   const [objective, setObjective] = useState("");
