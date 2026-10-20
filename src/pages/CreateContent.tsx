@@ -466,12 +466,14 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     console.log("DBG editOne start");
     try {
       const sendUrl = await shrinkDataUrl(imageUrl);
+      console.log("DBG shrunk", sendUrl.length);
       // Sin estilo visual: no queremos que la IA reinterprete la foto real.
       const { data, error } = await withTimeout(
         supabase.functions.invoke("edit-image", { body: { imageUrl: sendUrl, editPrompt: prompt, postType } }),
         150_000,
         "La mejora con IA está tardando demasiado. Inténtalo de nuevo en un momento; no se ha gastado tu cupo.",
       );
+      console.log("DBG invoked", JSON.stringify(data)?.slice(0,200), String(error));
       let body: any = data;
       if (error && (error as any)?.context?.json) {
         try { body = await (error as any).context.json(); } catch { /* sin cuerpo */ }
@@ -487,6 +489,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       autoSaveAsset(body.imageUrl, "edited", prompt);
       return body.imageUrl as string;
     } catch (error: any) {
+      console.log("DBG err", error?.message);
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
       return null;
     } finally {
