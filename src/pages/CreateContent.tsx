@@ -463,6 +463,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
   // Mejora la foto propia conservando su identidad. Devuelve la URL o null (límite / error).
   const editOne = async (imageUrl: string): Promise<string | null | "limit"> => {
     const prompt = buildEditPrompt(editPresets, editPrompt);
+    console.log("DBG editOne start");
     try {
       const sendUrl = await shrinkDataUrl(imageUrl);
       // Sin estilo visual: no queremos que la IA reinterprete la foto real.
@@ -531,6 +532,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
 
   /** Aplica la fuente de imagen elegida. Solo gasta cupo con "edit" o "generate" elegidos por el usuario. */
   const applyImageSource = async (ctx: { slidePrompts?: string[]; imagePrompt?: string }) => {
+    console.log("DBG apply", postType, imageSource);
     if (isReel(postType)) return;
     if (postType === "carousel") {
       if (imageSource === "generate") {
@@ -550,6 +552,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       return;
     }
     const url = imageSource === "library" ? uploadedImage : await resolveUploadedImageUrl();
+    console.log("DBG url", url?.slice(0,60));
     if (!url) return;
     if (imageSource === "edit") {
       await editImage(url);
