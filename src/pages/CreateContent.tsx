@@ -1,3 +1,4 @@
+import { shrinkDataUrl, withTimeout } from "@/lib/imageResize";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -463,17 +464,14 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
   // Mejora la foto propia conservando su identidad. Devuelve la URL o null (límite / error).
   const editOne = async (imageUrl: string): Promise<string | null | "limit"> => {
     const prompt = buildEditPrompt(editPresets, editPrompt);
-    console.log("DBG editOne start");
     try {
       const sendUrl = await shrinkDataUrl(imageUrl);
-      console.log("DBG shrunk", sendUrl.length);
       // Sin estilo visual: no queremos que la IA reinterprete la foto real.
       const { data, error } = await withTimeout(
         supabase.functions.invoke("edit-image", { body: { imageUrl: sendUrl, editPrompt: prompt, postType } }),
         150_000,
         "La mejora con IA está tardando demasiado. Inténtalo de nuevo en un momento; no se ha gastado tu cupo.",
       );
-      console.log("DBG invoked", JSON.stringify(data)?.slice(0,200), String(error));
       let body: any = data;
       if (error && (error as any)?.context?.json) {
         try { body = await (error as any).context.json(); } catch { /* sin cuerpo */ }
@@ -489,7 +487,6 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       autoSaveAsset(body.imageUrl, "edited", prompt);
       return body.imageUrl as string;
     } catch (error: any) {
-      console.log("DBG err", error?.message);
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
       return null;
     } finally {
@@ -535,7 +532,6 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
 
   /** Aplica la fuente de imagen elegida. Solo gasta cupo con "edit" o "generate" elegidos por el usuario. */
   const applyImageSource = async (ctx: { slidePrompts?: string[]; imagePrompt?: string }) => {
-    console.log("DBG apply", postType, imageSource);
     if (isReel(postType)) return;
     if (postType === "carousel") {
       if (imageSource === "generate") {
@@ -555,7 +551,6 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       return;
     }
     const url = imageSource === "library" ? uploadedImage : await resolveUploadedImageUrl();
-    console.log("DBG url", url?.slice(0,60));
     if (!url) return;
     if (imageSource === "edit") {
       await editImage(url);
