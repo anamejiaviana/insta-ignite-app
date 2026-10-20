@@ -514,23 +514,94 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     }
   };
 
-  const editImage = async (imageUrl: string, prompt: string) => {
+  // Mejora la foto propia conservando su identidad. Devuelve la URL o null (límite / error).
+  const editOne = async (imageUrl: string): Promise<string | null | "limit"> => {
+    const prompt = buildEditPrompt(editPresets, editPrompt);
     try {
+      // Sin estilo visual: no queremos que la IA reinterprete la foto real.
       const { data, error } = await supabase.functions.invoke("edit-image", {
-        body: { imageUrl, editPrompt: editPrompt || prompt, postType, brandConfig: { visual_style: visualStyle } },
+        body: { imageUrl, editPrompt: prompt, postType },
       });
-      if (error) throw error;
-      if (data.error === 'image_limit_reached') {
+      if (data?.error === 'image_limit_reached' || (error as any)?.context?.status === 429) {
         refreshUsage();
         toast({ variant: "destructive", title: t("imageLimitReached"), description: t("imageLimitReachedDesc") });
-        return;
+        return "limit";
       }
+      if (error) throw error;
       if (data.error) throw new Error(data.error);
-      setGeneratedPost((prev) => prev ? { ...prev, imageUrl: data.imageUrl } : null);
-      autoSaveAsset(data.imageUrl, "edited", editPrompt || prompt);
-      refreshUsage();
+      autoSaveAsset(data.imageUrl, "edited", prompt);
+      return data.imageUrl as string;
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorEditingImage"), description: error.message });
+      return null;
+    } finally {
+      refreshUsage();
+    }
+  };
+
+  const editImage = async (imageUrl: string) => {
+    const url = await editOne(imageUrl);
+    if (url && url !== "limit") setGeneratedPost((prev) => prev ? { ...prev, imageUrl: url } : null);
+  };
+
+  const editCarouselPhotos = async (photos: string[]) => {
+    const urls: string[] = [];
+    for (const p of photos) {
+      const r = await editOne(p);
+      if (r === "limit") break;
+      urls.push(r || p); // si falla una, se queda la foto original
+      setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...urls], imageUrl: urls[0] } : null);
+    }
+  };
+
+  const buildClientContext = () => activeClient
+    ? {
+        name: activeClient.name, type: activeClient.type, city: activeClient.city, address: activeClient.address,
+        tone: activeClient.tone, objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context,
+      }
+    : null;
+
+  // Carrusel sin descripciones por diapositiva (p. ej. desde el calendario): solo texto, sin imágenes.
+  const fetchCarouselSlidePrompts = async (): Promise<string[] | undefined> => {
+    const { data, error } = await supabase.functions.invoke("generate-post", {
+      body: {
+        title: title || prefill?.title, description: description || prefill?.description || prefill?.caption,
+        postType: "carousel", clientContext: buildClientContext(), language: activeClient?.content_language || "es",
+        carouselSlideCount,
+      },
+    });
+    if (error || !data || data.error || !data.slidePrompts?.length) return undefined;
+    setGeneratedPost((prev) => prev ? { ...prev, slidePrompts: data.slidePrompts } : prev);
+    return data.slidePrompts;
+  };
+
+  /** Aplica la fuente de imagen elegida. Solo gasta cupo con "edit" o "generate" elegidos por el usuario. */
+  const applyImageSource = async (ctx: { slidePrompts?: string[]; imagePrompt?: string }) => {
+    if (isReel(postType)) return;
+    if (postType === "carousel") {
+      if (imageSource === "generate") {
+        const prompts = ctx.slidePrompts?.length ? ctx.slidePrompts : await fetchCarouselSlidePrompts();
+        if (prompts?.length) await generateCarouselImages(prompts);
+        else if (ctx.imagePrompt) await generateImage(ctx.imagePrompt);
+      } else if (imageSource === "edit") {
+        if (carouselPhotos.length) await editCarouselPhotos(carouselPhotos);
+      } else if (carouselPhotos.length) {
+        setGeneratedPost((prev) => prev ? { ...prev, imageUrls: [...carouselPhotos], imageUrl: carouselPhotos[0] } : null);
+        carouselPhotos.forEach((u) => autoSaveAsset(u, "uploaded"));
+      }
+      return;
+    }
+    if (imageSource === "generate") {
+      if (ctx.imagePrompt) await generateImage(ctx.imagePrompt);
+      return;
+    }
+    const url = imageSource === "library" ? uploadedImage : await resolveUploadedImageUrl();
+    if (!url) return;
+    if (imageSource === "edit") {
+      await editImage(url);
+    } else {
+      setGeneratedPost((prev) => prev ? { ...prev, imageUrl: url } : null);
+      if (imageSource === "upload") await autoSaveAsset(url, "uploaded");
     }
   };
 
