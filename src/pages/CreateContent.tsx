@@ -143,6 +143,12 @@ export default function CreateContent() {
   };
   const needsAIImage = shouldAutoGenerateImage(postType, imageSource);
   const isImageBlocked = usage.limitReached && needsAIImage;
+  const pendingCost = imageCost(postType, imageSource, carouselSlideCount, carouselPhotos.length);
+  const hasImage = Boolean(generatedPost?.imageUrl || generatedPost?.imageUrls?.some(Boolean));
+  const needsImagePanel = Boolean(generatedPost) && !postTypeIsReel && !hasImage && !loading;
+  const canApplyImage =
+    imageSource === "generate" ||
+    (postType === "carousel" ? carouselPhotos.length > 0 && photosUploading === 0 : Boolean(uploadedImage));
   const getImageLoadingMessage = () => {
     if (postType === "carousel") return t("generatingCarousel");
     if (imageSource === "edit") return t("editingImageWithAI");
@@ -273,6 +279,24 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
     }
 
     return uploadedImage;
+  };
+
+  const handleCarouselFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).slice(0, Math.max(0, 10 - carouselPhotos.length));
+    e.target.value = "";
+    if (!files.length) return;
+    setPhotosUploading(files.length);
+    for (const f of files) {
+      try {
+        const url = await uploadFileToStorage(f);
+        if (url) setCarouselPhotos((prev) => [...prev, url]);
+      } catch (err) {
+        console.error("Error uploading carousel photo:", err);
+        toast({ variant: "destructive", title: "No se pudo subir una foto", description: f.name });
+      } finally {
+        setPhotosUploading((n) => Math.max(0, n - 1));
+      }
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
