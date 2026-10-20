@@ -419,6 +419,7 @@ const translations = {
     plansUpgrade: "Ver planes",
     srcUpload: "Subir mi foto",
     srcEdit: "Mejorar con IA",
+    srcGenerate: "Generar desde cero",
     srcLibrary: "Mis fotos guardadas",
     srcGenerateOptional: "Opcional: generar una imagen desde cero con IA (no muestra tu producto real)",
     srcUploadHint: "Recomendado: una foto real de tu negocio. Se usa tal cual y no gasta cupo de imágenes.",
@@ -865,6 +866,7 @@ const translations = {
     plansUpgrade: "View plans",
     srcUpload: "Upload my photo",
     srcEdit: "Enhance with AI",
+    srcGenerate: "Generate from scratch",
     srcLibrary: "My saved photos",
     srcGenerateOptional: "Optional: generate an image from scratch with AI (it won't show your real product)",
     srcUploadHint: "Recommended: a real photo of your business. It's used as is and doesn't use image quota.",
@@ -902,6 +904,7 @@ export type TranslationKey = keyof typeof translations.es;
 export const caTranslations: Partial<Record<TranslationKey, string>> = {
   srcUpload: "Pujar la meva foto",
   srcEdit: "Millorar amb IA",
+  srcGenerate: "Generar des de zero",
   srcLibrary: "Les meves fotos desades",
   srcGenerateOptional: "Opcional: generar una imatge des de zero amb IA (no mostra el teu producte real)",
   srcUploadHint: "Recomanat: una foto real del teu negoci. S'utilitza tal qual i no gasta quota d'imatges.",
