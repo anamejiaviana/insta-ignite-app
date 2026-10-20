@@ -718,64 +718,8 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             </Select>
           </div>
 
-          {/* Image Source - only for posts */}
-          {postType === "post" && (
-            <div className="space-y-2">
-              <Label>{t("imageSource")}</Label>
-              <div className="flex flex-col sm:grid sm:grid-cols-4 gap-2">
-                {IMAGE_SOURCES.map((src) => (
-                  <button
-                    key={src.value}
-                    onClick={() => setImageSource(src.value)}
-                    className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                      imageSource === src.value
-                        ? "text-primary-foreground shadow-md"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                    style={imageSource === src.value ? { background: "var(--gradient-primary)" } : undefined}
-                  >
-                    <src.icon className="h-4 w-4 shrink-0" />
-                    <span className="text-xs sm:text-sm">{t(src.label as any)}</span>
-                  </button>
-                ))}
-              </div>
-              {imageSource === "edit" && (
-                <p className="text-xs text-muted-foreground mt-1">{t("editWithAIDesc")}</p>
-              )}
-              {(imageSource === "upload" || imageSource === "edit") && (
-                <div className="space-y-3 mt-3">
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full h-28 border-dashed">
-                    {uploadedImage ? (
-                      <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <Image className="h-8 w-8" />
-                        <span className="text-sm">{t("uploadImage")}</span>
-                      </div>
-                    )}
-                  </Button>
-                  {imageSource === "edit" && uploadedImage && (
-                    <Textarea placeholder={t("editInstructions")} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} className="bg-secondary border-border" />
-                  )}
-                </div>
-              )}
-              {imageSource === "library" && (
-                <div className="mt-3">
-                  <Button variant="outline" onClick={() => setMediaPickerOpen(true)} className="w-full h-28 border-dashed">
-                    {uploadedImage ? (
-                      <img src={uploadedImage} alt="Preview" className="max-h-24 rounded-lg object-contain" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <ImageIcon className="h-8 w-8" />
-                        <span className="text-sm">{t("chooseFromLibrary")}</span>
-                      </div>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Imagen: tu foto por defecto (Post, Carrusel, Story). Reel nunca. */}
+          {!postTypeIsReel && renderImagePicker()}
 
           {/* Content Fields */}
           <div className="space-y-4">
