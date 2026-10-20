@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { buildGuideContext, normalizeManual } from "@/lib/editorialGuide";
 
 export interface Client {
   id: string;
@@ -16,6 +17,8 @@ export interface Client {
   content_language: string;
   inspiration_account: string | null;
   extra_context: string | null;
+  /** Compact text of the owner-APPROVED editorial manual (empty if none). Never saved back to clients. */
+  editorial_guide_text?: string;
   created_at: string;
   updated_at: string;
 }
@@ -49,11 +52,20 @@ export function ClientProvider({ children, userId }: { children: ReactNode; user
       .select("*")
       .eq("user_id", userId)
       .order("name");
+    const { data: guides } = await (supabase as any)
+      .from("editorial_guides")
+      .select("client_id, approved")
+      .eq("user_id", userId)
+      .not("approved", "is", null);
+    const guideMap = new Map<string, string>(
+      ((guides as any[]) || []).map((g) => [g.client_id, buildGuideContext(normalizeManual(g.approved))])
+    );
     if (data) {
       const mapped = (data as any[]).map((c: any) => ({
         ...c,
         keywords: (c.keywords as string[]) || [],
         content_language: c.content_language || "es",
+        editorial_guide_text: guideMap.get(c.id) || "",
       })) as Client[];
       setClients(mapped);
       if (!activeClientId && mapped.length > 0) {

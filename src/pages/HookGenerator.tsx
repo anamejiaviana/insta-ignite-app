@@ -1,3 +1,4 @@
+import { aiTone } from "@/lib/editorialGuide";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
@@ -31,7 +32,7 @@ export default function HookGenerator() {
             type: activeClient.type,
             city: activeClient.city,
             address: activeClient.address,
-            tone: activeClient.tone,
+            tone: aiTone(activeClient.tone, activeClient.editorial_guide_text),
             objective: activeClient.objective,
           },
           language: activeClient.content_language || "es",

@@ -1,3 +1,4 @@
+import { aiTone } from "@/lib/editorialGuide";
 import { shrinkDataUrl, withTimeout } from "@/lib/imageResize";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -127,7 +128,7 @@ export default function CreateContent() {
           title: title || prefill?.title || "Reel",
           description: `Hook: ${r.hook || "-"}. Guion: ${r.script || "-"}. Planos: ${shots || "-"}. Caption: ${generatedPost.mainCopy}`,
           postType: "reel",
-          clientContext: activeClient ? { name: activeClient.name, type: activeClient.type, city: activeClient.city, address: activeClient.address, tone: activeClient.tone, objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context } : null,
+          clientContext: activeClient ? { name: activeClient.name, type: activeClient.type, city: activeClient.city, address: activeClient.address, tone: aiTone(activeClient.tone, activeClient.editorial_guide_text), objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context } : null,
           language: activeClient?.content_language || "es",
           customFormat: true,
           formatInstructions: `Genera SOLO JSON: { ${voiceoverInstruction(mode)} }. Basado en el hook, guion y planos dados. NO generes imágenes.`,
@@ -186,7 +187,7 @@ export default function CreateContent() {
                 type: activeClient.type,
                 city: activeClient.city,
                 address: activeClient.address,
-                tone: activeClient.tone,
+                tone: aiTone(activeClient.tone, activeClient.editorial_guide_text),
                 objective: activeClient.objective,
                 keywords: activeClient.keywords,
                 extra_context: activeClient.extra_context,
@@ -347,7 +348,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
             type: activeClient.type,
             city: activeClient.city,
             address: activeClient.address,
-            tone: activeClient.tone,
+            tone: aiTone(activeClient.tone, activeClient.editorial_guide_text),
             objective: activeClient.objective,
             keywords: activeClient.keywords,
             extra_context: activeClient.extra_context,
@@ -512,7 +513,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
   const buildClientContext = () => activeClient
     ? {
         name: activeClient.name, type: activeClient.type, city: activeClient.city, address: activeClient.address,
-        tone: activeClient.tone, objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context,
+        tone: aiTone(activeClient.tone, activeClient.editorial_guide_text), objective: activeClient.objective, keywords: activeClient.keywords, extra_context: activeClient.extra_context,
       }
     : null;
 

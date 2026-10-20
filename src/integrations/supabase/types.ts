@@ -110,6 +110,50 @@ export type Database = {
         }
         Relationships: []
       }
+      editorial_guides: {
+        Row: {
+          answers: Json
+          approved: Json | null
+          approved_at: string | null
+          client_id: string
+          created_at: string
+          draft: Json | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          approved?: Json | null
+          approved_at?: string | null
+          client_id: string
+          created_at?: string
+          draft?: Json | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          approved?: Json | null
+          approved_at?: string | null
+          client_id?: string
+          created_at?: string
+          draft?: Json | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_guides_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generated_posts: {
         Row: {
           client_id: string | null

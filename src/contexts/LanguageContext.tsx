@@ -449,6 +449,7 @@ const translations = {
     photoUploadFailed: "No se pudo subir una foto",
     noImage: "Sin imagen",
     regenerate: "Regenerar",
+    editorialGuideNav: "Manual editorial",
   },
   en: {
     // Auth
@@ -896,6 +897,7 @@ const translations = {
     photoUploadFailed: "A photo couldn't be uploaded",
     noImage: "No image",
     regenerate: "Regenerate",
+    editorialGuideNav: "Editorial guide",
   },
 } as const;
 

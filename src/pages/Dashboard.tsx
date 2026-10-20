@@ -1,3 +1,4 @@
+import { aiTone } from "@/lib/editorialGuide";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -87,7 +88,7 @@ export default function Dashboard() {
             type: activeClient.type,
             city: activeClient.city,
             address: activeClient.address,
-            tone: activeClient.tone,
+            tone: aiTone(activeClient.tone, activeClient.editorial_guide_text),
             objective: activeClient.objective,
             keywords: activeClient.keywords,
             inspirationAccount: activeClient.inspiration_account,

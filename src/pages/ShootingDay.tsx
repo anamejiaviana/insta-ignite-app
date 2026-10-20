@@ -1,3 +1,4 @@
+import { aiTone } from "@/lib/editorialGuide";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -162,7 +163,7 @@ export default function ShootingDay() {
     type: activeClient!.type,
     city: activeClient!.city,
     address: activeClient!.address,
-    tone: activeClient!.tone,
+    tone: aiTone(activeClient!.tone, activeClient!.editorial_guide_text),
     objective: activeClient!.objective,
     keywords: activeClient!.keywords,
   });
