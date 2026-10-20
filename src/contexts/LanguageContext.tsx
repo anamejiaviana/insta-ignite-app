@@ -897,6 +897,7 @@ const translations = {
     photoUploadFailed: "A photo couldn't be uploaded",
     noImage: "No image",
     regenerate: "Regenerate",
+    editorialGuideNav: "Editorial guide",
   },
 } as const;
 
