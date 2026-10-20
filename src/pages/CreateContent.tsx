@@ -423,25 +423,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
       setGeneratedPost(data);
       setStep("image");
       setLoadingPhase("image");
-
-      const resolvedUploadedImage =
-        imageSource === "upload" || imageSource === "edit"
-          ? await resolveUploadedImageUrl()
-          : uploadedImage;
-
-      if (postType === "carousel" && data.slidePrompts?.length > 0) {
-        await generateCarouselImages(data.slidePrompts);
-      } else if (imageSource === "generate" && shouldAutoGenerateImage(postType, imageSource)) {
-        await generateImage(data.imagePrompt);
-      } else if (imageSource === "edit" && resolvedUploadedImage) {
-        await editImage(resolvedUploadedImage, data.imagePrompt);
-      } else if (imageSource === "upload" && resolvedUploadedImage) {
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: resolvedUploadedImage } : null);
-        await autoSaveAsset(resolvedUploadedImage, "uploaded");
-      } else if (imageSource === "library" && uploadedImage) {
-        // Already selected from library — just use it
-        setGeneratedPost((prev) => prev ? { ...prev, imageUrl: uploadedImage } : null);
-      }
+      await applyImageSource({ slidePrompts: data.slidePrompts, imagePrompt: data.imagePrompt });
       toast({ title: t("contentGenerated") });
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorGenerating"), description: error.message });
