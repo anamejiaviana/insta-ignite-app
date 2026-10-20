@@ -7,7 +7,6 @@ import {
   ImageIcon,
   Settings,
   CreditCard,
-  BookOpen,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -32,7 +31,6 @@ const items: { titleKey: TranslationKey; url: string; icon: any }[] = [
   { titleKey: "shootingDay", url: "/shooting", icon: Camera },
   { titleKey: "mediaLibraryNav", url: "/media", icon: ImageIcon },
   { titleKey: "libraryNav", url: "/library", icon: FolderOpen },
-  { titleKey: "editorialGuideNav", url: "/editorial", icon: BookOpen },
   { titleKey: "settings", url: "/settings", icon: Settings },
   { titleKey: "plansNav", url: "/plans", icon: CreditCard },
 ];
