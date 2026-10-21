@@ -16,7 +16,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const env = parseEnv(body.environment);
     const plan = body.plan as PlanKey;
-    if (!env || !PLAN_PRICE[plan]) return json({ error: "invalid_request" }, 400);
+    const action = body.action === "cancel" || body.action === "resume" ? body.action : "change";
+    if (!env || (action === "change" && !PLAN_PRICE[plan])) return json({ error: "invalid_request" }, 400);
     const admin = adminClient();
     if (!(await sandboxAllowed(admin, env, userId))) return json({ error: "payments_unavailable" }, 403);
 
@@ -26,7 +27,17 @@ Deno.serve(async (req) => {
     const stripe = createStripeClient(env);
     const sub: any = await stripe.subscriptions.retrieve(row.provider_subscription_id);
     if (sub.metadata?.userId !== userId) return json({ error: "forbidden" }, 403);
+
+    // Cancel always takes effect at the end of the paid period; a pending downgrade is dropped first
+    // (the provider does not allow cancelling a subscription that has a scheduled change).
+    if (action !== "change") {
+      if (sub.schedule) await stripe.subscriptionSchedules.release(typeof sub.schedule === "string" ? sub.schedule : sub.schedule.id);
+      await stripe.subscriptions.update(sub.id, { cancel_at_period_end: action === "cancel" });
+      await syncSubscription(admin, env, sub.id);
+      return json({ result: action === "cancel" ? "cancel_scheduled" : "resumed" });
+    }
     if (sub.status === "past_due") return json({ error: "past_due" }, 409);
+    if (sub.cancel_at_period_end) await stripe.subscriptions.update(sub.id, { cancel_at_period_end: false });
     const item = sub.items.data[0];
     const currentKey = item.price.lookup_key as string;
     const targetKey = PLAN_PRICE[plan];
