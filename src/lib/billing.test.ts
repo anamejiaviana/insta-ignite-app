@@ -22,5 +22,6 @@ describe("billing rules", () => {
   test("non-tester in test mode gets the 'not available' message", () => {
     expect(billingErrorKey("payments_unavailable")).toBe("billErrUnavailable");
     expect(billingErrorKey("weird")).toBe("billErrGeneric");
+    expect(billingErrorKey("auth_failed")).toBe("billErrAuth");
   });
 });

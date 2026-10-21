@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const env = parseEnv(body.environment);
     const plan = body.plan as PlanKey;
-    const action = body.action === "cancel" || body.action === "resume" ? body.action : "change";
+    const action = ["cancel", "resume", "abandon"].includes(body.action) ? body.action : "change";
     if (!env || (action === "change" && !PLAN_PRICE[plan])) return json({ error: "invalid_request" }, 400);
     const admin = adminClient();
     if (!(await sandboxAllowed(admin, env, userId))) return json({ error: "payments_unavailable" }, 403);
@@ -27,6 +27,14 @@ Deno.serve(async (req) => {
     const stripe = createStripeClient(env);
     const sub: any = await stripe.subscriptions.retrieve(row.provider_subscription_id);
     if (sub.metadata?.userId !== userId) return json({ error: "forbidden" }, 403);
+
+    // An upgrade whose bank verification was failed or abandoned leaves an unpaid charge: void it so it can
+    // never be collected later and the plan stays as it was.
+    if (sub.pending_update && sub.latest_invoice) {
+      const inv: any = await stripe.invoices.retrieve(typeof sub.latest_invoice === "string" ? sub.latest_invoice : sub.latest_invoice.id);
+      if (inv.status === "open") await stripe.invoices.voidInvoice(inv.id).catch((e: any) => console.error("void failed", e?.message));
+    }
+    if (action === "abandon") return json({ result: "abandoned" });
 
     // Cancel always takes effect at the end of the paid period; a pending downgrade is dropped first
     // (the provider does not allow cancelling a subscription that has a scheduled change).
@@ -56,12 +64,23 @@ Deno.serve(async (req) => {
     }
 
     if (PRICE_RANK[targetKey] > PRICE_RANK[currentKey]) {
-      await stripe.subscriptions.update(sub.id, {
+      // pending_if_incomplete: the new plan only applies once the prorated charge is paid.
+      // If the bank asks for 3D Secure, the browser completes it with the returned client secret.
+      const updated: any = await stripe.subscriptions.update(sub.id, {
         items: [{ id: item.id, price: target.id, quantity: 1 }],
         proration_behavior: "always_invoice",
-        payment_behavior: "error_if_incomplete",
-        metadata: { ...sub.metadata, plan },
-      });
+        payment_behavior: "pending_if_incomplete",
+        expand: ["latest_invoice.payments"],
+      } as any);
+      if (updated.pending_update) {
+        const inv = updated.latest_invoice;
+        const ref = inv?.payments?.data?.find((p: any) => p.payment?.payment_intent)?.payment?.payment_intent;
+        const pi: any = ref ? await stripe.paymentIntents.retrieve(typeof ref === "string" ? ref : ref.id) : null;
+        if (pi?.status === "requires_action") return json({ result: "requires_action", clientSecret: pi.client_secret });
+        // Declined: void the charge so it can never be collected later; the plan stays as it was.
+        if (inv?.id && inv.status === "open") await stripe.invoices.voidInvoice(inv.id).catch((e: any) => console.error("void failed", e?.message));
+        return json({ error: "payment_failed" }, 402);
+      }
       await syncSubscription(admin, env, sub.id);
       return json({ result: "upgraded" });
     }
