@@ -22,6 +22,13 @@
       "when": 1792577648826,
       "tag": "0002_trial_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792580676444,
+      "tag": "0003_trial_global_cap_30",
+      "breakpoints": true
     }
   ]
 }
