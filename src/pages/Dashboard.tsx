@@ -1,3 +1,4 @@
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { aiTone } from "@/lib/editorialGuide";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
