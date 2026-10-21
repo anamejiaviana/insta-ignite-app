@@ -180,7 +180,7 @@ export default function Plans() {
               <CardContent className="text-center space-y-5">
                 <div>
                   <span className="text-4xl font-bold">{p.price} €</span>
-                  <span className="text-muted-foreground text-sm">/mes</span>
+                  <span className="text-muted-foreground text-sm">{t("billPerMonth")}</span>
                   <p className="text-xs text-muted-foreground mt-1">{t("billVatIncluded")}</p>
                 </div>
                 <p className="text-sm font-medium text-foreground">
