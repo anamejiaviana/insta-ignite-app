@@ -1,104 +1,113 @@
-# Auditoría técnica y plan de lanzamiento — Anypostly
+# Auditoría comercial y propuesta de prueba gratuita limitada — Anypostly
 
-Alcance: solo planificación. Sin ediciones, sin publicar, sin Stripe ni cobros.
-Leyenda: **[C] Comprobado** en el código · **[H] Hipótesis** pendiente de verificar.
-
----
-
-## P0 — Bloquean el lanzamiento (abuso directo de coste de IA)
-
-### P0-1 [C] Las funciones de IA no verifican la identidad del usuario
-- Evidencia: `extractUserId()` en las 7 funciones de generación (`generate-image`, `edit-image`, `generate-post`, `generate-hooks`, `generate-reel-ideas`, `generate-weekly-plan`, `generate-shooting-plan`) decodifica el token con `atob(token.split('.')[1])` sin comprobar firma ni caducidad.
-- Impacto: un token falsificado con cualquier `sub` se acepta; se puede consumir la cuota de otra persona o inventar usuarios.
-- Cambio: módulo compartido `_shared/auth.ts` que use `supabase.auth.getClaims(token)`; responder 401 si falla.
-- Aceptación: llamada con token inventado → 401; token caducado → 401; token válido → 200.
-
-### P0-2 [C] Sin token, el límite de imágenes se salta por completo
-- Evidencia: `generate-image` y `edit-image`: `if (userId) { checkAndIncrementUsage... }`. Sin cabecera `Authorization`, `userId` es null y se genera la imagen igualmente. Las funciones de texto tampoco exigen sesión.
-- Impacto: cualquiera con la URL pública de la función genera imágenes ilimitadas con la clave de IA del proyecto. Es el mayor riesgo de gasto.
-- Cambio: exigir sesión válida antes de leer el cuerpo de la petición en todas las funciones de IA.
-- Aceptación: `curl` sin cabecera a cada función → 401 y ninguna llamada nueva en los registros del AI Gateway.
-
-### P0-3 [C] Cuota de imágenes no atómica y con fallos de cómputo
-- Evidencia: se lee `usage_counters`, se compara y después se llama a `increment_usage` (dos pasos, carrera). El contador sube **antes** de generar: si la IA falla, el usuario pierde una imagen. `checkAndIncrementUsage` deja pasar todo si faltan las variables de entorno.
-- Cambio: nueva función SQL `consume_image_quota(_user_id)` que hace `INSERT ... ON CONFLICT DO UPDATE ... WHERE count < limit RETURNING`, de forma atómica; más `refund_image_quota` si la generación falla. Si falta configuración, bloquear (fail-closed).
-- Aceptación: 40 peticiones en paralelo con límite 30 → exactamente 30 éxitos y 10 respuestas 429; una generación fallida no cambia el contador.
-
-### P0-4 [C] No hay techo de consumo para el texto ni límite global de gasto
-- Evidencia: las funciones de texto solo registran uso (`trackUsage`, sin `await`, sin límite). No existe ningún tope diario ni global.
-- Cambio: límite mensual generoso por plan para texto (p. ej. `text_*` ≤ 300/mes en Solo), límite diario por usuario para imágenes y un interruptor global (tabla `app_settings.ai_enabled` + tope diario de imágenes para todo el proyecto) consultado del lado servidor.
-- Aceptación: superar el tope diario → 429 con un mensaje claro; poner `ai_enabled=false` → todas las funciones de IA devuelven 503.
-- Nota: el backend no tiene una pieza estándar de limitación de peticiones; esto sería un contador propio en la base de datos.
+Alcance: solo análisis y plan. Sin código, sin Stripe, sin publicar.
+Leyenda: **[C] Comprobado** en la base de datos o en el registro de consumo · **[E] Estimación** · **[H] Hipótesis**.
 
 ---
 
-## P1 — Corregir antes de abrir a usuarios de pago
+## 1. Situación actual
 
-### P1-1 [C] `cleanup-storage` puede borrar archivos de otros usuarios
-- Evidencia: comprueba que hay sesión, pero borra cualquier URL que no esté referenciada sin comprobar quién la subió. Como el guardado es manual, las imágenes recién generadas de otros usuarios todavía no tienen referencias.
-- Cambio: guardar las imágenes en `post-images/{user_id}/...` y permitir borrar solo rutas con el prefijo del usuario que llama.
-- Aceptación: el usuario A no puede borrar un archivo del usuario B (respuesta `skipped`).
-
-### P1-2 [C] Almacenamiento sin aislamiento por usuario y bucket público
-- Evidencia: las rutas son `generated/{uuid}` y `edited/{uuid}`, sin carpeta por usuario. El bucket `post-images` es público.
-- Cambio: rutas con prefijo de usuario. Mantener el bucket público (las URL se pueden adivinar poco por el UUID), pero documentarlo; valorar más adelante URL firmadas para Studio/agencias.
-- Además: las imágenes generadas y no guardadas quedan huérfanas → tarea de limpieza periódica que borre archivos sin referencia de más de 7 días.
-
-### P1-3 [C] `edit-image` acepta cualquier `imageUrl` y tamaño de prompt
-- Cambio: aceptar solo URL del bucket propio o `data:image` de hasta unos 8 MB; limitar la longitud del prompt (unos 2.000 caracteres); validar `postType` con una lista cerrada. Aplicar la misma validación de entrada (por ejemplo con zod) en todas las funciones.
-
-### P1-4 [C] El modelo de imagen y el orden de respaldo no coinciden con lo esperado
-- Evidencia: `generate-image` prueba primero `gemini-2.5-flash-image`, después `3.1-flash` y por último `3-pro` (el más caro). `edit-image` usa `gemini-2.5-flash-image-preview` (nombre antiguo). Un fallo en cadena puede costar hasta 3 llamadas por imagen.
-- Cambio: definir un modelo principal y como máximo un respaldo; registrar el modelo usado en `usage_counters` o en una tabla `ai_calls`.
-
-### P1-5 [C] Planes de pago simulados
-- Evidencia: `user_plans` solo lo cambian los administradores; `Plans.tsx` muestra contacto/upgrade sin cobro. Los nombres no coinciden: el código usa `basic`/`pro`/`studio` y la oferta comercial usa Solo.
-- Cambio (sin Stripe todavía): unificar los nombres de plan, añadir `status` (trial/active/canceled) y `current_period_end`, y hacer que la cuota se calcule por periodo de facturación cuando se conecte el cobro.
-
-### P1-6 [C] `get_image_limit(_user_id)` acepta cualquier id
-- Cualquier usuario con sesión puede consultar el límite de otro (filtración menor del plan). Cambio: versión sin parámetro que use `auth.uid()` para el cliente.
-
----
-
-## P2 — Calidad y crecimiento internacional
-
-- P2-1 [H] Carruseles: la coherencia entre diapositivas depende de N llamadas independientes a `generate-image`, cada una consume cuota. Verificar con una prueba real cuántas imágenes descuenta un carrusel de 5 y si hay estilo consistente; valorar descontar en bloque y pasar la diapositiva 1 como referencia.
-- P2-2 [H] Respuestas JSON de texto analizadas con una expresión regular `\{[\s\S]*\}`; los fallos de análisis devuelven 500 sin reintento. Pasar a salida estructurada (tool calling).
-- P2-3 [C] CORS `*` en todas las funciones; restringir a los dominios propios cuando haya dominio de marca.
-- P2-4 [H] Onboarding: verificar el flujo nuevo usuario → banner → primer negocio → primer contenido; medir el tiempo hasta el primer contenido. Falta la traducción completa al catalán en las pantallas nuevas de recuperación de contraseña.
-- P2-5 Marca internacional: dominio propio fuera de la IP compartida (incidencia de bloqueo en España), páginas legales (términos, privacidad, RGPD, DPA para agencias), correos de autenticación con dominio propio.
-- P2-6 Registros: el `console.log` de los prompts completos puede incluir datos de clientes; recortarlo.
-
----
-
-## Datos que faltan para estimar el coste por generación
-
-| Dato | Estado | Cómo obtenerlo |
+| Tema | Hallazgo | Estado |
 |---|---|---|
-| Precio por imagen de cada modelo en el Gateway | Desconocido (inferido) | Registros del AI Gateway: créditos por petición |
-| Tokens de entrada/salida por función de texto | Desconocido | Registros del Gateway, 20 muestras por función |
-| Tasa de respaldo (cuántas imágenes usan 2-3 modelos) | No se registra | Registrar el modelo usado por llamada (P1-4) |
-| Regeneraciones por contenido guardado | Parcial | `usage_counters` frente a `generated_posts` |
-| Tamaño medio de imagen y crecimiento del bucket | Desconocido | Metadatos de `storage.objects` |
-| Coste fijo de la instancia de Cloud | Desconocido | Contexto de coste del proyecto |
-| Imágenes huérfanas (generadas y no guardadas) | Desconocido | Comparar objetos con las URL referenciadas |
+| Cuentas | 5 cuentas con plan. 4 en `basic` (1 negocio) y la propietaria en `admin` con `business_limit = -1` | [C] |
+| Alta nueva | Cada registro recibe automáticamente `basic` (1 negocio, 30 imágenes y 200 textos al mes), **sin pago ni fecha de fin** | [C] |
+| Significado de "basic" | El mismo nombre sirve para "Solo 29 €" y para "registrado gratis": no se distingue quién paga | [C] |
+| Ilimitado | `business_limit = -1` da 9999 imágenes y textos. Lo tiene la cuenta de la propietaria (plan `admin`) | [C] |
+| Cambio de plan | Solo un administrador puede modificar `user_plans`; un usuario solo puede leer su plan. No hay vía de autoascenso desde la app | [C] |
+| Botones "Mejorar plan" | Solo muestran un aviso "próximamente"; no cobran ni cambian nada | [C] |
+| Cupo en servidor | Las 7 funciones de IA verifican la sesión y reservan cupo de forma atómica; si falla, devuelven el cupo | [C] |
+| Imagen editada vs generada | Comparten el mismo cupo (`images`), 1 unidad por imagen. En carrusel, 1 por foto/diapositiva | [C] |
+| Roles | Hay 2 administradores (`user_roles`): la propietaria y una cuenta `basic` | [C] |
 
-Fórmula objetivo: coste por usuario y mes = Σ(llamadas × créditos medios por modelo) + GB almacenados × tarifa + parte fija prorrateada.
+## 2. Consumo medido (22 sep – 21 oct 2026, créditos solicitados)
 
----
+| Concepto | Créditos | Nota |
+|---|---|---|
+| Imágenes IA (gemini-2.5-flash-image) | ~4,38 | [C] |
+| Textos IA (gemini-3-flash) | ~0,60 | [C] |
+| Base de datos (11,1 h de instancia) | 0,86 | [C] — encendida pocas horas; si estuviera 24/7 serían ~55,7 créditos/mes [C tarifa] |
+| Almacenamiento + tráfico + funciones | ~0,12 | [C] |
+| Construcción de la app (no es coste de cliente) | 70,6 | [C] |
 
-## Plan incremental (cada paso se puede desplegar por separado)
+- **Por unidad [E]:** con unas 26 imágenes y unos 95 textos contados en ese periodo, sale del orden de **0,17 créditos por imagen** y **0,006 por texto**. Es aproximado: el registro no da cantidades exactas por petición.
+- **Generada vs editada:** el registro solo muestra un modelo de imagen y no las separa. No hay evidencia de diferencia de coste [H: similar, porque usan el mismo modelo].
+- **Euros:** no doy precio en euros por unidad; depende de cuánto cuesta cada crédito en vuestro plan, que no consta aquí.
+- **Conclusión [E]:** la imagen es ~30 veces más cara que el texto. El riesgo de un trial está en las imágenes, no en el texto.
 
-1. **Bloqueo de abuso (P0-1, P0-2):** autenticación compartida en las 8 funciones. Prueba: curl sin token y con token falso.
-2. **Cuota atómica y reembolso (P0-3).** Prueba de concurrencia.
-3. **Topes de texto, tope diario e interruptor global (P0-4).**
-4. **Almacenamiento por usuario y limpieza segura (P1-1, P1-2).** Migrar solo las rutas nuevas; las antiguas se mantienen.
-5. **Validación de entradas y modelos (P1-3, P1-4) + tabla `ai_calls`** (función, modelo, éxito, créditos si se conocen).
-6. **Modelo de planes preparado para cobro (P1-5, P1-6)**, todavía sin Stripe.
-7. **P2** según prioridad comercial.
+## 3. Vías de abuso de una prueba gratuita
+
+| Vía | Riesgo hoy | Medida |
+|---|---|---|
+| Registrarse con muchos correos y gastar 30 imágenes cada uno | **Alto**: 30 imágenes gratis para siempre por cuenta | Trial con cupo pequeño y caducidad |
+| Correos desechables | Medio | Confirmación de correo obligatoria (ya activa) + lista de dominios desechables [H] |
+| Trial que nunca caduca | Alto (no hay fecha) | `trial_ends_at` comprobado en el servidor |
+| Cuenta que se vuelve ilimitada | Bajo (solo admin) | Separar "admin" de "ilimitado"; registro de cambios de plan |
+| Cambiar de plan desde el navegador | Bajo (bloqueado por permisos) | Mantener; cobro futuro solo desde el servidor |
+| Gasto global inesperado | Medio | Tope diario global de imágenes para trials |
+
+## 4. Propuesta de trial limitado (sin tarjeta)
+
+| Decisión | Propuesta | Por qué |
+|---|---|---|
+| Duración | 7 días desde el alta | Suficiente para ver un calendario semanal |
+| Imágenes IA | **5 en total** (no por mes) | Es lo caro; deja probar "Mejorar con IA" y "Generar" |
+| Textos IA | **40 en total** | Barato; permite manual editorial + una semana de contenido |
+| Negocios | 1 | Igual que Solo |
+| Al caducar | Se puede entrar, ver y copiar todo lo guardado; las funciones de IA responden "prueba terminada" | No se pierde nada, no hay coste |
+| Tope global | Máx. N imágenes al día entre todos los trials (p. ej. 100) | Protege ante registros masivos |
+| Tarjeta | No | Menos fricción; el cupo pequeño limita el riesgo |
+
+**Coste máximo por trial [E]:** 5 × 0,17 + 40 × 0,006 ≈ **1,1 créditos**.
+
+## 5. Distinguir trial de pago de forma segura
+
+- Nuevo campo `status` en `user_plans`: `trial` / `active` / `expired` / `comp` (cortesía), más `trial_ends_at` y `current_period_end`.
+- Alta nueva → `trial` (en vez de `basic` sin fecha).
+- Solo `active` se considera de pago. En el futuro solo lo activará el servidor tras confirmar el cobro; nunca el navegador.
+- `reserve_quota` decide en el servidor: si es trial, cupo total y fecha; si `expired`, rechaza; si `active`, cupo mensual del plan.
+- Nombres alineados con la oferta: `solo` / `pro` / `studio` (hoy `basic` = Solo).
+- "Ilimitado" deja de depender de `business_limit = -1`; se usa un estado explícito `comp` solo para administradores.
+- Tabla de registro de cambios de plan (quién, cuándo, de qué a qué), visible solo para administradores.
+
+## 6. Las 5 cuentas actuales
+
+| Cuenta | Hoy | Propuesta |
+|---|---|---|
+| Propietaria (admin, ilimitada) | `admin`, -1 | `comp` ilimitada; sigue siendo administradora |
+| Admin con `basic` | basic | Confirmar si es tuya: pasar a `comp` o dejar en Solo |
+| 3 cuentas `basic` | basic | Pasar a `active` Solo como beta (sin caducidad) o a trial: **decisión tuya** |
+
+Nadie pierde negocios, contenidos ni imágenes; solo cambia el cupo.
+
+## 7. Qué corregir antes de vender
+
+1. Trial con caducidad y cupo total (hoy cada registro tiene 30 imágenes/mes gratis para siempre).
+2. Separar pago, cortesía y prueba con `status`.
+3. Mensaje claro en pantalla al llegar al límite o caducar (hoy puede salir un error genérico [H]).
+4. Tope global diario para trials.
+5. Página de planes con los cupos reales de cada plan.
+6. Páginas legales y condiciones de la prueba (pendiente de auditoría anterior).
+7. Después: conectar el cobro, que solo cambie `status` desde el servidor.
+
+## 8. Orden de implementación
+
+1. Migración: `status`, `trial_ends_at`, `current_period_end`, registro de cambios; cuentas actuales sin pérdida de acceso.
+2. Alta nueva → trial 7 días; `reserve_quota` con cupo total de trial y caducidad.
+3. Tope global diario de imágenes de trials.
+4. Avisos en pantalla: días restantes, cupo usado, "prueba terminada" (ES/EN).
+5. Página de planes y aviso de mejora coherentes.
+6. Pruebas: trial caducado → rechazo sin llamar a la IA; 6.ª imagen → rechazo; admin sigue ilimitado.
+7. Más adelante: Stripe.
+
+## Decisiones que necesito de ti
+
+- ¿7 días, 5 imágenes y 40 textos te parecen bien?
+- ¿Las 3 cuentas beta pasan a Solo de cortesía o a trial?
+- ¿La segunda cuenta administradora es tuya?
 
 ## Detalles técnicos
-- `_shared/auth.ts`: `requireUser(req)` → `{ userId, supabaseUserClient }` o lanza una respuesta 401.
-- `consume_image_quota` / `refund_image_quota`: SECURITY DEFINER, `search_path=public`, EXECUTE revocado a anon/authenticated (solo service role).
-- `ai_calls(id, user_id, function, model, status, latency_ms, created_at)`: RLS solo para administradores; la escriben las funciones.
-- Pruebas: tests de Deno por función (401 sin token, 429 al llegar al límite) y una prueba SQL de concurrencia.
+
+- `reserve_quota` lee `status` y `trial_ends_at`; para trial usa un contador con `month = 'trial'` para el total.
+- Funciones de límite reescritas por `status`, no por `business_limit = -1`.
+- `handle_new_user_plan` inserta `status='trial', trial_ends_at = now() + interval '7 days'`.
+- Todo sigue siendo SECURITY DEFINER y solo para el servidor.
