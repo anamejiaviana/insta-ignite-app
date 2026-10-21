@@ -17,6 +17,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AiLimitDialog />
           <Routes>
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/*" element={<Index />} />
