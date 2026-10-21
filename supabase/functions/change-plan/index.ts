@@ -79,7 +79,9 @@ Deno.serve(async (req) => {
     return json({ result: "downgrade_scheduled", effective_at: new Date(phase.end_date * 1000).toISOString() });
   } catch (e: any) {
     console.error("change-plan error", e);
-    if (e?.type === "StripeCardError" || e?.code === "card_declined") return json({ error: "payment_failed" }, 402);
+    // Declined cards and cards that need 3D Secure during an upgrade both leave the plan unchanged.
+    const payCodes = ["card_declined", "authentication_required", "subscription_payment_intent_requires_action", "expired_card", "insufficient_funds"];
+    if (e?.type === "StripeCardError" || payCodes.includes(e?.code)) return json({ error: "payment_failed" }, 402);
     return json({ error: "change_failed" }, 500);
   }
 });
