@@ -1,35 +1,28 @@
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { useSubscription } from "@/hooks/useSubscription";
 import { TrialBanner } from "@/components/plan/TrialBanner";
+import { PaymentTestModeBanner } from "@/components/plan/PaymentTestModeBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Sparkles, Building2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Check, Crown, Sparkles, Building2, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js";
+import {
+  type PlanKey, PRICE_TO_PLAN, billingErrorKey, callBilling, getStripe, hasPaidAccess, paymentsEnvironment, planChangeKind,
+} from "@/lib/billing";
 
 const PLANS = [
-  {
-    key: "solo" as const,
-    icon: Building2,
-    limit: 1,
-    price: "29",
-    planName: "basic",
-  },
-  {
-    key: "pro" as const,
-    icon: Sparkles,
-    limit: 3,
-    price: "69",
-    planName: "pro",
-    popular: true,
-  },
-  {
-    key: "studio" as const,
-    icon: Crown,
-    limit: 5,
-    price: "115",
-    planName: "studio",
-  },
+  { key: "solo" as const, icon: Building2, limit: 1, price: "29" },
+  { key: "pro" as const, icon: Sparkles, limit: 3, price: "69", popular: true },
+  { key: "studio" as const, icon: Crown, limit: 5, price: "115" },
 ];
 
 const CORE_FEATURES_KEYS = [
@@ -40,50 +33,112 @@ const CORE_FEATURES_KEYS = [
   "plansFeatureCustomization",
 ] as const;
 
+const NAME: Record<PlanKey, string> = { solo: "Solo", pro: "Pro", studio: "Studio" };
+
 export default function Plans() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { plan } = useUserPlan();
+  const { sub, refresh } = useSubscription();
   const { toast } = useToast();
+  const env = paymentsEnvironment();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<{ plan: PlanKey; kind: "upgrade" | "downgrade" } | null>(null);
 
-  const handleUpgrade = () => {
-    toast({
-      title: t("plansComingSoon"),
-      description: t("plansComingSoonDesc"),
-    });
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(language === "en" ? "en-GB" : "es-ES", { day: "numeric", month: "long", year: "numeric" });
+  const paid = hasPaidAccess(sub) && sub?.status !== "canceled";
+  const currentKey: PlanKey | null = paid && sub?.price_id ? PRICE_TO_PLAN[sub.price_id] ?? null : null;
+  const fail = (code?: string) => toast({ title: t(billingErrorKey(code)), variant: code === "payments_unavailable" || code === "not_needed" ? undefined : "destructive" });
+
+  const startCheckout = async (p: PlanKey) => {
+    setBusy(p);
+    const { data, code } = await callBilling<{ clientSecret: string }>("create-checkout", { plan: p });
+    setBusy(null);
+    if (!data?.clientSecret) return fail(code);
+    setClientSecret(data.clientSecret);
   };
 
-  const isCurrentPlan = (planName: string) => {
-    if (!plan) return false;
-    if (plan.business_limit === -1) return false;
-    if (plan.status === "trial" || plan.status === "expired") return false;
-    return plan.plan_name === planName;
+  const changePlan = async (p: PlanKey) => {
+    setConfirm(null);
+    setBusy(p);
+    const { data, code } = await callBilling<{ result: string; effective_at?: string }>("change-plan", { plan: p });
+    setBusy(null);
+    if (!data) return fail(code);
+    if (data.result === "upgraded") toast({ title: t("billUpgraded") });
+    if (data.result === "downgrade_scheduled" && data.effective_at) toast({ title: t("billDowngradeScheduled", { date: fmtDate(data.effective_at) }) });
+    await refresh();
+    setTimeout(() => window.location.reload(), 800);
   };
+
+  const openPortal = async () => {
+    setBusy("portal");
+    const win = window.open("", "_blank");
+    const { data, code } = await callBilling<{ url: string }>("create-portal-session", {});
+    setBusy(null);
+    if (!data?.url) { win?.close(); return fail(code); }
+    if (win) win.location.href = data.url; else window.location.href = data.url;
+  };
+
+  const onPlanClick = (p: PlanKey) => {
+    if (!env) return fail("payments_unavailable");
+    if (currentKey) {
+      const kind = planChangeKind(currentKey, p);
+      if (kind !== "same") setConfirm({ plan: p, kind });
+      return;
+    }
+    startCheckout(p);
+  };
+
+  const closeCheckout = () => {
+    setClientSecret(null);
+    toast({ title: t("billCheckoutClosed") });
+  };
+
+  const isComp = plan?.status === "comp";
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
+      <div className="mb-4"><PaymentTestModeBanner /></div>
       <div className="mb-6"><TrialBanner /></div>
-      <p className="text-center text-sm text-muted-foreground mb-4">{t("plansComingSoonDesc")}</p>
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">{t("plansTitle")}</h1>
         <p className="text-muted-foreground">{t("plansSubtitle")}</p>
       </div>
 
+      {sub && sub.status === "past_due" && (
+        <Card className="mb-6 p-4 border-destructive/50 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <p className="text-sm">{t("billPastDue")}</p>
+        </Card>
+      )}
+      {sub && hasPaidAccess(sub) && sub.current_period_end && (
+        <div className="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-muted-foreground">
+          <span data-testid="sub-period">
+            {sub.cancel_at_period_end || sub.status === "canceled"
+              ? t("billEndsOn", { date: fmtDate(sub.current_period_end) })
+              : t("billRenewsOn", { date: fmtDate(sub.current_period_end) })}
+          </span>
+        </div>
+      )}
+      {sub?.provider_customer_id && (
+        <div className="mb-8 text-center">
+          <Button variant="outline" onClick={openPortal} disabled={busy === "portal"}>
+            {busy === "portal" && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t("billManage")}
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
         {PLANS.map((p) => {
-          const current = isCurrentPlan(p.planName);
+          const current = currentKey === p.key || (!currentKey && !isComp && plan?.status === "legacy" && false);
+          const kind = currentKey ? planChangeKind(currentKey, p.key) : null;
+          const label = kind === "upgrade" ? t("billUpgrade") : kind === "downgrade" ? t("billDowngrade") : t("billSubscribe");
           return (
-            <Card
-              key={p.key}
-              className={`relative bg-card border-border transition-all ${
-                p.popular ? "ring-2 ring-primary shadow-lg" : ""
-              }`}
-            >
+            <Card key={p.key} className={`relative bg-card border-border transition-all ${p.popular ? "ring-2 ring-primary shadow-lg" : ""}`}>
               {p.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge
-                    className="text-xs px-3 py-0.5 text-primary-foreground"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
+                  <Badge className="text-xs px-3 py-0.5 text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
                     {t("plansMostPopular")}
                   </Badge>
                 </div>
@@ -93,22 +148,17 @@ export default function Plans() {
                   <p.icon className="h-5 w-5 text-primary" />
                 </div>
                 <CardTitle className="text-xl">{t(`planName_${p.key}`)}</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t(`planDesc_${p.key}`)}
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t(`planDesc_${p.key}`)}</p>
               </CardHeader>
               <CardContent className="text-center space-y-5">
                 <div>
                   <span className="text-4xl font-bold">{p.price} €</span>
                   <span className="text-muted-foreground text-sm">/mes</span>
+                  <p className="text-xs text-muted-foreground mt-1">{t("billVatIncluded")}</p>
                 </div>
-
                 <p className="text-sm font-medium text-foreground">
-                  {p.limit === 1
-                    ? t("plansBusiness1")
-                    : `${t("plansBusinessUpTo")} ${p.limit} ${t("plansBusinesses")}`}
+                  {p.limit === 1 ? t("plansBusiness1") : `${t("plansBusinessUpTo")} ${p.limit} ${t("plansBusinesses")}`}
                 </p>
-
                 <ul className="space-y-2 text-left text-sm">
                   {CORE_FEATURES_KEYS.map((fk) => (
                     <li key={fk} className="flex items-start gap-2">
@@ -117,18 +167,18 @@ export default function Plans() {
                     </li>
                   ))}
                 </ul>
-
                 {current ? (
-                  <Button variant="secondary" className="w-full" disabled>
-                    {t("plansCurrentPlan")}
-                  </Button>
+                  <Button variant="secondary" className="w-full" disabled>{t("plansCurrentPlan")}</Button>
                 ) : (
                   <Button
                     variant={p.popular ? "gradient" : "outline"}
                     className="w-full"
-                    onClick={handleUpgrade}
+                    disabled={!!busy || isComp || sub?.status === "past_due"}
+                    onClick={() => onPlanClick(p.key)}
+                    data-testid={`plan-${p.key}`}
                   >
-                    {t("plansContactUpgrade")}
+                    {busy === p.key && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {label}
                   </Button>
                 )}
               </CardContent>
@@ -139,22 +189,42 @@ export default function Plans() {
 
       <Card className="border-border bg-card/50 p-8 text-center">
         <h3 className="text-xl font-semibold mb-2">{t("plansCustomTitle")}</h3>
-        <p className="text-muted-foreground text-sm mb-5">
-          {t("plansCustomDesc")}
-        </p>
-        <Button variant="outline" onClick={handleUpgrade}>
-          {t("plansCustomCTA")}
-        </Button>
+        <p className="text-muted-foreground text-sm mb-5">{t("plansCustomDesc")}</p>
+        <Button variant="outline" asChild><a href="mailto:hola@anypostly.com">{t("plansCustomCTA")}</a></Button>
       </Card>
 
       <div className="text-center space-y-2 mt-6">
-        <p className="text-sm text-muted-foreground">
-          {t("plansBusinessExplainer")}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {t("plansFooter")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("plansBusinessExplainer")}</p>
+        <p className="text-xs text-muted-foreground">{t("plansFooter")}</p>
       </div>
+
+      <Dialog open={!!clientSecret} onOpenChange={(o) => { if (!o) closeCheckout(); }}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{t("billCheckoutTitle")}</DialogTitle></DialogHeader>
+          {clientSecret && (
+            <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret: () => Promise.resolve(clientSecret) }}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirm && t(confirm.kind === "upgrade" ? "billConfirmUpgradeTitle" : "billConfirmDowngradeTitle", { plan: NAME[confirm.plan] })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm && t(confirm.kind === "upgrade" ? "billConfirmUpgradeDesc" : "billConfirmDowngradeDesc")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("billCancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirm && changePlan(confirm.plan)}>{t("billConfirm")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
