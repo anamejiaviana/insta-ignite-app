@@ -27,6 +27,7 @@ export function AuthForm() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const { toast } = useToast();
   const { t, uiLanguage, setUILanguage } = useLanguage();
 
@@ -44,7 +45,7 @@ export function AuthForm() {
         if (error) throw error;
         toast({ title: t("welcomeBack") });
       } else if (isSignup) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -53,7 +54,12 @@ export function AuthForm() {
           },
         });
         if (error) throw error;
-        toast({ title: t("accountCreated"), description: t("accountCreatedDesc") });
+        if (!data.session) {
+          setSentTo(email);
+          setPassword("");
+        } else {
+          toast({ title: t("accountCreated") });
+        }
       } else if (isForgot) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
