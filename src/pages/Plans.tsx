@@ -53,7 +53,7 @@ export default function Plans() {
 
   const startCheckout = async (p: PlanKey) => {
     setBusy(p);
-    const { data, code } = await callBilling<{ clientSecret: string }>("create-checkout", { plan: p });
+    const { data, code } = await callBilling<{ clientSecret: string }>("create-checkout", { plan: p, locale: language });
     setBusy(null);
     if (!data?.clientSecret) return fail(code);
     setClientSecret(data.clientSecret);

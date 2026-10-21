@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
       billing_address_collection: "required",
       automatic_tax: { enabled: true },
       tax_id_collection: { enabled: true },
+      locale: body.locale === "en" ? "en" : "es",
       return_url: `${base}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
       metadata: { userId, plan, managed_payments: "false" },
       subscription_data: { metadata: { userId, plan } },
