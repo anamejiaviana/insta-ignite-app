@@ -44,6 +44,7 @@ export default function Plans() {
   const [busy, setBusy] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ plan: PlanKey; kind: "upgrade" | "downgrade" } | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(language === "en" ? "en-GB" : "es-ES", { day: "numeric", month: "long", year: "numeric" });
   const paid = hasPaidAccess(sub) && sub?.status !== "canceled";
@@ -68,6 +69,17 @@ export default function Plans() {
     if (data.result === "downgrade_scheduled" && data.effective_at) toast({ title: t("billDowngradeScheduled", { date: fmtDate(data.effective_at) }) });
     await refresh();
     setTimeout(() => window.location.reload(), 800);
+  };
+
+  const runAction = async (action: "cancel" | "resume" | "keep") => {
+    setConfirmCancel(false);
+    setBusy(action);
+    const body = action === "keep" ? { plan: currentKey } : { action };
+    const { data, code } = await callBilling<{ result: string }>("change-plan", body);
+    setBusy(null);
+    if (!data) return fail(code);
+    toast({ title: t(action === "cancel" ? "billCancelDone" : action === "resume" ? "billResumed" : "billUpgraded") });
+    await refresh();
   };
 
   const openPortal = async () => {
@@ -120,12 +132,27 @@ export default function Plans() {
           </span>
         </div>
       )}
+      {currentKey && sub?.pending_price_id && PRICE_TO_PLAN[sub.pending_price_id] && sub.current_period_end && (
+        <p className="mb-4 text-center text-sm text-foreground" data-testid="pending-change">
+          {t("billPendingChange", { plan: NAME[PRICE_TO_PLAN[sub.pending_price_id]], date: fmtDate(sub.current_period_end) })}{" "}
+          <Button variant="link" className="h-auto p-0" disabled={!!busy} onClick={() => runAction("keep")}>{t("billKeepPlan")}</Button>
+        </p>
+      )}
       {sub?.provider_customer_id && (
-        <div className="mb-8 text-center">
+        <div className="mb-8 flex flex-wrap justify-center gap-2">
           <Button variant="outline" onClick={openPortal} disabled={busy === "portal"}>
             {busy === "portal" && <Loader2 className="h-4 w-4 animate-spin" />}
             {t("billManage")}
           </Button>
+          {currentKey && !sub.cancel_at_period_end && (
+            <Button variant="ghost" onClick={() => setConfirmCancel(true)} disabled={!!busy} data-testid="cancel-sub">{t("billCancelSub")}</Button>
+          )}
+          {currentKey && sub.cancel_at_period_end && (
+            <Button variant="gradient" onClick={() => runAction("resume")} disabled={!!busy} data-testid="resume-sub">
+              {busy === "resume" && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t("billResume")}
+            </Button>
+          )}
         </div>
       )}
 
@@ -208,6 +235,19 @@ export default function Plans() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("billCancelSubTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("billCancelSubDesc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("billBack")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => runAction("cancel")}>{t("billCancelSub")}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
