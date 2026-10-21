@@ -9,3 +9,14 @@ describe("ai error codes", () => {
     expect(classifyAiError({ error: "boom" })).toBe(null);
   });
 });
+import { markLimitNotice, shouldSuppressErrorToast } from "./aiLimitNotice";
+describe("duplicate error toast", () => {
+  test("red toast right after a limit notice is skipped", () => {
+    markLimitNotice(1000);
+    expect(shouldSuppressErrorToast("destructive", 2000)).toBe(true);
+  });
+  test("unexpected errors later are still shown", () => {
+    markLimitNotice(1000);
+    expect(shouldSuppressErrorToast("destructive", 10000)).toBe(false);
+  });
+});
