@@ -6,8 +6,8 @@ const CODES: AiLimitCode[] = ["trial_expired", "image_limit_reached", "text_limi
 
 /** Maps a server error body to a known limit code (or null for other errors). */
 export function classifyAiError(body: unknown): AiLimitCode | null {
-  const code = (body as any)?.error;
-  return CODES.includes(code) ? code : null;
+  const code = (body as { error?: unknown } | null)?.error;
+  return CODES.includes(code as AiLimitCode) ? (code as AiLimitCode) : null;
 }
 
 /** Typed error for a controlled 403/429 limit response; the friendly notice already explains it. */
@@ -32,12 +32,14 @@ export function installAiErrorInterceptor() {
   if (installed) return;
   installed = true;
   // `supabase.functions` returns a new client on every access, so patch the shared prototype.
-  const proto: any = Object.getPrototypeOf(supabase.functions);
+  type InvokeResult = { data: unknown; error: { context?: Response } | Error | null };
+  type Invoke = (...args: unknown[]) => Promise<InvokeResult>;
+  const proto = Object.getPrototypeOf(supabase.functions) as { invoke: Invoke };
   const original = proto.invoke;
-  proto.invoke = async function (this: unknown, ...args: any[]) {
+  proto.invoke = async function (this: unknown, ...args: unknown[]) {
     const res = await original.apply(this, args);
     try {
-      const ctx = res?.error?.context;
+      const ctx = (res?.error as { context?: Response } | null)?.context;
       if (!ctx || typeof ctx.clone !== "function" || ![403, 429].includes(ctx.status)) return res;
       const code = classifyAiError(await ctx.clone().json().catch(() => null));
       if (!code) return res;
