@@ -57,6 +57,13 @@
       "when": 1792592021657,
       "tag": "0007_subscriptions_pending_price",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792592330106,
+      "tag": "0008_subscriptions_allow_history",
+      "breakpoints": true
     }
   ]
 }
