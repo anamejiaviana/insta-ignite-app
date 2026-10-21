@@ -16,10 +16,11 @@ let installed = false;
 export function installAiErrorInterceptor() {
   if (installed) return;
   installed = true;
-  const fns: any = supabase.functions;
-  const original = fns.invoke.bind(fns);
-  fns.invoke = async (...args: any[]) => {
-    const res = await original(...args);
+  // `supabase.functions` returns a new client on every access, so patch the shared prototype.
+  const proto: any = Object.getPrototypeOf(supabase.functions);
+  const original = proto.invoke;
+  proto.invoke = async function (this: unknown, ...args: any[]) {
+    const res = await original.apply(this, args);
     try {
       let body: unknown = res?.data;
       const ctx = res?.error?.context;
