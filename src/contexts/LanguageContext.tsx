@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 export type UILanguage = "es" | "en";
 
-const translations = {
+export const translations = {
   es: {
     // Auth
     loginTitle: "Iniciar Sesión",
@@ -322,6 +322,14 @@ const translations = {
     businessCreated: "Negocio creado",
     businessDeleted: "Negocio eliminado",
     errorSavingBusiness: "Error al guardar",
+    bizLimitExpiredTitle: "Tu prueba gratuita ha terminado",
+    bizLimitExpiredDesc: "Puedes seguir viendo y editando tus negocios, pero no añadir nuevos.",
+    bizLimitNoneTitle: "Tu plan no permite añadir negocios ahora",
+    bizLimitOneTitle: "Tu plan actual incluye 1 negocio",
+    bizLimitManyTitle: "Tu plan actual incluye {n} negocios",
+    bizLimitUpgradeDesc: "Para añadir otro negocio, necesitas ampliar tu plan.",
+    bizLimitServerDesc: "Has llegado al número de negocios de tu plan. Tus negocios actuales siguen intactos.",
+    bizLimitGenericDesc: "No se ha podido guardar el negocio. Inténtalo de nuevo en un momento.",
     errorDeletingBusiness: "Error al eliminar",
     nameRequired: "El nombre es obligatorio",
     interfaceLanguage: "Idioma de la interfaz",
@@ -770,6 +778,14 @@ const translations = {
     businessCreated: "Business created",
     businessDeleted: "Business deleted",
     errorSavingBusiness: "Error saving",
+    bizLimitExpiredTitle: "Your free trial has ended",
+    bizLimitExpiredDesc: "You can still view and edit your current businesses, but you can't add new ones.",
+    bizLimitNoneTitle: "Your plan doesn't allow adding businesses right now",
+    bizLimitOneTitle: "Your current plan includes 1 business",
+    bizLimitManyTitle: "Your current plan includes {n} businesses",
+    bizLimitUpgradeDesc: "To add another business, you need a bigger plan.",
+    bizLimitServerDesc: "You've reached your plan's business limit. Your current businesses are untouched.",
+    bizLimitGenericDesc: "We couldn't save the business. Please try again in a moment.",
     errorDeletingBusiness: "Error deleting",
     nameRequired: "Name is required",
     interfaceLanguage: "Interface language",
