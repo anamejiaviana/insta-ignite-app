@@ -1,3 +1,4 @@
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { aiTone } from "@/lib/editorialGuide";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -170,19 +171,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("dashboardSubtitle")}</p>
-        {clients.length === 0 && (
-          <div className="mt-4 p-5 rounded-xl border-2 border-primary/30 bg-primary/5 space-y-2">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <span className="text-xl">👋</span> {t("onboardingBannerTitle")}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t("onboardingBannerDesc")}
-            </p>
-            <Button variant="gradient" size="sm" onClick={() => navigate("/settings")} className="mt-2">
-              {t("onboardingBannerCTA")}
-            </Button>
-          </div>
-        )}
+        <OnboardingChecklist />
       </div>
 
       {/* Main CTA: Generate weekly plan */}

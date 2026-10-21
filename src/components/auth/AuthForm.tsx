@@ -27,6 +27,7 @@ export function AuthForm() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const { toast } = useToast();
   const { t, uiLanguage, setUILanguage } = useLanguage();
 
@@ -44,7 +45,7 @@ export function AuthForm() {
         if (error) throw error;
         toast({ title: t("welcomeBack") });
       } else if (isSignup) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -53,7 +54,12 @@ export function AuthForm() {
           },
         });
         if (error) throw error;
-        toast({ title: t("accountCreated"), description: t("accountCreatedDesc") });
+        if (!data.session) {
+          setSentTo(email);
+          setPassword("");
+        } else {
+          toast({ title: t("accountCreated") });
+        }
       } else if (isForgot) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -102,6 +108,22 @@ export function AuthForm() {
         </DropdownMenu>
       </div>
 
+      {sentTo ? (
+        <div className="glass rounded-2xl p-8 shadow-elevated animate-scale-in text-center space-y-4" data-testid="check-email">
+          <Mail className="h-10 w-10 text-primary mx-auto" />
+          <h2 className="text-2xl font-bold gradient-text">
+            {uiLanguage === "en" ? "Check your email" : "Revisa tu correo"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {uiLanguage === "en"
+              ? <>We sent a confirmation link to <strong className="text-foreground break-all">{sentTo}</strong>. Open it to activate your account and you'll come straight back here. If you don't see it, check your spam folder.</>
+              : <>Hemos enviado un enlace de confirmación a <strong className="text-foreground break-all">{sentTo}</strong>. Ábrelo para activar tu cuenta y volverás aquí directamente. Si no lo ves, mira en la carpeta de spam.</>}
+          </p>
+          <Button variant="outline" className="w-full" onClick={() => { setSentTo(null); setMode("login"); }}>
+            {t("backToLogin")}
+          </Button>
+        </div>
+      ) : (
       <div className="glass rounded-2xl p-8 shadow-elevated animate-scale-in">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold gradient-text mb-2">{title}</h2>
@@ -222,6 +244,7 @@ export function AuthForm() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

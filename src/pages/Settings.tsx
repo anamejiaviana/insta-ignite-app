@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
@@ -106,6 +106,15 @@ export default function Settings() {
   const [form, setForm] = useState<ClientForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Onboarding deep link: open the new-business form directly (only if no businesses yet)
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      if (clients.length === 0) { setEditingId(null); setForm(emptyForm); setShowForm(true); }
+      setSearchParams({}, { replace: true });
+    }
+  }, []);
 
   const startEdit = (client: Client) => {
     setEditingId(client.id);
@@ -172,6 +181,7 @@ export default function Settings() {
         extra_context: form.extra_context || null,
       };
 
+      const wasFirst = !editingId && clients.length === 0;
       if (editingId) {
         const { error } = await (supabase as any).from("clients").update(payload).eq("id", editingId);
         if (error) throw error;
@@ -187,6 +197,7 @@ export default function Settings() {
       setForm(emptyForm);
       setEditingId(null);
       await refreshClients();
+      if (wasFirst && localStorage.getItem("anypostly-onboarding")?.includes('"active":true')) navigate("/");
     } catch (error: any) {
       toast({ variant: "destructive", title: t("errorSavingBusiness"), description: error.message });
     } finally {
