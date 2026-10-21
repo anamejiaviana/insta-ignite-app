@@ -17,6 +17,7 @@ import Library from "./Library";
 import MediaLibrary from "./MediaLibrary";
 import Settings from "./Settings";
 import Plans from "./Plans";
+import CheckoutReturn from "./CheckoutReturn";
 import EditorialGuide from "./EditorialGuide";
 import NotFound from "./NotFound";
 
@@ -75,6 +76,7 @@ const Index = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="editorial" element={<EditorialGuide />} />
           <Route path="plans" element={<Plans />} />
+          <Route path="checkout/return" element={<CheckoutReturn />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
