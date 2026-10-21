@@ -62,7 +62,7 @@ export function OnboardingChecklist() {
       .then(({ count }) => setHasPost((count ?? 0) > 0));
   }, [state?.active, activeClient?.id]);
 
-  if (loading || !state?.active) return null;
+  if (loading || (!state?.active && clients.length > 0)) return null;
 
   const s1 = clients.length > 0;
   const s2 = s1 && (hasGuide || state.skippedGuide);
@@ -82,9 +82,9 @@ export function OnboardingChecklist() {
           <h2 className="text-lg font-semibold">👋 {T.title}</h2>
           <p className="text-sm text-muted-foreground">{allDone ? T.done : T.sub}</p>
         </div>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" aria-label={T.close} onClick={() => save({ ...state, active: false })}>
+        {clients.length > 0 && <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0" aria-label={T.close} onClick={() => save({ skippedGuide: false, ...state, active: false })}>
           <X className="h-4 w-4" />
-        </Button>
+        </Button>}
       </div>
       <ol className="space-y-2">
         {steps.map((s, i) => (
@@ -98,7 +98,7 @@ export function OnboardingChecklist() {
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Button variant="gradient" size="sm" onClick={s.go} disabled={!s.enabled}>{s.cta}</Button>
                     {s.skip && (
-                      <Button variant="ghost" size="sm" onClick={() => save({ ...state, skippedGuide: true })}>{T.s2skip}</Button>
+                      <Button variant="ghost" size="sm" onClick={() => save({ active: true, ...state, skippedGuide: true })}>{T.s2skip}</Button>
                     )}
                   </div>
                 </>

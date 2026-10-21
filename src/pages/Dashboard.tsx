@@ -172,19 +172,6 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("dashboardSubtitle")}</p>
         <OnboardingChecklist />
-        {clients.length === 0 && !localStorage.getItem("anypostly-onboarding")?.includes('"active":true') && (
-          <div className="mt-4 p-5 rounded-xl border-2 border-primary/30 bg-primary/5 space-y-2">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <span className="text-xl">👋</span> {t("onboardingBannerTitle")}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t("onboardingBannerDesc")}
-            </p>
-            <Button variant="gradient" size="sm" onClick={() => navigate("/settings?new=1")} className="mt-2">
-              {t("onboardingBannerCTA")}
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Main CTA: Generate weekly plan */}
