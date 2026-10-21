@@ -1,3 +1,4 @@
+import { markLimitNotice } from "./aiLimitNotice";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AiLimitCode = "trial_expired" | "image_limit_reached" | "text_limit_reached" | "trial_daily_cap" | "no_plan";
@@ -26,7 +27,7 @@ export function installAiErrorInterceptor() {
       const ctx = res?.error?.context;
       if (ctx && typeof ctx.clone === "function") body = await ctx.clone().json().catch(() => null);
       const code = classifyAiError(body);
-      if (code) window.dispatchEvent(new CustomEvent(AI_LIMIT_EVENT, { detail: code }));
+      if (code) { markLimitNotice(); window.dispatchEvent(new CustomEvent(AI_LIMIT_EVENT, { detail: code })); }
     } catch { /* never break the caller */ }
     return res;
   };
