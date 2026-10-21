@@ -22,6 +22,7 @@ import { Loader2, Sparkles, Upload, Wand2, Image, ArrowLeft, ImageIcon, AlertTri
 import { MediaPickerDialog } from "@/components/post/MediaPickerDialog";
 import { saveMediaAsset } from "@/lib/mediaAssets";
 import { useImageUsage } from "@/hooks/useImageUsage";
+import { TrialBanner } from "@/components/plan/TrialBanner";
 import { isReel, shouldAutoGenerateImage, extractReelPackage, buildReelInstructions, voiceoverInstruction, DEFAULT_IMAGE_SOURCE, EDIT_PRESETS, buildEditPrompt, imageCost, type ReelPackage, type ReelVoiceMode } from "@/lib/contentRules";
 import { useNavigate as useNav } from "react-router-dom";
 
@@ -746,6 +747,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
 
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
+      <div className="mb-4"><TrialBanner /></div>
       {/* Back to calendar link */}
       {fromCalendar && !generatedPost && (
         <button
