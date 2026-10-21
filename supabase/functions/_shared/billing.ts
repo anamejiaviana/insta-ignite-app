@@ -63,7 +63,17 @@ export async function syncSubscription(admin: SupabaseClient, env: StripeEnv, su
   const planName = key ? PRICE_PLAN_NAME[key] ?? null : null;
   const periodEnd = item?.current_period_end ?? sub.current_period_end;
 
+  // A scheduled downgrade shows up as the next phase of the subscription schedule.
+  let pendingKey: string | null = null;
+  if (sub.schedule) {
+    const sched: any = await stripe.subscriptionSchedules.retrieve(typeof sub.schedule === "string" ? sub.schedule : sub.schedule.id, { expand: ["phases.items.price"] });
+    const now = Math.floor(Date.now() / 1000);
+    const next = (sched.phases ?? []).find((ph: any) => ph.start_date > now);
+    pendingKey = next ? priceKey(next.items?.[0]?.price) : null;
+  }
+
   const { error: upErr } = await admin.from("subscriptions").upsert({
+    pending_price_id: pendingKey,
     user_id: userId,
     provider: "stripe",
     environment: env,

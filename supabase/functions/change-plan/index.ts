@@ -50,10 +50,6 @@ Deno.serve(async (req) => {
     const target = prices.data[0];
     if (!target || target.tax_behavior !== "inclusive") return json({ error: "price_unavailable" }, 503);
 
-    // Any pending scheduled change is replaced by the new choice.
-    if (sub.schedule) {
-      await stripe.subscriptionSchedules.release(typeof sub.schedule === "string" ? sub.schedule : sub.schedule.id);
-    }
     if (currentKey === targetKey) {
       await syncSubscription(admin, env, sub.id);
       return json({ result: "unchanged" });

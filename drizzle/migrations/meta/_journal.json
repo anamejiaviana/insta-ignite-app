@@ -50,6 +50,13 @@
       "when": 1792591431808,
       "tag": "0006_billing_testers",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792592021657,
+      "tag": "0007_subscriptions_pending_price",
+      "breakpoints": true
     }
   ]
 }

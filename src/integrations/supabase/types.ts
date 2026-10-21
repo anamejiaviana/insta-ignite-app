@@ -358,6 +358,7 @@ export type Database = {
           environment: string
           id: string
           last_event_at: string | null
+          pending_price_id: string | null
           plan_name: string | null
           price_id: string | null
           provider: string
@@ -374,6 +375,7 @@ export type Database = {
           environment?: string
           id?: string
           last_event_at?: string | null
+          pending_price_id?: string | null
           plan_name?: string | null
           price_id?: string | null
           provider?: string
@@ -390,6 +392,7 @@ export type Database = {
           environment?: string
           id?: string
           last_event_at?: string | null
+          pending_price_id?: string | null
           plan_name?: string | null
           price_id?: string | null
           provider?: string
