@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients, Client } from "@/contexts/ClientContext";
 import { useLanguage, UILanguage } from "@/contexts/LanguageContext";
+import { bizLimitFromError, bizLimitPrecheck } from "@/lib/businessLimit";
 import { Button } from "@/components/ui/button";
 import { ToastAction } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
@@ -100,7 +101,7 @@ export default function Settings() {
   const { clients, refreshClients } = useClients();
   const { t, uiLanguage, setUILanguage } = useLanguage();
   const { toast } = useToast();
-  const { canAddBusiness, businessLimit } = useUserPlan();
+  const { canAddBusiness, businessLimit, expired } = useUserPlan();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ClientForm>(emptyForm);
@@ -137,11 +138,11 @@ export default function Settings() {
 
   const startNew = () => {
     if (!canAddBusiness(clients.length)) {
-      const limit = Math.max(businessLimit, 0);
+      const m = bizLimitPrecheck(businessLimit, expired);
       toast({
         variant: "destructive",
-        title: limit === 0 ? "Tu plan no permite añadir negocios ahora" : `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
-        description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
+        title: t(m.title as any).replace("{n}", String(m.count ?? "")),
+        description: t(m.description as any),
         action: (
           <ToastAction altText={t("plansUpgrade")} onClick={() => navigate("/plans")}>
             {t("plansUpgrade")}
@@ -199,11 +200,13 @@ export default function Settings() {
       await refreshClients();
       if (wasFirst && localStorage.getItem("anypostly-onboarding")?.includes('"active":true')) navigate("/");
     } catch (error: any) {
-      const limitHit = String(error?.message ?? "").includes("business_limit_reached");
+      const m = bizLimitFromError(error?.message, expired);
+      if (!m) console.error("save business failed", error);
       toast({
         variant: "destructive",
-        title: t("errorSavingBusiness"),
-        description: limitHit ? "Has llegado al número de negocios de tu plan. Tus negocios actuales siguen intactos." : error.message,
+        title: t((m?.title ?? "errorSavingBusiness") as any),
+        description: m ? t(m.description as any) : (error?.message || t("bizLimitGenericDesc")),
+        ...(m?.showPlans ? { action: <ToastAction altText={t("plansUpgrade")} onClick={() => navigate("/plans")}>{t("plansUpgrade")}</ToastAction> } : {}),
       });
     } finally {
       setSaving(false);
