@@ -75,6 +75,7 @@ const Index = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="editorial" element={<EditorialGuide />} />
           <Route path="plans" element={<Plans />} />
+          <Route path="checkout/return" element={<CheckoutReturn />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
