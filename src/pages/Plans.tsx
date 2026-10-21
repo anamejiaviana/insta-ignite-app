@@ -1,5 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUserPlan } from "@/hooks/useUserPlan";
+import { TrialBanner } from "@/components/plan/TrialBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,11 +55,14 @@ export default function Plans() {
   const isCurrentPlan = (planName: string) => {
     if (!plan) return false;
     if (plan.business_limit === -1) return false;
+    if (plan.status === "trial" || plan.status === "expired") return false;
     return plan.plan_name === planName;
   };
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
+      <div className="mb-6"><TrialBanner /></div>
+      <p className="text-center text-sm text-muted-foreground mb-4">{t("plansComingSoonDesc")}</p>
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold mb-2">{t("plansTitle")}</h1>
         <p className="text-muted-foreground">{t("plansSubtitle")}</p>
