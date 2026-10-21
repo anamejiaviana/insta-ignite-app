@@ -2,6 +2,7 @@ import { aiTone } from "@/lib/editorialGuide";
 import { shrinkDataUrl, withTimeout } from "@/lib/imageResize";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { isAiLimitError } from "@/lib/aiErrors";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage, type TranslationKey } from "@/contexts/LanguageContext";
@@ -474,6 +475,7 @@ A partir de esto genera SOLO JSON: { "storyCopy": "máx 200 caracteres", "storyb
         150_000,
         "La mejora con IA está tardando demasiado. Inténtalo de nuevo en un momento; no se ha gastado tu cupo.",
       );
+      if (isAiLimitError(error)) { refreshUsage(); return "limit"; } // friendly notice already shown
       let body: any = data;
       if (error && (error as any)?.context?.json) {
         try { body = await (error as any).context.json(); } catch { /* sin cuerpo */ }

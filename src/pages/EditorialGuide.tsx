@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAiLimitError } from "@/lib/aiErrors";
 import { supabase } from "@/integrations/supabase/client";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -164,6 +165,7 @@ export default function EditorialGuide() {
   const callPost = async (body: any) => {
     const { data, error } = await supabase.functions.invoke("generate-post", { body });
     if (error) {
+      if (isAiLimitError(error)) throw error;
       let msg = error.message;
       try { const j = await (error as any).context?.json?.(); if (j?.error) msg = j.error; } catch { /* keep */ }
       throw new Error(msg);

@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { classifyAiError } from "./aiErrors";
+import { consumeLimitToast, registerLimitToken } from "./aiLimitNotice";
+
 describe("ai error codes", () => {
   test("expired trial is distinct from used-up allowance", () => {
     expect(classifyAiError({ error: "trial_expired" })).toBe("trial_expired");
@@ -9,14 +11,19 @@ describe("ai error codes", () => {
     expect(classifyAiError({ error: "boom" })).toBe(null);
   });
 });
-import { markLimitNotice, shouldSuppressErrorToast } from "./aiLimitNotice";
+
 describe("duplicate error toast", () => {
-  test("red toast right after a limit notice is skipped", () => {
-    markLimitNotice(1000);
-    expect(shouldSuppressErrorToast("destructive", 2000)).toBe(true);
+  test("only the toast carrying the limit response is skipped", () => {
+    const token = registerLimitToken("trial_expired");
+    expect(consumeLimitToast({ title: "Error", description: token })).toBe(true);
   });
-  test("unexpected errors later are still shown", () => {
-    markLimitNotice(1000);
-    expect(shouldSuppressErrorToast("destructive", 10000)).toBe(false);
+  test("an unexpected error right after is still shown", () => {
+    registerLimitToken("trial_expired");
+    expect(consumeLimitToast({ title: "Error", description: "Edge Function returned a non-2xx status code" })).toBe(false);
+  });
+  test("the same limit response is skipped only once", () => {
+    const token = registerLimitToken("text_limit_reached");
+    consumeLimitToast({ description: token });
+    expect(consumeLimitToast({ description: token })).toBe(false);
   });
 });

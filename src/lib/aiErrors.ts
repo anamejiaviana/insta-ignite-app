@@ -1,4 +1,4 @@
-import { markLimitNotice } from "./aiLimitNotice";
+import { registerLimitToken } from "./aiLimitNotice";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AiLimitCode = "trial_expired" | "image_limit_reached" | "text_limit_reached" | "trial_daily_cap" | "no_plan";
@@ -10,10 +10,24 @@ export function classifyAiError(body: unknown): AiLimitCode | null {
   return CODES.includes(code) ? code : null;
 }
 
+/** Typed error for a controlled 403/429 limit response; the friendly notice already explains it. */
+export class AiLimitError extends Error {
+  readonly code: AiLimitCode;
+  readonly context: unknown;
+  constructor(code: AiLimitCode, context: unknown) {
+    super(registerLimitToken(code));
+    this.name = "AiLimitError";
+    this.code = code;
+    this.context = context;
+  }
+}
+
+export const isAiLimitError = (e: unknown): e is AiLimitError => e instanceof AiLimitError;
+
 export const AI_LIMIT_EVENT = "anypostly:ai-limit";
 
 let installed = false;
-/** Wraps functions.invoke once so every AI screen surfaces the same clear notice. */
+/** Wraps functions.invoke once: a controlled limit response becomes an AiLimitError and opens the friendly notice. */
 export function installAiErrorInterceptor() {
   if (installed) return;
   installed = true;
@@ -23,12 +37,14 @@ export function installAiErrorInterceptor() {
   proto.invoke = async function (this: unknown, ...args: any[]) {
     const res = await original.apply(this, args);
     try {
-      let body: unknown = res?.data;
       const ctx = res?.error?.context;
-      if (ctx && typeof ctx.clone === "function") body = await ctx.clone().json().catch(() => null);
-      const code = classifyAiError(body);
-      if (code) { markLimitNotice(); window.dispatchEvent(new CustomEvent(AI_LIMIT_EVENT, { detail: code })); }
-    } catch { /* never break the caller */ }
-    return res;
+      if (!ctx || typeof ctx.clone !== "function" || ![403, 429].includes(ctx.status)) return res;
+      const code = classifyAiError(await ctx.clone().json().catch(() => null));
+      if (!code) return res;
+      window.dispatchEvent(new CustomEvent(AI_LIMIT_EVENT, { detail: code }));
+      return { ...res, error: new AiLimitError(code, ctx) };
+    } catch {
+      return res; // never break the caller
+    }
   };
 }
