@@ -36,7 +36,7 @@ const CORE_FEATURES_KEYS = [
 const NAME: Record<PlanKey, string> = { solo: "Solo", pro: "Pro", studio: "Studio" };
 
 export default function Plans() {
-  const { t, language } = useLanguage();
+  const { t, uiLanguage: language } = useLanguage();
   const { plan } = useUserPlan();
   const { sub, refresh } = useSubscription();
   const { toast } = useToast();
