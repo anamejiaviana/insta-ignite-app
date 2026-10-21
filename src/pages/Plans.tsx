@@ -62,7 +62,20 @@ export default function Plans() {
   const changePlan = async (p: PlanKey) => {
     setConfirm(null);
     setBusy(p);
-    const { data, code } = await callBilling<{ result: string; effective_at?: string }>("change-plan", { plan: p });
+    const { data, code } = await callBilling<{ result: string; effective_at?: string; clientSecret?: string }>("change-plan", { plan: p });
+    if (data?.result === "requires_action" && data.clientSecret) {
+      // The bank asks for 3D Secure: show its verification window; the plan changes only if it succeeds.
+      const stripe = await getStripe();
+      const res = await stripe?.handleNextAction({ clientSecret: data.clientSecret });
+      setBusy(null);
+      if (!res || res.error || res.paymentIntent?.status !== "succeeded") {
+        await callBilling("change-plan", { action: "abandon" });
+        return fail("auth_failed");
+      }
+      toast({ title: t("billUpgraded") });
+      setTimeout(() => window.location.reload(), 4000);
+      return;
+    }
     setBusy(null);
     if (!data) return fail(code);
     if (data.result === "upgraded") toast({ title: t("billUpgraded") });

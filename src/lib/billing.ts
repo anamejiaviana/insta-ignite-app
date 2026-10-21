@@ -43,6 +43,7 @@ const ERROR_KEYS: Record<string, TranslationKey> = {
   already_subscribed: "billErrAlready",
   not_needed: "billErrNotNeeded",
   payment_failed: "billErrPayment",
+  auth_failed: "billErrAuth",
   past_due: "billErrPastDue",
   no_subscription: "billErrNoSub",
 };
