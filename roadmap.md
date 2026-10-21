@@ -8,3 +8,4 @@
 - [x] Asistente guiado de manual editorial (6 pasos, propuesta IA revisable, aprobar, copy de prueba) aplicado a todos los generadores de texto
 - [x] Onboarding self-service: guía de 3 pasos para cuentas nuevas, pantalla 'Revisa tu correo' tras registro
 - [x] Prueba gratuita 7 días (40 textos, 5 imágenes, 1 negocio), estados trial/active/expired/comp/legacy, tope diario global, avisos ES/EN, cuentas actuales intactas
+- [ ] Pre-pagos: límite de negocios en servidor, cupos IA por plan/estado, protección plan_name/business_limit, tablas subscriptions/billing_events (sin cobros)
