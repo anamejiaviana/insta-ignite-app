@@ -38,6 +38,24 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_testers: {
+        Row: {
+          created_at: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       brand_configs: {
         Row: {
           brand_name: string | null

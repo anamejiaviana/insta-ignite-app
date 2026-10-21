@@ -43,6 +43,13 @@
       "when": 1792591397969,
       "tag": "0005_billing_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792591431808,
+      "tag": "0006_billing_testers",
+      "breakpoints": true
     }
   ]
 }
