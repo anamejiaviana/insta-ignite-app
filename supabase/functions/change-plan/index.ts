@@ -37,6 +37,11 @@ Deno.serve(async (req) => {
       return json({ result: action === "cancel" ? "cancel_scheduled" : "resumed" });
     }
     if (sub.status === "past_due") return json({ error: "past_due" }, 409);
+    if (sub.schedule) {
+      await stripe.subscriptionSchedules.release(typeof sub.schedule === "string" ? sub.schedule : sub.schedule.id);
+      sub.schedule = null;
+    }
+    // Choosing a plan again undoes a pending cancellation.
     if (sub.cancel_at_period_end) await stripe.subscriptions.update(sub.id, { cancel_at_period_end: false });
     const item = sub.items.data[0];
     const currentKey = item.price.lookup_key as string;
@@ -74,6 +79,7 @@ Deno.serve(async (req) => {
         { items: [{ price: target.id, quantity: 1 }], duration: { interval: "month", interval_count: 1 }, metadata: { userId, plan } },
       ],
     } as any);
+    await syncSubscription(admin, env, sub.id);
     return json({ result: "downgrade_scheduled", effective_at: new Date(phase.end_date * 1000).toISOString() });
   } catch (e: any) {
     console.error("change-plan error", e);
