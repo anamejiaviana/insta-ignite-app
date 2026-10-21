@@ -131,7 +131,7 @@ export default function Plans() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
         {PLANS.map((p) => {
-          const current = currentKey === p.key || (!currentKey && !isComp && plan?.status === "legacy" && false);
+          const current = currentKey === p.key;
           const kind = currentKey ? planChangeKind(currentKey, p.key) : null;
           const label = kind === "upgrade" ? t("billUpgrade") : kind === "downgrade" ? t("billDowngrade") : t("billSubscribe");
           return (
