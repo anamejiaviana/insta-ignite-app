@@ -137,10 +137,10 @@ export default function Settings() {
 
   const startNew = () => {
     if (!canAddBusiness(clients.length)) {
-      const limit = plan?.business_limit ?? 1;
+      const limit = Math.max(businessLimit, 0);
       toast({
         variant: "destructive",
-        title: `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
+        title: limit === 0 ? "Tu plan no permite añadir negocios ahora" : `Tu plan actual incluye ${limit} negocio${limit > 1 ? "s" : ""}`,
         description: "Para añadir otra cuenta, necesitas ampliar tu plan.",
         action: (
           <ToastAction altText={t("plansUpgrade")} onClick={() => navigate("/plans")}>
@@ -199,7 +199,12 @@ export default function Settings() {
       await refreshClients();
       if (wasFirst && localStorage.getItem("anypostly-onboarding")?.includes('"active":true')) navigate("/");
     } catch (error: any) {
-      toast({ variant: "destructive", title: t("errorSavingBusiness"), description: error.message });
+      const limitHit = String(error?.message ?? "").includes("business_limit_reached");
+      toast({
+        variant: "destructive",
+        title: t("errorSavingBusiness"),
+        description: limitHit ? "Has llegado al número de negocios de tu plan. Tus negocios actuales siguen intactos." : error.message,
+      });
     } finally {
       setSaving(false);
     }

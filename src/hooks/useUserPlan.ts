@@ -22,6 +22,18 @@ export function trialDaysLeft(p: Pick<UserPlan, "trial_ends_at"> | null, now = D
   return Math.max(0, Math.ceil((new Date(p.trial_ends_at).getTime() - now) / 86400000));
 }
 
+/** Mirrors the server rule `get_business_limit` (the database trigger is what actually enforces it). -1 = unlimited. */
+export function businessLimitFor(p: Pick<UserPlan, "status" | "plan_name" | "business_limit"> | null) {
+  if (!p) return 1;
+  switch (p.status) {
+    case "comp": return -1;
+    case "expired": return 0;
+    case "trial": return 1;
+    case "active": return p.plan_name === "studio" ? 5 : p.plan_name === "pro" ? 3 : 1;
+    default: return p.business_limit;
+  }
+}
+
 export function useUserPlan() {
   const [plan, setPlan] = useState<UserPlan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,15 +74,16 @@ export function useUserPlan() {
     };
   }, []);
 
-  const isUnlimited = plan ? plan.business_limit === -1 : false;
+  const businessLimit = businessLimitFor(plan);
+  const isUnlimited = plan ? businessLimit === -1 : false;
   const isTrial = plan?.status === "trial" || plan?.status === "expired";
   const expired = isTrialExpired(plan);
 
   const canAddBusiness = (currentCount: number) => {
     if (!plan) return false;
-    if (plan.business_limit === -1) return true;
-    return currentCount < plan.business_limit;
+    if (businessLimit === -1) return true;
+    return currentCount < businessLimit;
   };
 
-  return { plan, loading, isUnlimited, isTrial, expired, daysLeft: trialDaysLeft(plan), canAddBusiness };
+  return { plan, loading, businessLimit, isUnlimited, isTrial, expired, daysLeft: trialDaysLeft(plan), canAddBusiness };
 }
