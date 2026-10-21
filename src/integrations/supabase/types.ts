@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_events: {
+        Row: {
+          event_id: string
+          event_type: string
+          processed_at: string
+          provider: string
+          user_id: string | null
+        }
+        Insert: {
+          event_id: string
+          event_type: string
+          processed_at?: string
+          provider?: string
+          user_id?: string | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string
+          processed_at?: string
+          provider?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       brand_configs: {
         Row: {
           brand_name: string | null
@@ -308,6 +332,57 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          environment: string
+          id: string
+          last_event_at: string | null
+          plan_name: string | null
+          price_id: string | null
+          provider: string
+          provider_customer_id: string | null
+          provider_subscription_id: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          environment?: string
+          id?: string
+          last_event_at?: string | null
+          plan_name?: string | null
+          price_id?: string | null
+          provider?: string
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          environment?: string
+          id?: string
+          last_event_at?: string | null
+          plan_name?: string | null
+          price_id?: string | null
+          provider?: string
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       usage_counters: {
         Row: {
           count: number
@@ -449,6 +524,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_business_limit: { Args: { _user_id: string }; Returns: number }
       get_image_limit: { Args: { _user_id: string }; Returns: number }
       get_text_limit: { Args: { _user_id: string }; Returns: number }
       has_role: {
