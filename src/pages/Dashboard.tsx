@@ -1,4 +1,5 @@
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
+import { TrialBanner } from "@/components/plan/TrialBanner";
 import { aiTone } from "@/lib/editorialGuide";
 import { useClients } from "@/contexts/ClientContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -171,6 +172,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("dashboardSubtitle")}</p>
+        <div className="mt-4"><TrialBanner /></div>
         <OnboardingChecklist />
       </div>
 

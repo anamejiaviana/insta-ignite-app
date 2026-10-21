@@ -15,6 +15,13 @@
       "when": 1792522195678,
       "tag": "0001_editorial_guides",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792577648826,
+      "tag": "0002_trial_plans",
+      "breakpoints": true
     }
   ]
 }
