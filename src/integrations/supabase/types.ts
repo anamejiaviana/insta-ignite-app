@@ -419,6 +419,8 @@ export type Database = {
           created_at: string
           id: string
           plan_name: string
+          pre_billing_plan: string | null
+          pre_billing_status: string | null
           status: string
           trial_ends_at: string | null
           updated_at: string
@@ -429,6 +431,8 @@ export type Database = {
           created_at?: string
           id?: string
           plan_name?: string
+          pre_billing_plan?: string | null
+          pre_billing_status?: string | null
           status?: string
           trial_ends_at?: string | null
           updated_at?: string
@@ -439,6 +443,8 @@ export type Database = {
           created_at?: string
           id?: string
           plan_name?: string
+          pre_billing_plan?: string | null
+          pre_billing_status?: string | null
           status?: string
           trial_ends_at?: string | null
           updated_at?: string
@@ -524,6 +530,10 @@ export type Database = {
       }
     }
     Functions: {
+      apply_billing_state: {
+        Args: { _has_access: boolean; _plan_name: string; _user_id: string }
+        Returns: string
+      }
       get_business_limit: { Args: { _user_id: string }; Returns: number }
       get_image_limit: { Args: { _user_id: string }; Returns: number }
       get_text_limit: { Args: { _user_id: string }; Returns: number }
