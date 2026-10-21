@@ -1,9 +1,25 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export type PlanStatus = "trial" | "active" | "expired" | "comp" | "legacy";
+
 export interface UserPlan {
   plan_name: string;
   business_limit: number; // -1 = unlimited
+  status: PlanStatus;
+  trial_ends_at: string | null;
+}
+
+/** Trial is over when status is expired, or trial and the end date passed (the server enforces the same rule). */
+export function isTrialExpired(p: Pick<UserPlan, "status" | "trial_ends_at"> | null, now = Date.now()) {
+  if (!p) return false;
+  if (p.status === "expired") return true;
+  return p.status === "trial" && (!p.trial_ends_at || new Date(p.trial_ends_at).getTime() <= now);
+}
+
+export function trialDaysLeft(p: Pick<UserPlan, "trial_ends_at"> | null, now = Date.now()) {
+  if (!p?.trial_ends_at) return 0;
+  return Math.max(0, Math.ceil((new Date(p.trial_ends_at).getTime() - now) / 86400000));
 }
 
 export function useUserPlan() {
@@ -22,12 +38,14 @@ export function useUserPlan() {
 
       const { data } = await (supabase as any)
         .from("user_plans")
-        .select("plan_name, business_limit")
+        .select("plan_name, business_limit, status, trial_ends_at")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (!cancelled) {
-        setPlan(data ? { plan_name: data.plan_name, business_limit: data.business_limit } : { plan_name: "basic", business_limit: 1 });
+        setPlan(data
+          ? { plan_name: data.plan_name, business_limit: data.business_limit, status: data.status ?? "legacy", trial_ends_at: data.trial_ends_at ?? null }
+          : { plan_name: "basic", business_limit: 1, status: "legacy", trial_ends_at: null });
         setLoading(false);
       }
     };
@@ -45,6 +63,8 @@ export function useUserPlan() {
   }, []);
 
   const isUnlimited = plan ? plan.business_limit === -1 : false;
+  const isTrial = plan?.status === "trial" || plan?.status === "expired";
+  const expired = isTrialExpired(plan);
 
   const canAddBusiness = (currentCount: number) => {
     if (!plan) return false;
@@ -52,5 +72,5 @@ export function useUserPlan() {
     return currentCount < plan.business_limit;
   };
 
-  return { plan, loading, isUnlimited, canAddBusiness };
+  return { plan, loading, isUnlimited, isTrial, expired, daysLeft: trialDaysLeft(plan), canAddBusiness };
 }
