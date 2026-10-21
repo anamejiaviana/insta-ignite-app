@@ -1,5 +1,5 @@
 import * as React from "react";
-import { shouldSuppressErrorToast } from "@/lib/aiLimitNotice";
+import { consumeLimitToast } from "@/lib/aiLimitNotice";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
@@ -137,7 +137,8 @@ type Toast = Omit<ToasterToast, "id">;
 
 function toast({ ...props }: Toast) {
   const id = genId();
-  if (shouldSuppressErrorToast(props.variant)) {
+  if (props.variant === "destructive" && consumeLimitToast(props)) {
+    // Duplicate of a limit response already explained by the friendly notice.
     return { id, dismiss: () => {}, update: () => {} };
   }
 
