@@ -46,6 +46,9 @@ export function guarded(
       return json({ error: 'quota_unavailable' }, 503); // fail closed
     }
     if (!q.allowed) {
+      if (q.reason === 'trial_expired') return json({ error: 'trial_expired' }, 403);
+      if (q.reason === 'no_plan') return json({ error: 'no_plan' }, 403);
+      if (q.reason === 'trial_daily_cap') return json({ error: 'trial_daily_cap', current: q.current, limit: q.limit }, 429);
       return json({ error: resource === 'images' ? 'image_limit_reached' : 'text_limit_reached', current: q.current, limit: q.limit }, 429);
     }
 
